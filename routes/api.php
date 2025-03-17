@@ -16,7 +16,7 @@ use App\Http\Controllers\System\Menus\MenuController;
 use App\Http\Controllers\System\Securityroles\SecurityroleController;
 
 use App\Http\Controllers\System\Roles\RoleController;
-
+use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +79,11 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     // lookup information
     Route::get('userlists',[LookupController::class,'userlists'])->name('userlists');
 
+  
+    //search fullname
+    Route::get('searchUsers', [UserController::class, 'searchUsers']);
 
+   //get Onlineusers
+   Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
 
 });
