@@ -123,7 +123,6 @@ class UserController extends Controller
     public function searchUsersxx(Request $request)
     {
         $search = $request->input('search', '');
-
         $users = DB::table('users')
             ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
             ->leftJoin('userskills', 'userskills.code', '=', 'users.code')
