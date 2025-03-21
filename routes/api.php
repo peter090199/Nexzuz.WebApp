@@ -84,6 +84,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('searchUsers', [UserController::class, 'searchUsers']);
 
    //get Onlineusers
+   
    Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
 
 });
