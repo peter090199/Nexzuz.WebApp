@@ -56,6 +56,7 @@ class ProfilepictureController extends Controller
             ]);
         }
 
+
         try {
             DB::beginTransaction(); // Start the transaction
 
