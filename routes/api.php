@@ -51,6 +51,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
 
+    Route::resource('testpost',PostController::class)->names('testpost');
+    
     // PROFILE resource
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
