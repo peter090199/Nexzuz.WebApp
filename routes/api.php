@@ -9,6 +9,7 @@ use  App\Http\Controllers\Auth\RegisterController;
 use  App\Http\Controllers\Auth\ForgetpasswordController;
 use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\ProfilepictureController;
+use  App\Http\Controllers\Auth\PostController;
 
 use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
 
@@ -51,8 +52,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
 
-    Route::resource('testpost',PostController::class)->names('testpost');
-    
     // PROFILE resource
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
@@ -90,4 +89,11 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
    //GIT PUSH
 
+
+
+
+
+
+   
+   Route::resource('testpost',PostController::class)->names('testpost');
 });

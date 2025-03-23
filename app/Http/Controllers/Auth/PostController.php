@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
 use DB;
 class PostController extends Controller
@@ -47,7 +49,7 @@ class PostController extends Controller
             }
             
             try {
-                $transNo = UserProfile::max('transNo');
+                $transNo = Post::max('transNo');
                 $newtrans = empty($transNo) ? 1 : $transNo + 1;
             
                 $uploadedFiles = [];
