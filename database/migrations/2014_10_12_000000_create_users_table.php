@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('company')->nullable();
             $table->integer('code')->unique(); // Added unique constraint
             $table->string('role_code')->nullable(); // Assuming there's a roles table
+            $table->tinyInteger('is_online')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
