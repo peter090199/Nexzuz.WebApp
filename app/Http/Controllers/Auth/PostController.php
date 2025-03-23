@@ -15,6 +15,8 @@ class PostController extends Controller
     public function index()
     {
         //
+
+        return view('testuploads');
     }
 
     /**
@@ -30,7 +32,50 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+            $data = $request->all();
+
+            $data = $request->all();
+
+            $validator = Validator::make($data, [
+                'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
+                'caption' => 'nullable|string',
+                'status' => 'required|integer',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+            
+            try {
+                $transNo = UserProfile::max('transNo');
+                $newtrans = empty($transNo) ? 1 : $transNo + 1;
+            
+                $uploadedFiles = [];
+                if ($request->hasFile('posts')) {
+                    foreach ($request->file('posts') as $file) {
+                        $filename = time() . '_' . $file->getClientOriginalName();
+                        $filePath = $file->storeAs('uploads', $filename, 'public');
+                        $uploadedFiles[] = [
+                            'filename' => $filename,
+                            'path' => asset('storage/' . $filePath),
+                        ];
+                    }
+                }
+            
+                return response()->json([
+                    'caption' => $request->input('caption', ''), 
+                    'status' => $request->input('status', 0),
+                    'attachment' => $uploadedFiles,
+                ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack(); // Rollback the transaction on error
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $th->getMessage(),
+            ]);
+        }
 
 
 

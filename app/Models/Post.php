@@ -11,14 +11,17 @@ class Post extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+
+
     protected $fillable = [
         'transNo',
+        'posts_uuid',
         'caption',
         'post',
         'status',
         'code',
         'created_by',
-        'updated_by',
+        'updated_by'
     ];
 
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use  App\Http\Controllers\Auth\ProfileController;
+use  App\Http\Controllers\Auth\PostController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,4 +18,5 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('profiles',ProfileController::class)->names('profiles');
+// Route::resource('profiles',ProfileController::class)->names('profiles');
+Route::resource('testpost',PostController::class)->names('testpost');

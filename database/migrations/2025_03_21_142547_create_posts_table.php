@@ -14,17 +14,18 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('transNo'); // Use unsignedInteger if it's a reference
-            $table->string('caption')->nullable(); // Changed from integer to string
-            $table->text('post')->nullable(); // Changed to text for larger content
-            $table->tinyInteger('status')->default(1); // Changed from char to tinyInteger
+            $table->integer('transNo');
+            $table->uuid('posts_uuid')->unique(); // Defining UUID column and making it unique
+            $table->string('caption')->nullable();
+            $table->text('post')->nullable();
+            $table->tinyInteger('status')->default(1);
             $table->integer('code');
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
         });
     }
-
+    
     /**
      * Reverse the migrations.
     */

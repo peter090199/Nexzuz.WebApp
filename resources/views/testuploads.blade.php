@@ -8,7 +8,17 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>User Profile</h1>
+
+
+
+    {{-- <form action="testpost" method="POST" enctype="multipart/form-data"> --}}
+        <input type="text" name="" id="status">
+        <input type="text" name="" id="caption">
+        <input type="file" id="attachment" name="posts[]" multiple>
+        <button type="submit" id="upload">Upload</button>
+    {{-- </form> --}}
+
+    {{-- <h1>User Profile</h1>
      <img src="{{$imagePath}}" alt="" srcset="">
     
         <!-- Photo Upload -->
@@ -66,7 +76,7 @@
             </div>
         </div>
         <button type="button" id="addEducation">Add Education</button><br><br>
-        <button type="submit" id="save">Save Profile</button>
+        <button type="submit" id="save">Save Profile</button> --}}
 
 
     <script>
@@ -244,10 +254,52 @@
         console.error(error.response ? error.response.data : error.message); // Handle errors
         alert('An error occurred. Please try again.');
     });
-});
+    });
 
+    $('#upload').on('click',function(){
+  
 
+        $('#upload').click(function (e) {
+        e.preventDefault(); // Prevent default button behavior
+
+        let formData = new FormData();
+        
+        // Get input values
+        let status = $('#status').val();
+        let caption = $('#caption').val();
+        let attachment = $('#attachment')[0].files; // Get files
+
+        // Append text inputs
+        formData.append('status', status);
+        formData.append('caption', caption);
+
+        // Append files (supports multiple file uploads)
+        for (let i = 0; i < attachment.length; i++) {
+            formData.append('posts[]', attachment[i]);
+        }
+        var bearerToken = '637|a04AjeaidiTJJQNoA55KZo993XmybOYHOdbzAUTgbe3f0ef3';
+        $.ajax({
+            url: 'http://127.0.0.1:8000/testpost',
+            type: 'POST',
+            data: formData,
+            processData: false, // Important: Prevent jQuery from processing FormData
+            contentType: false, // Important: Prevent jQuery from adding Content-Type header
+            headers: {
+                'Authorization': `Bearer ${bearerToken}` // Ensure bearerToken is defined
+            },
+            success: function (response) {
+                console.log(response);
+                // alert('Upload successful!');
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseJSON ? xhr.responseJSON : error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+    })
 
     </script>
+    
 </body>
 </html>
