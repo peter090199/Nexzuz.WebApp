@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -277,25 +280,60 @@
         for (let i = 0; i < attachment.length; i++) {
             formData.append('posts[]', attachment[i]);
         }
-        var bearerToken = '1|H9HlK5QFEff412SP7TmuUTKXA3r27mdNp4G8Q6PTad85c3fc';
+        var bearerToken = '2|Mlj8tWv5E2AFG0ULk0MCA0pFogaRqNKoojsXz4I480cf5bec';
         $.ajax({
             url: 'http://127.0.0.1:8000/api/testpost',
             type: 'POST',
             data: formData,
-            processData: false, // Important: Prevent jQuery from processing FormData
-            contentType: false, // Important: Prevent jQuery from adding Content-Type header
+            processData: false, // Prevent jQuery from processing FormData
+            contentType: false, // Prevent jQuery from adding Content-Type header
             headers: {
                 'Authorization': `Bearer ${bearerToken}` // Ensure bearerToken is defined
             },
+            beforeSend: function () {
+                if (!Swal.isVisible()) {
+                    Swal.fire({
+                        title: 'Uploading...',
+                        text: 'Please wait while we upload your file.',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                }
+            },
             success: function (response) {
                 console.log(response);
-                // alert('Upload successful!');
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Upload successful!',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    Swal.close(); // Close Swal manually
+                });
             },
             error: function (xhr, status, error) {
                 console.error(xhr.responseJSON ? xhr.responseJSON : error);
-                alert('An error occurred. Please try again.');
+
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            },
+            complete: function () {
+                // Ensure loading indicator is removed if not closed automatically
+                if (Swal.isVisible()) {
+                    Swal.close();
+                }
             }
         });
+
+
     });
     })
 

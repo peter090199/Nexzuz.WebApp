@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
+use Illuminate\Support\Str;
 use DB;
 class PostController extends Controller
 {
@@ -36,8 +37,6 @@ class PostController extends Controller
     {
             $data = $request->all();
 
-            $data = $request->all();
-
             $validator = Validator::make($data, [
                 'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
                 'caption' => 'nullable|string',
@@ -51,19 +50,37 @@ class PostController extends Controller
             try {
                 $transNo = Post::max('transNo');
                 $newtrans = empty($transNo) ? 1 : $transNo + 1;
-            
+                
+
                 $uploadedFiles = [];
+                $folderuuid = Str::uuid();
+                $codeuser = Auth::user()->code;
                 if ($request->hasFile('posts')) {
+
                     foreach ($request->file('posts') as $file) {
+                        $uuid = Str::uuid();
                         $filename = time() . '_' . $file->getClientOriginalName();
-                        $filePath = $file->storeAs('uploads', $filename, 'public');
+                        $filePath = "uploads/posts/${codeuser}/{$uuid}/{$filename}";
+                        $file->storeAs("uploads/posts/${codeuser}/{$folderuuid}", $filename, 'public');
                         $uploadedFiles[] = [
+                            'uuid' => $uuid,
+                            'folderuui' =>$folderuuid,
                             'filename' => $filename,
                             'path' => asset('storage/' . $filePath),
                         ];
+
+                        DB::table('posts')->insert([
+                            'transNo' => $newtrans,
+                            'posts_uuid' => $uuid,
+                            'caption' => $data['caption'],
+                            'post' => "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/".$filename,
+                            'status' => $data['status'],
+                            'code' => $codeuser,
+                            'created_by' => Auth::user()->fullname
+                        ]);        
                     }
                 }
-            
+                DB::commit();
                 return response()->json([
                     'caption' => $request->input('caption', ''), 
                     'status' => $request->input('status', 0),
