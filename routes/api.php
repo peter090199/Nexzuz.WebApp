@@ -94,6 +94,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
 
 
-   
-   Route::resource('testpost',PostController::class)->names('testpost');
+    // POST what's in your mind?
+   Route::resource('post',PostController::class)->names('post');
 });

@@ -70,8 +70,9 @@ class PostController extends Controller
                         ];
 
                         DB::table('posts')->insert([
+                            'posts_uuid' => $folderuuid,
                             'transNo' => $newtrans,
-                            'posts_uuid' => $uuid,
+                            'posts_uuind' => $uuid,
                             'caption' => $data['caption'],
                             'post' => "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/".$filename,
                             'status' => $data['status'],

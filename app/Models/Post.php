@@ -16,6 +16,7 @@ class Post extends Model
     protected $fillable = [
         'transNo',
         'posts_uuid',
+        'posts_uuind',
         'caption',
         'post',
         'status',
