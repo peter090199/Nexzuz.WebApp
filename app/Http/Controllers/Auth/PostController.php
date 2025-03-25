@@ -48,6 +48,14 @@ class PostController extends Controller
             }
             
             try {
+
+
+
+
+                $test = DB::select('SELECT * FROM posts');
+
+
+                return $test;
                 $transNo = Post::max('transNo');
                 $newtrans = empty($transNo) ? 1 : $transNo + 1;
                 
