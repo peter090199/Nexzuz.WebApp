@@ -98,14 +98,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
    //get Onlineusers
    Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
+ 
+   //chat meesages realtime
+   Route::post('send-message', [ChatController::class, 'sendMessage']);
+   Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
+   Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
 
-   //GIT PUSH
-
-
-
-
-
-
-   
-   Route::resource('testpost',PostController::class)->names('testpost');
 });
