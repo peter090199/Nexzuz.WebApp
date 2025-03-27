@@ -19,6 +19,11 @@ use App\Http\Controllers\System\Securityroles\SecurityroleController;
 use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
+use App\Http\Controllers\ChatController;
+
+use App\Events\MessageSent; 
+use App\Events\Message;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,12 +47,19 @@ Route::post('register',[RegisterController::class,'register'])->name('register')
 Route::post('accountactivation',[RegisterController::class,'accountactivation'])->name('accountactivation');
 
 
+Route::post('send-message', function (Request $request) {
+    $message = $request->input('message');
 
+    event(new MessageSent($message)); // ✅ Corrected event class name
+
+    return response()->json(['success' => true, 'message' => $message]);
+});
 
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user(); // Return authenticated user information
     });
+    
     //logout
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
@@ -86,14 +98,12 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
    //get Onlineusers
    Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
+ 
+   //chat meesages realtime
+   Route::post('send-message', [ChatController::class, 'sendMessage']);
+   Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
+   Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
 
-   //GIT PUSH
 
-
-
-
-
-
-   
-   Route::resource('testpost',PostController::class)->names('testpost');
+   //Route::resource('testpost',PostController::class)->names('testpost');
 });

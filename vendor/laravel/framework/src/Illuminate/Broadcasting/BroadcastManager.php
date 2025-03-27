@@ -303,23 +303,26 @@ class BroadcastManager implements FactoryContract
      */
     public function pusher(array $config)
     {
+        // Ensure required keys exist and are not null
+        if (empty($config['key']) || empty($config['secret']) || empty($config['app_id'])) {
+            throw new InvalidArgumentException('Pusher configuration is missing required values.');
+        }
+    
         $pusher = new Pusher(
-            $config['key'],
-            $config['secret'],
-            $config['app_id'],
+            (string) $config['key'],  // Ensure values are strings
+            (string) $config['secret'],
+            (string) $config['app_id'],
             $config['options'] ?? [],
-            isset($config['client_options']) && ! empty($config['client_options'])
-                    ? new GuzzleClient($config['client_options'])
-                    : null,
+            (!empty($config['client_options']) ? new GuzzleClient($config['client_options']) : null)
         );
-
-        if ($config['log'] ?? false) {
+    
+        if (!empty($config['log'])) {
             $pusher->setLogger($this->app->make(LoggerInterface::class));
         }
-
+    
         return $pusher;
     }
-
+    
     /**
      * Create an instance of the driver.
      *
