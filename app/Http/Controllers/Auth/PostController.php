@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
+use Illuminate\Support\Str;
 use DB;
 class PostController extends Controller
 {
@@ -17,6 +18,9 @@ class PostController extends Controller
     public function index()
     {
         //
+
+
+
 
         return view('testuploads');
     }
@@ -34,50 +38,85 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-            $data = $request->all();
+        $data = $request->all();
 
-            $data = $request->all();
-
-            $validator = Validator::make($data, [
-                'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
-                'caption' => 'nullable|string',
-                'status' => 'required|integer',
-            ]);
+        $validator = Validator::make($data, [
+            'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
+            'caption' => 'nullable|string',
+            'status' => 'required|integer',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
             
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            
-            try {
-                $transNo = Post::max('transNo');
-                $newtrans = empty($transNo) ? 1 : $transNo + 1;
-            
-                $uploadedFiles = [];
-                if ($request->hasFile('posts')) {
-                    foreach ($request->file('posts') as $file) {
-                        $filename = time() . '_' . $file->getClientOriginalName();
-                        $filePath = $file->storeAs('uploads', $filename, 'public');
-                        $uploadedFiles[] = [
-                            'filename' => $filename,
-                            'path' => asset('storage/' . $filePath),
-                        ];
-                    }
+        try {
+            DB::beginTransaction(); // Start transaction
+        
+            $transNo = Post::max('transNo');
+            $newtrans = empty($transNo) ? 1 : $transNo + 1;
+        
+            $uploadedFiles = [];
+            $folderuuid = Str::uuid();
+            $codeuser = Auth::user()->code;
+        
+            if ($request->hasFile('posts')) {
+                foreach ($request->file('posts') as $file) {
+                    $uuid = Str::uuid();
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $filePath = "uploads/posts/${codeuser}/{$folderuuid}/{$filename}";
+                    $file->storeAs("uploads/posts/${codeuser}/{$folderuuid}", $filename, 'public');
+        
+                    $uploadedFiles[] = [
+                        'uuid' => $uuid,
+                        'folderuuid' => $folderuuid, // Fix key name
+                        'filename' => $filename,
+                        'path' => asset('storage/' . $filePath),
+                    ];
+        
+                    DB::table('posts')->insert([
+                        'posts_uuid' => $folderuuid,
+                        'transNo' => $newtrans,
+                        'posts_uuind' => $uuid,
+                        'caption' => $data['caption'],
+                        'post' => asset('storage/' . $filePath), // Use asset()
+                        'status' => $data['status'],
+                        'code' => $codeuser,
+                        'created_by' => Auth::user()->fullname
+                    ]);
                 }
-            
-                return response()->json([
-                    'caption' => $request->input('caption', ''), 
-                    'status' => $request->input('status', 0),
-                    'attachment' => $uploadedFiles,
+            } else {
+                $uuid = Str::uuid(); // Ensure $uuid is always set
+                DB::table('posts')->insert([
+                    'posts_uuid' => $folderuuid,
+                    'transNo' => $newtrans,
+                    'posts_uuind' => $uuid,
+                    'caption' => $data['caption'],
+                    'status' => $data['status'],
+                    'code' => $codeuser,
+                    'created_by' => Auth::user()->fullname
                 ]);
-
+            }
+        
+            DB::commit(); // Commit transaction
+            // return response()->json([
+            //     'caption' => $request->input('caption', ''),
+            //     'status' => $request->input('status', 0),
+            //     'attachment' => $uploadedFiles,
+            // ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully uploaded.',
+            ]);
+        
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback the transaction on error
-
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $th->getMessage(),
             ]);
         }
+            
 
 
 
@@ -89,6 +128,21 @@ class PostController extends Controller
     public function show(string $id)
     {
         //
+
+        if(Auth::check()){
+            try {
+                
+                
+
+            } catch (\Throwable $th) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $th->getMessage(),
+                ]);
+            }
+        }
+        
     }
 
     /**
@@ -108,53 +162,7 @@ class PostController extends Controller
 
         
         if(Auth::check()){
-            try {
-                DB::beginTransaction();
-                
-                $data = $request->all();
-                // $validator = Validator::make($data, [
-                //     'posts' => 'required|file|image|max:3000',
-                // ]);
-                // if ($validator->fails()) {
-                //     return response()->json([
-                //         'success' => false,
-                //         'message' => $validator->errors()->all(),
-                //     ]);
-                // }
-                $userCode = Auth::user()->code;
-                $folderPath = "uploads/{$userCode}/posts"; 
-                $posts = [];
-                for ($i = 0; $i < count($data['Post']); $i++) {
-
-                    // $file = $request->file('file.$i');
-                    // $fileName = time() . '.' . $file->getClientOriginalExtension();
-                    // $photoPath = $file->storeAs($folderPath, $fileName, 'public');
-                    // $photoUrl = asset(Storage::url($photoPath));
-
-                    $posts[] = [
-                        'transNo' => $data['Post']['transNo'][$i],
-                        'caption' => $data['Post']['caption'][$i],
-                        'post' => $data['Post']['post'][$i],
-                        'status' => $data['Post']['status'][$i],
-                        'code' => $data['Post']['code'][$i],
-                        'created_by' => Auth::user()->fullname,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
             
-                // Insert all posts in one query
-                DB::table('posts')->insert($posts);
-            
-                return response()->json(['message' => 'Posts inserted successfully']);
-
-            } catch (\Throwable $th) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error occurred: ' . $th->getMessage(),
-               ], 500);
-            }
         }
     }
 
@@ -165,4 +173,14 @@ class PostController extends Controller
     {
         //
     }
+
+
+    public function authpostshow(){
+        if(Auth::check()){
+            
+
+        }
+    }
+
+
 }

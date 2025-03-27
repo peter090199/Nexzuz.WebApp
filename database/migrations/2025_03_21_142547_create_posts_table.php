@@ -14,8 +14,9 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
+            $table->uuid('posts_uuid'); 
             $table->integer('transNo');
-            $table->uuid('posts_uuid')->unique(); // Defining UUID column and making it unique
+            $table->uuid('posts_uuind')->unique(); // Defining UUID column and making it unique
             $table->string('caption')->nullable();
             $table->text('post')->nullable();
             $table->tinyInteger('status')->default(1);
