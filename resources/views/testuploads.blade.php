@@ -280,9 +280,9 @@
         for (let i = 0; i < attachment.length; i++) {
             formData.append('posts[]', attachment[i]);
         }
-        var bearerToken = '1|FWErikhVF8NODmU1MfRpMEFiTGzPBS3dfRxj61VO205b19fb';
+        var bearerToken = '2|CzrdntdctoH6Ddm0ENpWvIWV9hg9bQTuO56sR6Tjb7af358c';
         $.ajax({
-            url: 'http://127.0.0.1:8000/api/post',
+            url: 'http://127.0.0.1:8001/api/post',
             type: 'POST',
             data: formData,
             processData: false, // Prevent jQuery from processing FormData
