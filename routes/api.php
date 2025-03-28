@@ -105,8 +105,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
 
 
-
-
    //post    
    Route::resource('post',PostController::class)->names('post');
 
