@@ -35,13 +35,6 @@ Route::get('/pusher3', function () {
     return view('pusher3');
 });
 
-
-
-
-
-
-
-
 Route::get('/user/post',[MessageController::class,'showForm']);
 Route::post('/user/postSave',[MessageController::class,'save'])->name('post.save');
 
