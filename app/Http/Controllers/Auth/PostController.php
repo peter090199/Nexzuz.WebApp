@@ -136,7 +136,8 @@ class PostController extends Controller
                         'transNo' => $newtrans,
                         'posts_uuind' => $uuid,
                         'caption' => $data['caption'],
-                        'post' => "https://lightgreen-pigeon-122992.hostingersite.com/".asset('storage/' . $filePath), // Use asset()
+                        // 'post' => "https://lightgreen-pigeon-122992.hostingersite.com/".asset('storage/' . $filePath), // Use asset()
+                        'post' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'status' => $data['status'],
                         'code' => $codeuser,
                         'created_by' => Auth::user()->fullname
