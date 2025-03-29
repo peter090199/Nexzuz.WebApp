@@ -52,7 +52,7 @@ class ChatController extends Controller
     {
         $users = DB::table('users')
             ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
-            ->select('users.id', 'users.code', 'users.status', 'users.fullname', 'userprofiles.photo_pic')
+            ->select('users.id', 'users.code', 'users.status', 'users.fullname', 'userprofiles.photo_pic','users.is_online')
             ->where('users.status', 'A')
             ->get();
 
