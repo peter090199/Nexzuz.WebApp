@@ -38,5 +38,8 @@ Route::get('/pusher3', function () {
 Route::get('/user/post',[MessageController::class,'showForm']);
 Route::post('/user/postSave',[MessageController::class,'save'])->name('post.save');
 
+// Route::get('/userpost',[PostController::class,'showForm']);
+
+
 // Route::resource('profiles',ProfileController::class)->names('profiles');
 Route::resource('testpost',PostController::class)->names('testpost');
