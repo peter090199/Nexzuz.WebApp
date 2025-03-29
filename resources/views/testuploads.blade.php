@@ -280,9 +280,9 @@
         for (let i = 0; i < attachment.length; i++) {
             formData.append('posts[]', attachment[i]);
         }
-        var bearerToken = '2|CzrdntdctoH6Ddm0ENpWvIWV9hg9bQTuO56sR6Tjb7af358c';
+        var bearerToken = '654|pzN2hOeHyQTOlSSuSEyEmCfNSs4pFjNvOcVla8Cz3334d67b';
         $.ajax({
-            url: 'http://127.0.0.1:8001/api/post',
+            url: 'https://lightgreen-pigeon-122992.hostingersite.com/api/post',
             type: 'POST',
             data: formData,
             processData: false, // Prevent jQuery from processing FormData
