@@ -19,71 +19,68 @@ class PostController extends Controller
     public function index(Request $request)
     {
         //
-            // if(Auth::check()){
-            //     try {
-            //         $requestedCode = $request->code;
-            //         $authCode = Auth::user()->code;
+            if(Auth::check()){
+                try {
+                    $requestedCode = $request->code;
+                    $authCode = Auth::user()->code;
                     
-            //         $result = [];
+                    $result = [];
                     
-            //         $posts = Post::where(function ($query) use ($requestedCode, $authCode) {
-            //             if ($requestedCode) {
-            //                 // Scenario 1: Viewing a specific code profile
-            //                 $query->where('code', $requestedCode)
-            //                       ->where(function ($subQuery) use ($requestedCode, $authCode) {
-            //                           $subQuery->where('status', 1); // Public posts
+                    $posts = Post::where(function ($query) use ($requestedCode, $authCode) {
+                        if ($requestedCode) {
+                            // Scenario 1: Viewing a specific code profile
+                            $query->where('code', $requestedCode)
+                                  ->where(function ($subQuery) use ($requestedCode, $authCode) {
+                                      $subQuery->where('status', 1); // Public posts
                     
-            //                           // Allow private posts if visiting own profile
-            //                           if ($requestedCode == $authCode) {
-            //                               $subQuery->orWhere('status', 0);
-            //                           }
-            //                       });
-            //             } else {
-            //                 // Scenario 2: Viewing own profile
-            //                 $query->where('code', $authCode)
-            //                       ->where(function ($subQuery) {
-            //                           $subQuery->where('status', 1) // Public posts
-            //                                    ->orWhere('status', 0); // Private posts
-            //                       });
-            //             }
-            //         })
-            //         ->get();
+                                      // Allow private posts if visiting own profile
+                                      if ($requestedCode == $authCode) {
+                                          $subQuery->orWhere('status', 0);
+                                      }
+                                  });
+                        } else {
+                            // Scenario 2: Viewing own profile
+                            $query->where('code', $authCode)
+                                  ->where(function ($subQuery) {
+                                      $subQuery->where('status', 1) // Public posts
+                                               ->orWhere('status', 0); // Private posts
+                                  });
+                        }
+                    })
+                    ->get();
                     
-            //         // Format output
-            //         foreach ($posts as $post) {
-            //             if (!isset($result[$post->posts_uuid])) {
-            //                 $result[$post->posts_uuid] = [
-            //                     "Fullname" => $post->created_by,
-            //                     "status" => $post->status,
-            //                     "caption" => $post->caption,
-            //                     "posts_uuind"=>$post->posts_uuind,
-            //                     "posts" => []
-            //                 ];
-            //             }
+                    // Format output
+                    foreach ($posts as $post) {
+                        if (!isset($result[$post->posts_uuid])) {
+                            $result[$post->posts_uuid] = [
+                                "Fullname" => $post->created_by,
+                                "status" => $post->status,
+                                "caption" => $post->caption,
+                                "posts_uuind"=>$post->posts_uuind,
+                                "posts" => []
+                            ];
+                        }
                     
-            //             $result[$post->posts_uuid]['posts'][] = [
-            //                 "posts_uuind" => $post->posts_uuind,
-            //                 "post" => $post->post,
-            //                 "transNo" => $post->transNo
-            //             ];
-            //         }
+                        $result[$post->posts_uuid]['posts'][] = [
+                            "posts_uuind" => $post->posts_uuind,
+                            "post" => $post->post,
+                            "transNo" => $post->transNo
+                        ];
+                    }
                     
-            //         return response()->json(array_values($result));
+                    return response()->json(array_values($result));
                     
                 
 
-            //     } catch (\Throwable $th) {
-            //         return response()->json([
-            //             'success' => false,
-            //             'message' => 'An error occurred: ' . $th->getMessage(),
-            //         ]);
-            //     }
+                } catch (\Throwable $th) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'An error occurred: ' . $th->getMessage(),
+                    ]);
+                }
                 
-            // }
-
-
-
-        return view('testuploads');
+            }
+        // return view('testuploads');
     }
 
     /**

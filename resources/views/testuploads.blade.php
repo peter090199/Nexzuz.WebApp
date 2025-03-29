@@ -282,7 +282,7 @@
         }
         var bearerToken = '654|pzN2hOeHyQTOlSSuSEyEmCfNSs4pFjNvOcVla8Cz3334d67b';
         $.ajax({
-            url: 'https://lightgreen-pigeon-122992.hostingersite.com/api/post',
+            url: 'https://lightgreen-pigeon-122992.hostingersite.com/public/api/post',
             type: 'POST',
             data: formData,
             processData: false, // Prevent jQuery from processing FormData
