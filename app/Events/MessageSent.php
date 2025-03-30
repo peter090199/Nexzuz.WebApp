@@ -23,13 +23,11 @@ class MessageSent implements ShouldBroadcastNow
     {
         return new Channel('chat'); 
     }
-
     // ✅ Custom event name
     public function broadcastAs()
     {
         return 'my-event'; 
     }
-
     // ✅ Correct message format
     public function broadcastWith()
     {
