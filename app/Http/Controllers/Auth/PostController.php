@@ -239,6 +239,8 @@ class PostController extends Controller
 
         }
     }
-
-
+    public function showForm()
+    {
+        return view('post');
+    }
 }

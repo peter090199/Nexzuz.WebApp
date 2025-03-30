@@ -5,6 +5,7 @@ use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\PostController;
 use  App\Http\Controllers\MessageController;
 use  App\Events\MessageSent;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -37,6 +38,11 @@ Route::get('/pusher3', function () {
 
 Route::get('/user/post',[MessageController::class,'showForm']);
 Route::post('/user/postSave',[MessageController::class,'save'])->name('post.save');
+
+Route::get('/postuser',[PostController::class,'showForm']);
+Route::get('/postuser', function () {
+    return view('testuploads');
+});
 
 // Route::get('/userpost',[PostController::class,'showForm']);
 

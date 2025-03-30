@@ -10,6 +10,7 @@ use  App\Http\Controllers\Auth\ForgetpasswordController;
 use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\ProfilepictureController;
 use  App\Http\Controllers\Auth\PostController;
+use App\Http\Controllers\Auth\PostImageController;
 
 use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
 
@@ -20,6 +21,7 @@ use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
+
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -107,7 +109,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('notifications', [ChatController::class, 'getNotifications']);
 
 
-   //post    
+   //post temporary
+   Route::post('postData', [PostImageController::class, 'PostNexzus']);
+   
+   //original post
    Route::resource('post',PostController::class)->names('post');
 
 });
