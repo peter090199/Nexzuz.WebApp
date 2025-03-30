@@ -13,6 +13,11 @@ class ChatController extends Controller
 {
     public function sendMessage(Request $request)
     {
+        $request->validate([
+            'message' => 'required|string',
+            'receiver_id' => 'required|integer'
+        ]);
+        
         $message = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
