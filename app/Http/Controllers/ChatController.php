@@ -97,12 +97,13 @@ class ChatController extends Controller
         $userId = Auth::id();
         $notifications = Message::where('receiver_id', $userId)
             ->where('is_read', false)
-            ->with('sender_id')
+            ->with('sender') // ✅ Corrected relationship
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         return response()->json($notifications);
     }
+    
 
       // ✅ Mark messages as read
       public function markAsRead(Request $request) {
