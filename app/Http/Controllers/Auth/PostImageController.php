@@ -42,6 +42,7 @@ class PostImageController extends Controller
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
+                    // Storing the file in the public disk and generating relative file path
                     $filePath = $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
                     
                     // Ensure that the file path is being saved correctly
@@ -49,17 +50,16 @@ class PostImageController extends Controller
                         'uuid' => $uuid,
                         'folderuuid' => $folderuuid,
                         'filename' => $filename,
-                        'path' => asset('storage/' . $filePath), // Correct URL generation
+                        'path' => 'storage/' . $filePath, // Store the relative path
                     ];
     
-                    $photoUrl = asset(Storage::url($filePath));
-                    // Insert the post record
+                    // Insert the post record with the relative file path
                     DB::table('posts')->insert([
                         'posts_uuid' => $folderuuid,
                         'transNo' => $newtrans,
                         'posts_uuind' => $uuid,
                         'caption' => $data['caption'],
-                        'post' => $filePath,
+                        'post' => $filePath, // Save the relative file path
                         'status' => $data['status'],
                         'code' => $codeuser,
                         'created_by' => Auth::user()->fullname
