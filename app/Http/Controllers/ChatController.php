@@ -97,7 +97,7 @@ class ChatController extends Controller
         $userId = Auth::id();
         $notifications = Message::where('receiver_id', $userId)
             ->where('is_read', false)
-            ->with('sender:id,fullname,photo')
+            ->with('sender_id,fullname')
             ->orderBy('created_at', 'desc')
             ->get();
 
