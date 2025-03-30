@@ -11,7 +11,8 @@ use App\Models\Message;
 
 class ChatController extends Controller
 {
-    public function sendMessagexx(Request $request)
+    
+    public function sendMessage(Request $request)
     {
         $request->validate([
             'message' => 'required|string',
@@ -19,35 +20,20 @@ class ChatController extends Controller
         ]);
 
         $message = Message::create([
-            'sender_id' => Auth::id(),
+            'sender_id' => auth()->id(),
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
+            'created_at' => now(),
+            'is_read' => true
         ]);
-    
-        // Now $message is an Eloquent model, so it's compatible with the MessageSent event
-        broadcast(new MessageSent($message))->toOthers();
-    
+
+        // ✅ Broadcast the message in real-time
+        event(new MessageSent($message));
         return response()->json([
             'success' => true,
             'message' => 'Message sent successfully!',
             'data' => $message
         ], 200);
-    }
-    
-    public function sendMessage(Request $request)
-    {
-        $message = Message::create([
-            'sender_id' => auth()->id(),
-            'receiver_id' => $request->receiver_id,
-            'message' => $request->message,
-            'created_at' => now(),
-            'is_read' => false
-        ]);
-
-        // ✅ Broadcast the message in real-time
-        event(new MessageSent($message));
-        return response()->json($message);
-       // return response()->json(['success' => true, 'message' => $message]);
     }
 
 
