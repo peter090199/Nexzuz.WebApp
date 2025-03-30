@@ -93,7 +93,7 @@ class ChatController extends Controller
 
       // ✅ Mark messages as read
       public function markAsRead(Request $request) {
-        Message::where('sender_id', $request->sender_id)
+        Message::where('id', $request->id)
             ->where('receiver_id', Auth::id())
             ->update(['is_read' => true]);
 
