@@ -101,8 +101,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
  
    //chat meesages realtime
    Route::post('send-message', [ChatController::class, 'sendMessage']);
+   Route::post('/messages/read', [ChatController::class, 'markAsRead']);
    Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
+   Route::get('/notifications', [ChatController::class, 'getNotifications']);
 
 
    //post    

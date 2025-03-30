@@ -41,6 +41,7 @@ class ChatController extends Controller
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'created_at' => now(),
+            'is_read' => false
         ]);
 
         // ✅ Broadcast the message in real-time
@@ -49,7 +50,21 @@ class ChatController extends Controller
        // return response()->json(['success' => true, 'message' => $message]);
     }
 
-    public function fetchMessages($receiverId)
+
+  // ✅ Fetch chat messages
+  public function fetchMessages($receiverId) {
+        $userId = Auth::id();
+        $messages = Message::where(function($query) use ($userId, $receiverId) {
+                $query->where('sender_id', $userId)->where('receiver_id', $receiverId);
+            })->orWhere(function($query) use ($userId, $receiverId) {
+                $query->where('sender_id', $receiverId)->where('receiver_id', $userId);
+            })->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json($messages);
+    }
+
+    public function fetchMessagesx($receiverId)
     {
         $messages = DB::table('messages')
             ->where(function ($query) use ($receiverId) {
@@ -78,6 +93,23 @@ class ChatController extends Controller
         return response()->json($users);
     }
 
+    public function getNotifications() {
+        $userId = Auth::id();
+        $notifications = Message::where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->with('sender:id,fullname,photo')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    
+        return response()->json($notifications);
+    }
+
+      // ✅ Mark messages as read
+      public function markAsRead(Request $request) {
+        Message::where('sender_id', $request->sender_id)
+            ->where('receiver_id', Auth::id())
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'Messages marked as read']);
+    }
 }
