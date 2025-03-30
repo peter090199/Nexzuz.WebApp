@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
-use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
-use App\Models\Resource;
 use Illuminate\Support\Str;
 use DB;
 
@@ -42,29 +40,32 @@ class PostImageController extends Controller
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
-                    $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                    $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+                    $filePath = $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
+                    $photoPath = $file->storeAs($filePath, $fileName, 'public');
+                    // Ensure that the file path is being saved correctly
                     $uploadedFiles[] = [
                         'uuid' => $uuid,
-                        'folderuuid' => $folderuuid, // Fix key name
+                        'folderuuid' => $folderuuid,
                         'filename' => $filename,
-                        'path' => asset('storage/' . $filePath),
+                        'path' => asset('storage/' . $photoPath),  // Correct URL generation
                     ];
 
+                    // Insert the post record
                     DB::table('posts')->insert([
                         'posts_uuid' => $folderuuid,
                         'transNo' => $newtrans,
                         'posts_uuind' => $uuid,
                         'caption' => $data['caption'],
-                        'post' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . $codeuser . '/' . $folderuuid . '/' . $filename,
+                        'post' => asset('storage/' . $filePath),  // Use asset to generate the correct URL
                         'status' => $data['status'],
                         'code' => $codeuser,
                         'created_by' => Auth::user()->fullname
                     ]);
                 }
             } else {
-                $uuid = Str::uuid(); // Ensure $uuid is always set
+                // If no files are uploaded, insert a record without a post image
+                $uuid = Str::uuid();
                 DB::table('posts')->insert([
                     'posts_uuid' => $folderuuid,
                     'transNo' => $newtrans,
@@ -90,5 +91,4 @@ class PostImageController extends Controller
             ]);
         }
     }
-
 }
