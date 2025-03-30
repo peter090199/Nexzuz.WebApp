@@ -49,13 +49,14 @@ class PostImageController extends Controller
                         'path' => asset('storage/' . $filePath),  // Correct URL generation
                     ];
 
+                    $photoUrl = asset(Storage::url($filePath));
                     // Insert the post record
                     DB::table('posts')->insert([
                         'posts_uuid' => $folderuuid,
                         'transNo' => $newtrans,
                         'posts_uuind' => $uuid,
                         'caption' => $data['caption'],
-                        'post' => asset('storage/' . $filePath),  // Use asset to generate the correct URL
+                        'post' => $filePath, 
                         'status' => $data['status'],
                         'code' => $codeuser,
                         'created_by' => Auth::user()->fullname
