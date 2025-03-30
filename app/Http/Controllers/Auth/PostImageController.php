@@ -41,14 +41,12 @@ class PostImageController extends Controller
                     $uuid = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
                     $filePath = $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                    $photoPath = $file->storeAs($filePath, $fileName, 'public');
                     // Ensure that the file path is being saved correctly
                     $uploadedFiles[] = [
                         'uuid' => $uuid,
                         'folderuuid' => $folderuuid,
                         'filename' => $filename,
-                        'path' => asset('storage/' . $photoPath),  // Correct URL generation
+                        'path' => asset('storage/' . $filePath),  // Correct URL generation
                     ];
 
                     // Insert the post record
@@ -73,6 +71,7 @@ class PostImageController extends Controller
                     'caption' => $data['caption'],
                     'status' => $data['status'],
                     'code' => $codeuser,
+                    'post' => $filePath,
                     'created_by' => Auth::user()->fullname
                 ]);
             }
