@@ -11,13 +11,13 @@ use App\Models\Message;
 
 class ChatController extends Controller
 {
-    public function sendMessage(Request $request)
+    public function sendMessagexx(Request $request)
     {
         $request->validate([
             'message' => 'required|string',
             'receiver_id' => 'required|integer'
         ]);
-        
+
         $message = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
@@ -33,7 +33,21 @@ class ChatController extends Controller
             'data' => $message
         ], 200);
     }
+    
+    public function sendMessage(Request $request)
+    {
+        $message = Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $request->receiver_id,
+            'message' => $request->message,
+            'created_at' => now(),
+        ]);
 
+        // ✅ Broadcast the message in real-time
+        event(new MessageSent($message));
+        return response()->json($message);
+       // return response()->json(['success' => true, 'message' => $message]);
+    }
 
     public function fetchMessages($receiverId)
     {

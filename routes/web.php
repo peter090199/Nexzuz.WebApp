@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\PostController;
 use  App\Http\Controllers\MessageController;
-
+use  App\Events\MessageSent;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -43,3 +43,22 @@ Route::post('/user/postSave',[MessageController::class,'save'])->name('post.save
 
 // Route::resource('profiles',ProfileController::class)->names('profiles');
 Route::resource('testpost',PostController::class)->names('testpost');
+
+Route::get('/test-broadcast', function () {
+    $message = (object)[
+        'id' => 146,
+        'sender_id' => 92,
+        'receiver_id' => 91,
+        'message' => 'receive',
+        'created_at' => now(),
+    ];
+
+    // ✅ Broadcast the event
+    event(new MessageSent($message));
+
+    // ✅ Return the message data
+    return response()->json([
+        'success' => true,
+        'broadcasted_data' => $message
+    ]);
+});

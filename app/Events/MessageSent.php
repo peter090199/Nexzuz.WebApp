@@ -7,6 +7,9 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
+use App\Models\Message;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+
 class MessageSent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
@@ -21,13 +24,18 @@ class MessageSent implements ShouldBroadcastNow
     // ✅ Public channel (No authentication required)
     public function broadcastOn()
     {
-        return new Channel('chat'); 
+        // return new Channel('chat'); 
+        return ['chat'];
     }
     // ✅ Custom event name
     public function broadcastAs()
     {
-        return 'my-event'; 
+        return 'message.sent';
     }
+    // public function broadcastAs()
+    // {
+    //     return 'my-event'; 
+    // }
     // ✅ Correct message format
     public function broadcastWith()
     {
