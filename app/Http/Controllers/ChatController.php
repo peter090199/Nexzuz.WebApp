@@ -24,7 +24,7 @@ class ChatController extends Controller
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'created_at' => now(),
-            'is_read' => true
+            'is_read' => false
         ]);
 
         // ✅ Broadcast the message in real-time
@@ -82,7 +82,7 @@ class ChatController extends Controller
     public function getNotifications() {
         $userId = Auth::id();
         $notifications = Message::where('receiver_id', $userId)
-            ->where('is_read', true)
+            ->where('is_read', false)
             ->with('sender')
             ->orderBy('created_at', 'desc')
             ->get();
