@@ -24,7 +24,7 @@ class ChatController extends Controller
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'created_at' => now(),
-            'is_read' => true
+            'is_read' => false
         ]);
 
         // ✅ Broadcast the message in real-time
