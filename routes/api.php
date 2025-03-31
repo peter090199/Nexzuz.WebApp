@@ -10,7 +10,6 @@ use  App\Http\Controllers\Auth\ForgetpasswordController;
 use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\ProfilepictureController;
 use  App\Http\Controllers\Auth\PostController;
-use App\Http\Controllers\Auth\PostImageController;
 
 use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
 
@@ -108,11 +107,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
    Route::get('notifications', [ChatController::class, 'getNotifications']);
 
-
-   //post temporary
-   Route::post('postData', [PostImageController::class, 'PostNexzus']);
-   
-   //original post
+   //post 
    Route::resource('post',PostController::class)->names('post');
 
 });
