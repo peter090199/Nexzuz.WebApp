@@ -421,7 +421,7 @@ class ProfileController extends Controller
                     "profession" => $user[$i]->profession,
                     "industry" => $user[$i]->industry,
                     "companywebsite" =>  $user[$i]->companywebsite,
-                    "photo_pic" => $user[$i]->photo_pic,
+                    
                 ];
             }         
             return response()->json(['success' => true,'message' => $result]);

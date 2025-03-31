@@ -58,7 +58,7 @@ Route::post('send-message', function (Request $request) {
 
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('/user', function (Request $request) {
-        return $request->user(); // Return authenticated user information
+        return $request->user(); 
     });
     
     //logout
