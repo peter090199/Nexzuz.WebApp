@@ -420,7 +420,8 @@ class ProfileController extends Controller
                     "contact_no" => $user[$i]->contact_no,
                     "profession" => $user[$i]->profession,
                     "industry" => $user[$i]->industry,
-                    "companywebsite" =>  $user[$i]->companywebsite
+                    "companywebsite" =>  $user[$i]->companywebsite,
+                    "photo_pic" => $user[$i]->photo_pic,
                 ];
             }         
             return response()->json(['success' => true,'message' => $result]);
