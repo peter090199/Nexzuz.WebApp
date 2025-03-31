@@ -106,6 +106,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
    Route::get('notifications', [ChatController::class, 'getNotifications']);
+   Route::get('getDataPost', [PostController::class, 'getDataPost']);
 
    //post 
    Route::resource('post',PostController::class)->names('post');

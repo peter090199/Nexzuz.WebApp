@@ -243,4 +243,42 @@ class PostController extends Controller
     {
         return view('post');
     }
+
+
+    public function getDataPost(Request $request)
+    {
+        if (!Auth::check()) return response()->json([]);
+
+        try {
+            $requestedCode = $request->code;
+            $authCode = Auth::user()->code;
+
+            $posts = DB::table('posts')
+                ->where('code', $requestedCode ?: $authCode)
+                ->where(function ($query) use ($requestedCode, $authCode) {
+                    $query->where('status', 1);
+                    if (!$requestedCode || $requestedCode == $authCode) {
+                        $query->orWhere('status', 0);
+                    }
+                })
+                ->get();
+
+            $result = [];
+            foreach ($posts as $post) {
+                $result[$post->posts_uuid]['Fullname'] = $post->created_by;
+                $result[$post->posts_uuid]['status'] = $post->status;
+                $result[$post->posts_uuid]['caption'] = $post->caption;
+                $result[$post->posts_uuid]['posts'][] = [
+                    'posts_uuind' => $post->posts_uuind,
+                    'post' => $post->post,
+                    'transNo' => $post->transNo
+                ];
+            }
+
+            return response()->json(array_values($result));
+        } catch (\Throwable $th) {
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+        }
+    }
+
 }
