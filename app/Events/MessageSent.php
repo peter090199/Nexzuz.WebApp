@@ -24,18 +24,12 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastOn()
     {
          return new Channel('chat'); 
-       // return ['chat'];
     }
-    // ✅ Custom event name
     public function broadcastAs()
     {
         return 'message.sent';
     }
-    // public function broadcastAs()
-    // {
-    //     return 'my-event'; 
-    // }
-    // ✅ Correct message format
+ 
     public function broadcastWith()
     {
         return [
