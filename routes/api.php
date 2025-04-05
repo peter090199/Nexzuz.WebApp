@@ -24,6 +24,7 @@ use App\Http\Controllers\ChatController;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
+use App\Events\NotificationCountUpdated;
 
 /*
 |--------------------------------------------------------------------------
