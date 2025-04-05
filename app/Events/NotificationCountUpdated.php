@@ -20,12 +20,10 @@ class NotificationCountUpdated
         $this->userId = $userId;
         $this->unreadCount = $unreadCount;
     }
-
     public function broadcastOn()
     {
-        return new PrivateChannel('user.' . $this->userId);
-    }   
-
+        return new PrivateChannel('my-channel.' . $this->userId);
+    }
     public function broadcastAs()
     {
         return 'notifications';
