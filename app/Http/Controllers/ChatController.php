@@ -79,6 +79,13 @@ class ChatController extends Controller
         return response()->json($users);
     }
 
+    
+    public function testBroadcast()
+    {
+        event(new NotificationCountUpdated(auth()->id(), 5));
+        return response()->json(['message' => 'Broadcast sent']);
+    }
+
     public function updateNotificationCount()
     {
         $userId = Auth::id();
