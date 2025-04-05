@@ -1,36 +1,20 @@
 <?php
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-namespace App\Events;
-
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\BroadcastEvent;
-
-class NotificationCountUpdated implements Broadcasting
+class NotificationCountUpdated implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public $userId;
     public $unreadCount;
 
-    public function __construct($userId, $unreadCount)
+    public function __construct($unreadCount)
     {
-        $this->userId = $userId;
         $this->unreadCount = $unreadCount;
     }
 
     public function broadcastOn()
     {
-        return new PrivateChannel('user.' . $this->userId);
+        return new PrivateChannel('user.' . auth()->id());
     }
-    public function broadcastWith()
-    {
-        return [
-            'unreadCount' => $this->unreadCount,  // Data to be broadcasted
-        ];
-    }
+
     public function broadcastAs()
     {
         return 'NotificationCountUpdated';
