@@ -21,9 +21,14 @@ class MessageSent implements ShouldBroadcastNow
         $this->message = $message;
     }
 
+    // public function broadcastOn()
+    // {
+    //     return new Channel('my-channel'); // ✅ This is the Pusher channel
+    // }
+
     public function broadcastOn()
     {
-        return new Channel('my-channel'); // ✅ This is the Pusher channel
+        return new PrivateChannel('my-channel.' . $this->message->receiver_id);
     }
 
     public function broadcastAs()

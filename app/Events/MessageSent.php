@@ -21,11 +21,10 @@ class MessageSent implements ShouldBroadcastNow
         $this->message = $message;
     }
 
-    // ✅ Public channel (No authentication required)
     public function broadcastOn()
     {
-        // return new Channel('chat'); 
-        return ['chat'];
+         return new Channel('chat'); 
+       // return ['chat'];
     }
     // ✅ Custom event name
     public function broadcastAs()
