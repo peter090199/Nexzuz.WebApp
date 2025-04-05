@@ -25,4 +25,9 @@ class NotificationCountUpdated
     {
         return new PrivateChannel('user.' . $this->userId);
     }
+
+    public function broadcastAs()
+    {
+        return 'NotificationCountUpdated';
+    }
 }
