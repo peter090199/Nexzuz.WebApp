@@ -11,8 +11,38 @@ use App\Events\NotificationCountUpdated;
 
 class ChatController extends Controller
 {
-    
     public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string',
+            'receiver_id' => 'required|integer'
+        ]);
+
+        $message = Message::create([
+            'sender_id' => auth()->id(),
+            'receiver_id' => $request->receiver_id,
+            'message' => $request->message,
+            'created_at' => now(),
+            'is_read' => false
+        ]);
+
+        // ✅ Broadcast the message in real-time
+        event(new NotificationCountUpdated($message));
+
+        // 🔢 Get updated unread message count for the receiver
+        $unreadCount = Message::where('receiver_id', $request->receiver_id)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully!',
+            'data' => $message,
+            'unread_count' => $unreadCount // ✅ include this in response
+        ], 200);
+    }
+
+    public function sendMessagexx(Request $request)
     {
         $request->validate([
             'message' => 'required|string',
@@ -92,6 +122,7 @@ class ChatController extends Controller
         return response()->json([
             'unreadCount' => $unreadCount
         ]);
+        
     }
 
     public function getNotifications()
