@@ -112,7 +112,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
 
    Route::get('test_notification', function () {
-    event(new NotificationCountUpdated(1, 5)); // Replace 1 with your actual test user ID
+    event(new NotificationCountUpdated(92, 5)); // Replace 1 with your actual test user ID
     return 'Notification event fired!';
 });
 
