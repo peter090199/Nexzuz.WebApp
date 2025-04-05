@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Events\MessageSent;
 use App\Models\Message;
-
+use App\Events\NotificationCountUpdated;
 
 class ChatController extends Controller
 {
@@ -79,6 +79,20 @@ class ChatController extends Controller
         return response()->json($users);
     }
 
+    public function updateNotificationCount()
+    {
+        $userId = Auth::id();
+        $unreadCount = Message::where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->count();  
+
+        // Trigger the event
+        broadcast(new NotificationCountUpdated($userId, $unreadCount));
+        
+        return response()->json([
+            'unreadCount' => $unreadCount
+        ]);
+    }
 
     public function getNotifications()
     {
@@ -90,18 +104,11 @@ class ChatController extends Controller
             ->orderByDesc('created_at')
             ->get();
     
-        $unreadCount = $notifications->count();
-    
         return response()->json([
-            'count' => $unreadCount,
             'notifications' => $notifications
         ]);
     }
     
-    
-    
-    
-
       // ✅ Mark messages as read
       public function markAsRead(Request $request) {
         Message::where('id', $request->id)
