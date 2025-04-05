@@ -111,11 +111,15 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
 
-   Route::get('test_notification', function () {
-    event(new NotificationCountUpdated(92, 5)); // Replace 1 with your actual test user ID
-    return 'Notification event fired!';
-});
 
+   Route::post('test-notification', function (Request $request) {
+    $userId = $request->input('userId');
+    $count = $request->input('count');
+
+    event(new NotificationCountUpdated($userId, $count));
+
+    return response()->json(['message' => 'Notification event sent']);
+    });
 
    //post 
    Route::resource('post',PostController::class)->names('post');
