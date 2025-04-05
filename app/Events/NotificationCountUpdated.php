@@ -14,7 +14,7 @@ class NotificationCountUpdated implements ShouldBroadcast
     {
         return new PrivateChannel('user.' . auth()->id());
     }
-
+    
     public function broadcastAs()
     {
         return 'NotificationCountUpdated';
