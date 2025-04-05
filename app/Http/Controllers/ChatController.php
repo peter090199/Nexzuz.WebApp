@@ -85,13 +85,19 @@ class ChatController extends Controller
         $userId = Auth::id();
     
         $notifications = Message::where('receiver_id', $userId)
-            ->where('is_read', false) 
-            ->with('sender')       
+            ->where('is_read', false)
+            ->with('sender')
             ->orderByDesc('created_at')
             ->get();
     
-        return response()->json($notifications);
+        $unreadCount = $notifications->count();
+    
+        return response()->json([
+            'count' => $unreadCount,
+            'notifications' => $notifications
+        ]);
     }
+    
     
     
     
