@@ -31,4 +31,8 @@ class NotificationCountUpdated implements Broadcasting
             'unreadCount' => $this->unreadCount,  // Data to be broadcasted
         ];
     }
+    public function broadcastAs()
+    {
+        return 'NotificationCountUpdated';
+    }
 }
