@@ -28,6 +28,6 @@ class NotificationCountUpdated
 
     public function broadcastAs()
     {
-        return 'NotificationCountUpdated';
+        return 'notifications';
     }
 }
