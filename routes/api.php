@@ -112,7 +112,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
 
 
-   Route::post('test-notification', function (Request $request) {
+   Route::post('test_notification', function (Request $request) {
     $userId = $request->input('userId');
     $count = $request->input('count');
 
