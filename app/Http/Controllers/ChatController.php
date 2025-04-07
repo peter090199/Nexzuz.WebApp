@@ -28,7 +28,9 @@ class ChatController extends Controller
         ]);
 
         // ✅ Broadcast the message in real-time
-        event(new MessageSent($message));
+        // event(new MessageSent($message));
+        broadcast(new MessageSent($message));
+        
         return response()->json([
             'success' => true,
             'message' => 'Message sent successfully!',
