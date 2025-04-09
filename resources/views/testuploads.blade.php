@@ -269,6 +269,9 @@
         
         // Get input values
         let status = $('#status').val();
+
+
+        
         let caption = $('#caption').val();
         let attachment = $('#attachment')[0].files; // Get files
 
@@ -280,10 +283,13 @@
         for (let i = 0; i < attachment.length; i++) {
             formData.append('posts[]', attachment[i]);
         }
-        var bearerToken = '654|pzN2hOeHyQTOlSSuSEyEmCfNSs4pFjNvOcVla8Cz3334d67b';
+        var bearerToken = '6|8CFMmZHfP0stpFR6SCKmvMOSxwtBK8uWCjeyMnm1f5f2cfad';
+
+        var i = 'b882da04-f211-4b7a-868e-6c7148f766f3';
         $.ajax({
-            url: 'https://lightgreen-pigeon-122992.hostingersite.com/public/api/post',
-            type: 'POST',
+            url: `http://127.0.0.1:8000/api/post/${i}`,
+            // url: `http://127.0.0.1:8000/api/post`,
+            type: 'PUT',
             data: formData,
             processData: false, // Prevent jQuery from processing FormData
             contentType: false, // Prevent jQuery from adding Content-Type header
