@@ -50,7 +50,6 @@ Route::post('register',[RegisterController::class,'register'])->name('register')
 
 Route::post('accountactivation',[RegisterController::class,'accountactivation'])->name('accountactivation');
 
-
 Route::post('send-message', function (Request $request) {
     $message = $request->input('message');
 
