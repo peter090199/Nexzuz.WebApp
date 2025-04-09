@@ -80,7 +80,7 @@ class PostController extends Controller
                         $posts = Post::where('code', Auth::user()->code)->get(); // Get posts created by the authenticated user
                     } else {
                         // If the auth code does not match the requested code, show only public posts
-                        $posts = Post::where('status', 1)->get(); // Retrieve only public posts
+                        $posts = Post::where('status', 1 , 'code', $requestedCode)->get(); // Retrieve only public posts
                     }
 
                     // Loop through posts and add attachments to result
