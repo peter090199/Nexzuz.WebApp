@@ -41,7 +41,7 @@ class MessageSent implements ShouldBroadcastNow
             'receiver_id' => $this->message->receiver_id,
             'message' => $this->message->message,
             'created_at' => $this->message->created_at,
-            'unreadCount' => $this->message->unreadCount,
+           // 'unreadCount' => $this->message->unreadCount,
         ];
     }
 }
