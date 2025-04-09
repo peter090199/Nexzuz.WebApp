@@ -18,7 +18,7 @@ class MessageSent implements ShouldBroadcastNow
     public $message;
    // public $unreadCount;
 
-    public function __construct($message,$unreadCount)
+    public function __construct($message)
     {
         $this->message = $message;
       //  $this->unreadCount = $unreadCount;
