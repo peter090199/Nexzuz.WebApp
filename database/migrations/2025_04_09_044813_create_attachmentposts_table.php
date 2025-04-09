@@ -8,28 +8,29 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-    */
-
+     */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create('attachmentposts', function (Blueprint $table) {
             $table->id();
             $table->integer('code');
-            $table->uuid('posts_uuid')->unique(); 
             $table->integer('transNo');
-            $table->string('caption')->nullable();
+            $table->uuid('posts_uuid')->nullable(); 
+            $table->uuid('posts_uuind')->nullable(); 
             $table->tinyInteger('status')->default(1);
+            $table->text('path_url')->nullable();
+            $table->string('posts_type')->nullable();     
             $table->string('created_by')->nullable();
-            $table->string('updated_by')->nullable();
+            $table->string('updated_by')->nullable();       
             $table->timestamps();
         });
     }
-    
+
     /**
      * Reverse the migrations.
-    */
+     */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists('attachmentposts');
     }
 };
