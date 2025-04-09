@@ -22,6 +22,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Broadcast::routes(['middleware' => ['auth:api']]);
+
 
 //sample pusher notifiy realtime
 Route::get('/pusher', function () {

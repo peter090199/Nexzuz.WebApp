@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
+
 use App\Http\Controllers\Lookup\LookupController;
 
 use App\Http\Controllers\Auth\LoginController;
@@ -55,6 +57,10 @@ Route::post('send-message', function (Request $request) {
     event(new MessageSent($message)); // ✅ Corrected event class name
 
     return response()->json(['success' => true, 'message' => $message]);
+});
+
+Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
+    return Broadcast::auth(request());
 });
 
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
