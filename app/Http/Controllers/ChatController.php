@@ -95,9 +95,13 @@ class ChatController extends Controller
             ->where('is_read', false)
             ->count();  
 
+        // Assuming the latest message for this user (adjust as necessary)
+            $message = Message::where('receiver_id', $userId)
+            ->latest()
+            ->first();
+
         // Trigger the event
-        broadcast(new NotificationCountUpdated($userId, $unreadCount));
-        
+        broadcast(new MessageSent($message, $unreadCount));
         return response()->json([
             'unreadCount' => $unreadCount
         ]);
