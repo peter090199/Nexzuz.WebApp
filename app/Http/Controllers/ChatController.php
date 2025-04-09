@@ -101,7 +101,7 @@ class ChatController extends Controller
             ->first();
 
         // Trigger the event
-        broadcast(new MessageSent($message, $unreadCount));
+        broadcast(new \App\Events\MessageSent($message, $unreadCount));
         return response()->json([
             'unreadCount' => $unreadCount
         ]);
