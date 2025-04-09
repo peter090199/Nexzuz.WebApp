@@ -6,7 +6,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
+
 
 use App\Models\Message;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -24,7 +24,7 @@ class MessageSent implements ShouldBroadcastNow
 
     public function broadcastOn()
     {
-        return new PrivateChannel('chat.' . $this->message['receiver_id']);
+        return new Channel('chat.' . $this->message['receiver_id']);
     }
     public function broadcastAs()
     {
