@@ -10,19 +10,16 @@ class NotificationCountUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $userId;
     public $unreadCount;
 
-    public function __construct($userId, $unreadCount)
+    public function __construct($unreadCount)
     {
-        $this->userId = $userId;
         $this->unreadCount = $unreadCount;
     }
 
-    // Broadcasting to the specific user's private channel
     public function broadcastOn()
     {
-        return new PrivateChannel('user.' . $this->userId); // Use private channel for specific user
+        return new Channel('notification.count');
     }
 
     // Event name when broadcasting
