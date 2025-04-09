@@ -131,7 +131,7 @@ class PostController extends Controller
                         'posts_uuid' => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status' => $data['status'],
-                        'path_url' => $storageUrl,
+                        'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'posts_type' => $postType,
                         'created_by' => Auth::user()->fullname,
                     ]);
@@ -275,8 +275,7 @@ class PostController extends Controller
                         'posts_uuid' => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status' => $data['status'],
-                        'path_url' => $storageUrl,
-                        'posts_type' => $postType,
+                        'path_url' =>'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'created_by' => Auth::user()->fullname,
                     ]);
     
