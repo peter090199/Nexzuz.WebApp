@@ -17,52 +17,100 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // public function index(Request $request)
+    // {
+    //         if(Auth::check()){
+    //             try {
+    //                 $requestedCode = $request->code;
+    //                 $authCode = Auth::user()->code;
+                    
+    //                 $result = [];
+                    
+    //                 if ($requestedCode) {
+    //                     // Scenario 1: Viewing a specific code profile
+    //                     if ($authCode == $requestedCode) {
+    //                         // If the auth code matches the requested code, show all posts (including private)
+    //                         $posts = Post::all(); // Retrieve all posts (both public and private)
+    //                     } else {
+    //                         // If the auth code does not match the requested code, show only public posts
+    //                         $posts = Post::where('status', 1)->get(); // Retrieve only public posts
+    //                     }
+                    
+    //                     // Loop through posts and add attachments to result
+    //                     foreach ($posts as $post) {
+    //                         $attachment = Attachmentpost::where('posts_uuid', $post->posts_uuid)
+    //                             ->where('status', 1)
+    //                             ->get(); // Get public attachments
+                    
+    //                         $result[] = [
+    //                             "Fullname" => $post->created_by,
+    //                             "status" => $post->status,
+    //                             "caption" => $post->caption,
+    //                             "posts_uuid" => $post->posts_uuid,
+    //                             "posts" => $attachment
+    //                         ];
+    //                     }
+    //                 }
+                     
+    //                 return response()->json(array_values($result));
+    //             } catch (\Throwable $th) {
+    //                 return response()->json([
+    //                     'success' => false,
+    //                     'message' => 'An error occurred: ' . $th->getMessage(),
+    //                 ]);
+    //             }
+                
+    //         }
+    //     // return view('testuploads');
+    // }
+
     public function index(Request $request)
     {
-            if(Auth::check()){
-                try {
-                    $requestedCode = $request->code;
-                    $authCode = Auth::user()->code;
-                    
-                    $result = [];
-                    
-                    if ($requestedCode) {
-                        // Scenario 1: Viewing a specific code profile
-                        if ($authCode == $requestedCode) {
-                            // If the auth code matches the requested code, show all posts (including private)
-                            $posts = Post::all(); // Retrieve all posts (both public and private)
-                        } else {
-                            // If the auth code does not match the requested code, show only public posts
-                            $posts = Post::where('status', 1)->get(); // Retrieve only public posts
-                        }
-                    
-                        // Loop through posts and add attachments to result
-                        foreach ($posts as $post) {
-                            $attachment = Attachmentpost::where('posts_uuid', $post->posts_uuid)
-                                ->where('status', 1)
-                                ->get(); // Get public attachments
-                    
-                            $result[] = [
-                                "Fullname" => $post->created_by,
-                                "status" => $post->status,
-                                "caption" => $post->caption,
-                                "posts_uuid" => $post->posts_uuid,
-                                "posts" => $attachment
-                            ];
-                        }
+        if (Auth::check()) {
+            try {
+                $requestedCode = $request->code;
+                $authCode = Auth::user()->code;
+                
+                $result = [];
+
+                if ($requestedCode) {
+                    // Scenario 1: Viewing a specific code profile
+                    if ($authCode == $requestedCode) {
+                        // If the auth code matches the requested code, show all posts (including private)
+                        $posts = Post::where('code', Auth::user()->code)->get(); // Get posts created by the authenticated user
+                    } else {
+                        // If the auth code does not match the requested code, show only public posts
+                        $posts = Post::where('status', 1)->get(); // Retrieve only public posts
                     }
-                     
-                    return response()->json(array_values($result));
-                } catch (\Throwable $th) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'An error occurred: ' . $th->getMessage(),
-                    ]);
+
+                    // Loop through posts and add attachments to result
+                    foreach ($posts as $post) {
+                        $attachment = Attachmentpost::where('posts_uuid', $post->posts_uuid)
+                            ->where('status', 1)
+                            ->get(); // Get public attachments
+
+                        $result[] = [
+                            "Fullname" => $post->created_by,
+                            "status" => $post->status,
+                            "caption" => $post->caption,
+                            "posts_uuid" => $post->posts_uuid,
+                            "posts" => $attachment
+                        ];
+                    }
                 }
                 
+                return response()->json(array_values($result));
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $th->getMessage(),
+                ]);
             }
+        }
+
         // return view('testuploads');
     }
+
 
     /**
      * Show the form for creating a new resource.
