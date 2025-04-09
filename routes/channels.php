@@ -21,7 +21,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 Broadcast::channel('user.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId; // Ensure that the authenticated user can access their own notifications
 });
-
+    
 
 Broadcast::channel('chat.{receiver_id}', function ($user, $receiver_id) {
     return (int) $user->id === (int) $receiver_id;
