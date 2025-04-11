@@ -2,7 +2,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -30,7 +30,7 @@ class NotificationCountUpdated
     public function broadcastWith()
     {
         return [
-            'unreadCount' => $this->unreadCount, // Send the unread count data
+            'unreadCount' => $this->unreadCount,
         ];
     }
 }

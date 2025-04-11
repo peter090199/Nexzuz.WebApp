@@ -100,10 +100,7 @@ class ChatController extends Controller
             // ->latest()
             // ->first();
 
-        // Trigger the event
          broadcast(new NotificationCountUpdated($unreadCount));
-       //  broadcast(new MessageSent($message, $unreadCount));
-
         return response()->json([
             'unreadCount' => $unreadCount
         ]);
