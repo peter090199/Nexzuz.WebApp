@@ -39,6 +39,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Support\Facades\Log;
 
 class NotificationCountUpdated implements ShouldBroadcast
 {
@@ -47,6 +48,7 @@ class NotificationCountUpdated implements ShouldBroadcast
 
     public function __construct($userId, $unreadCount)
     {
+        Log::info("Broadcasting count to user {$userId}: {$unreadCount}");
         $this->userId = $userId;
         $this->unreadCount = $unreadCount;
     }
