@@ -27,9 +27,14 @@ class ChatController extends Controller
             'is_read' => false
         ]);
 
-        // ✅ Broadcast the message in real-time
-        // event(new MessageSent($message));
-        broadcast(new MessageSent($message));
+          // Get unread count for the receiver
+            $unreadCount = Message::where('receiver_id', $request->receiver_id)
+            ->where('is_read', false)
+            ->count();
+        
+       broadcast(new NotificationCountUpdated($request->receiver_id, $unreadCount))->toOthers();
+  
+       // broadcast(new MessageSent($message));
         
         return response()->json([
             'success' => true,
