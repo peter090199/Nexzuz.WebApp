@@ -22,13 +22,11 @@ class NotificationCountUpdated
         return new Channel('notification.count');
     }
 
-    // Event name when broadcasting
     public function broadcastAs()
     {
-        return 'notifications.count'; // You can keep the same event name if needed
+        return 'notifications'; 
     }
 
-    // Data to broadcast with the event
     public function broadcastWith()
     {
         return [
