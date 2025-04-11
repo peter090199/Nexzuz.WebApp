@@ -115,6 +115,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('notifications', [ChatController::class, 'getNotifications']);
    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
+   Route::get('test-count/{id}/{count}', function ($id, $count) {
+    broadcast(new NotificationCountUpdated($id, $count));
+        return 'Broadcasted!';
+    });
 
    //post 
    Route::resource('post',PostController::class)->names('post');
