@@ -32,7 +32,7 @@ class ChatController extends Controller
             ->where('is_read', false)
             ->count();
         
-       broadcast(new NotificationCountUpdated($request->receiver_id, $unreadCount))->toOthers();
+            broadcast(new NotificationCountUpdated($request->receiver_id, $unreadCount))->toOthers();
   
        // broadcast(new MessageSent($message));
         
@@ -92,8 +92,25 @@ class ChatController extends Controller
         event(new NotificationCountUpdated(auth()->id(), 5));
         return response()->json(['message' => 'Broadcast sent']);
     }
-
+    
     public function updateNotificationCount()
+    {
+        $userId = Auth::id();
+    
+        $unreadCount = Message::where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->count();  
+    
+        // ✅ Pass both userId and unreadCount to the event
+        broadcast(new NotificationCountUpdated($userId, $unreadCount));
+    
+        return response()->json([
+            'unreadCount' => $unreadCount
+        ]);
+    }
+
+
+    public function updateNotificationCountxx()
     {
         $userId = Auth::id();
         $unreadCount = Message::where('receiver_id', $userId)
