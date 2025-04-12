@@ -266,6 +266,12 @@
         e.preventDefault(); // Prevent default button behavior
 
         let formData = new FormData();
+        var bearerToken = '8|M7MsmUd9lZ5BpOuqJ5oQUP6B1VZQtNiwZVF09y7252cd30e8';
+
+
+
+        // UUID UPDATE
+        // var i = '7b6eba7f-b777-4a6a-9781-b927751e3531';
         
         // Get input values
         let status = $('#status').val();
@@ -275,6 +281,9 @@
         let caption = $('#caption').val();
         let attachment = $('#attachment')[0].files; // Get files
 
+        // Append method spoofing for PUT request
+        // formData.append('_method', 'PUT');
+
         // Append text inputs
         formData.append('status', status);
         formData.append('caption', caption);
@@ -283,13 +292,11 @@
         for (let i = 0; i < attachment.length; i++) {
             formData.append('posts[]', attachment[i]);
         }
-        var bearerToken = '6|8CFMmZHfP0stpFR6SCKmvMOSxwtBK8uWCjeyMnm1f5f2cfad';
 
-        var i = 'b882da04-f211-4b7a-868e-6c7148f766f3';
+        // store
         $.ajax({
-            url: `http://127.0.0.1:8000/api/post/${i}`,
-            // url: `http://127.0.0.1:8000/api/post`,
-            type: 'PUT',
+            url: `http://127.0.0.1:8000/api/post`,
+            type: 'POST',
             data: formData,
             processData: false, // Prevent jQuery from processing FormData
             contentType: false, // Prevent jQuery from adding Content-Type header
@@ -338,6 +345,58 @@
                 }
             }
         });
+
+        //UPDATE
+        // $.ajax({
+        //     url: `http://127.0.0.1:8000/api/post/${i}`,
+        //     type: 'POST', // Using POST because we spoof PUT via _method
+        //     data: formData,
+        //     processData: false,
+        //     contentType: false,
+        //     headers: {
+        //         'Authorization': `Bearer ${bearerToken}`
+        //     },
+        //     beforeSend: function () {
+        //         if (!Swal.isVisible()) {
+        //             Swal.fire({
+        //                 title: 'Uploading...',
+        //                 text: 'Please wait while we upload your file.',
+        //                 allowOutsideClick: false,
+        //                 showConfirmButton: false,
+        //                 willOpen: () => {
+        //                     Swal.showLoading();
+        //                 }
+        //             });
+        //         }
+        //     },
+        //     success: function (response) {
+        //         console.log(response);
+
+        //         Swal.fire({
+        //             title: 'Success!',
+        //             text: 'Upload successful!',
+        //             icon: 'success',
+        //             confirmButtonText: 'OK'
+        //         }).then(() => {
+        //             Swal.close(); // Close Swal manually
+        //         });
+        //     },
+        //     error: function (xhr, status, error) {
+        //         console.error(xhr.responseJSON ? xhr.responseJSON : error);
+
+        //         Swal.fire({
+        //             title: 'Error!',
+        //             text: 'An error occurred. Please try again.',
+        //             icon: 'error',
+        //             confirmButtonText: 'OK'
+        //         });
+        //     },
+        //     complete: function () {
+        //         if (Swal.isVisible()) {
+        //             Swal.close();
+        //         }
+        //     }
+        // });     
 
 
     });

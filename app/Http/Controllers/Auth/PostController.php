@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\File; 
@@ -10,60 +11,15 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
 use App\Models\Attachmentpost;
 use App\Models\Resource;
+use App\Models\Userprofile;
 use Illuminate\Support\Str;
 use DB;
+
 class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    // public function index(Request $request)
-    // {
-    //         if(Auth::check()){
-    //             try {
-    //                 $requestedCode = $request->code;
-    //                 $authCode = Auth::user()->code;
-                    
-    //                 $result = [];
-                    
-    //                 if ($requestedCode) {
-    //                     // Scenario 1: Viewing a specific code profile
-    //                     if ($authCode == $requestedCode) {
-    //                         // If the auth code matches the requested code, show all posts (including private)
-    //                         $posts = Post::all(); // Retrieve all posts (both public and private)
-    //                     } else {
-    //                         // If the auth code does not match the requested code, show only public posts
-    //                         $posts = Post::where('status', 1)->get(); // Retrieve only public posts
-    //                     }
-                    
-    //                     // Loop through posts and add attachments to result
-    //                     foreach ($posts as $post) {
-    //                         $attachment = Attachmentpost::where('posts_uuid', $post->posts_uuid)
-    //                             ->where('status', 1)
-    //                             ->get(); // Get public attachments
-                    
-    //                         $result[] = [
-    //                             "Fullname" => $post->created_by,
-    //                             "status" => $post->status,
-    //                             "caption" => $post->caption,
-    //                             "posts_uuid" => $post->posts_uuid,
-    //                             "posts" => $attachment
-    //                         ];
-    //                     }
-    //                 }
-                     
-    //                 return response()->json(array_values($result));
-    //             } catch (\Throwable $th) {
-    //                 return response()->json([
-    //                     'success' => false,
-    //                     'message' => 'An error occurred: ' . $th->getMessage(),
-    //                 ]);
-    //             }
-                
-    //         }
-    //     // return view('testuploads');
-    // }
-
     public function index(Request $request)
     {
         if (Auth::check()) {
@@ -72,35 +28,40 @@ class PostController extends Controller
                 $authCode = Auth::user()->code;
                 
                 $result = [];
-
+                
                 if ($requestedCode) {
                     // Scenario 1: Viewing a specific code profile
                     if ($authCode == $requestedCode) {
-                        // If the auth code matches the requested code, show all posts (including private)
-                        $posts = Post::where('code', Auth::user()->code)->get(); // Get posts created by the authenticated user
+                        // Show all posts (including private)
+                        $posts = Post::where('code', $authCode)->get();
                     } else {
-                        // If the auth code does not match the requested code, show only public posts
+                        // Show only public posts
                         $posts = Post::where('status', 1)
-                        ->where('code', $requestedCode)
-                        ->get();
+                                     ->where('code', $requestedCode)
+                                     ->get();
                     }
-
+                
                     // Loop through posts and add attachments to result
                     foreach ($posts as $post) {
-                        $attachment = Attachmentpost::where('posts_uuid', $post->posts_uuid)
-                            ->where('status', 1)
-                            ->get(); // Get public attachments
-
+                        // Conditional attachments based on access
+                        $attachmentQuery = Attachmentpost::where('posts_uuid', $post->posts_uuid);
+                
+                        if ($authCode != $requestedCode) {
+                            // If viewing someone else's posts, only show public attachments
+                            $attachmentQuery->where('status', 1);
+                        }
+                
+                        $attachments = $attachmentQuery->get();
+                
                         $result[] = [
                             "Fullname" => $post->created_by,
                             "status" => $post->status,
                             "caption" => $post->caption,
                             "posts_uuid" => $post->posts_uuid,
-                            "posts" => $attachment
+                            "posts" => $attachments
                         ];
                     }
                 }
-                
                 return response()->json(array_values($result));
             } catch (\Throwable $th) {
                 return response()->json([
@@ -226,14 +187,65 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         //
-
+        // return 'test';
         if(Auth::check()){
             try {
                 
-                
+                if (Auth::check()) {
+                    try {
+                        $requestedCode = $request->code;
+                        $authCode = Auth::user()->code;
+                        
+                        $result = [];
+                        
+                        // Scenario 1: Viewing a specific code profile
+                        if ($authCode == $requestedCode) {
+                            // Show all posts (including private)
+                            $posts = Post::where('code', $authCode)
+                                         ->where('posts_uuid', $id)
+                                         ->get();
+                        } else {
+                            // Show only public posts
+                            $posts = Post::where('status', 1)
+                                         ->where('code', $requestedCode)
+                                         ->where('posts_uuid', $id)
+                                         ->get();
+                        }
+                        
+                        // Loop through posts and add attachments to result
+                        foreach ($posts as $post) {
+                            // Determine if full attachments should be shown
+                            if ($authCode == $requestedCode) {
+                                // Show all attachments
+                                $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)->get();
+                            } else {
+                                // Show only public attachments
+                                $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)
+                                                             ->where('status', 1)
+                                                             ->get();
+                            }
+                        
+                            $profilePic = Userprofile::select('photo_pic')->where('code', $requestedCode)->first();
+                            $result[] = [
+                                "Fullname" => $post->created_by,
+                                "photo_pic" => $profilePic->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                                "status" => $post->status,
+                                "caption" => $post->caption,
+                                "posts_uuid" => $post->posts_uuid,
+                                "posts" => $attachments
+                            ];
+                        }
+                        return response()->json(array_values($result));
+                    } catch (\Throwable $th) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'An error occurred: ' . $th->getMessage(),
+                        ]);
+                    }
+                }
 
             } catch (\Throwable $th) {
                 DB::rollBack();
@@ -257,11 +269,14 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,string $id)
+    public function update(Request $request,$id)
     {
+
+
+        // return $id;
         $data = $request->all();
 
-        return $data;
+        // return $data;
         // Validate incoming data
         $validator = Validator::make($data, [
             'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
@@ -330,13 +345,13 @@ class PostController extends Controller
                     ]);
     
                     // Optional array to return or track uploaded files
-                    $uploadedFiles[] = [
-                        'uuid' => $uuid,
-                        'folderuuid' => $folderuuid,
-                        'filename' => $filename,
-                        'path' => $storageUrl,
-                        'type' => $postType,
-                    ];
+                    // $uploadedFiles[] = [
+                    //     'uuid' => $uuid,
+                    //     'folderuuid' => $folderuuid,
+                    //     'filename' => $filename,
+                    //     'path' => $storageUrl,
+                    //     'type' => $postType,
+                    // ];
                 }
             }
     
@@ -345,7 +360,7 @@ class PostController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully updated.',
-                'uploadedFiles' => $uploadedFiles ?? [],
+                // 'uploadedFiles' => $uploadedFiles ?? [],
             ]);
     
         } catch (\Throwable $th) {
@@ -364,11 +379,74 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    // DELETE ALL POST TRANSACTIONS
     public function destroy(string $id)
     {
         //
+        if(Auth::check()){
+            DB::beginTransaction();
+
+            try {
+                // Find the post that matches the ID and belongs to the authenticated user
+                $post = Post::where('posts_uuid', $id)->where('code', Auth::user()->code)->first();
+            
+                if (!$post) {
+                    DB::rollBack();
+                    return response()->json(['success' => false,'message' => 'You are not authorized to delete this post.',], 403);
+                }   
+
+                $folderPath = "uploads/posts/$post->code/$post->posts_uuid";
+
+                // Delete the entire folder and its contents
+                Storage::disk('public')->deleteDirectory($folderPath);
+
+                // Delete the post and its attachments
+                Post::where('posts_uuid', $id)->delete();
+                Attachmentpost::where('posts_uuid', $id)->delete();
+            
+                DB::commit();
+                return response()->json(['success' => true,'message' => 'Post and its attachments were successfully deleted.',], 200);
+            
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false,'message' => 'Something went wrong. Please try again.','error' => $e->getMessage()
+                ], 500);
+            }
+        }
+
     }
 
+    // DELETE INDIVIDUAL ATTACHMENT 
+    public function deleteIndividualPost(string $id) {
+        // return 'testing purposes';
+        // return $id;
+        if(Auth::check()){
+            DB::beginTransaction();
+
+            try {
+                // Find the post that matches the ID and belongs to the authenticated user
+                $countAttach = Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->get();
+
+                if (count($countAttach) > 0) {
+                    $Attachment = Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->first();
+                    $folderPath = "uploads/posts/$Attachment->code/$Attachment->posts_uuid/$Attachment->posts_uuind";
+
+                     Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->delete();
+                    // Delete the entire folder and its contents
+                    Storage::disk('public')->deleteDirectory($folderPath);
+                    DB::commit();
+                    return response()->json(['success' => true,'message' => 'Post and its attachments were successfully deleted.',], 200);
+                } 
+                DB::rollBack();
+                return response()->json(['success' => false,'message' => 'You are not authorized to delete this post.',], 403);
+
+            }catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false,'message' => 'Something went wrong. Please try again.','error' => $e->getMessage()
+                ], 500);
+            }
+        }
+    }
 
     public function authpostshow(){
         if(Auth::check()){

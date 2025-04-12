@@ -120,7 +120,9 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
         return 'Broadcasted!';
     });
 
-   //post 
+   //Post 
    Route::resource('post',PostController::class)->names('post');
+   Route::post('/deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
+    // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
 
 });
