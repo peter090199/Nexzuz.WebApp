@@ -128,7 +128,7 @@ class ChatController extends Controller
         ]);
     }
 
-    public function getNotifications()
+    public function getNotificationsIsRead()
     {
         $userId = Auth::id();
     
@@ -143,6 +143,21 @@ class ChatController extends Controller
         ]);
     }
     
+    public function getNotificationsIsUnRead()
+    {
+        $userId = Auth::id();
+    
+        $notifications = Message::where('receiver_id', $userId)
+            ->where('is_read', true)
+            ->with('sender')
+            ->orderByDesc('created_at')
+            ->get();
+    
+        return response()->json([
+            'notifications' => $notifications
+        ]);
+    }
+
       // ✅ Mark messages as read
       public function markAsRead(Request $request) {
         Message::where('id', $request->id)

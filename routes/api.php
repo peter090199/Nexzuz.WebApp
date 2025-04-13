@@ -112,13 +112,17 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::post('messages/read', [ChatController::class, 'markAsRead']);
    Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
-   Route::get('notifications', [ChatController::class, 'getNotifications']);
+   Route::get('notifications', [ChatController::class, 'getNotificationsIsRead']);
    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
-   Route::get('test-count/{id}/{count}', function ($id, $count) {
-    broadcast(new NotificationCountUpdated($id, $count));
-        return 'Broadcasted!';
-    });
+   Route::get('getNotificationsIsUnRead', [ChatController::class, 'getNotificationsIsUnRead']);
+
+//    Route::get('test-count/{id}/{count}', function ($id, $count) {
+//     broadcast(new NotificationCountUpdated($id, $count));
+//         return 'Broadcasted!';
+//     });
+
+
 
    //Post 
    Route::resource('post',PostController::class)->names('post');
