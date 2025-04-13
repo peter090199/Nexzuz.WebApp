@@ -157,14 +157,7 @@ class ChatController extends Controller
             'notifications' => $notifications
         ]);
     }
-    // public function markAllAsRead(Request $request)
-    // {
-    //     Message::where('receiver_id', Auth::id())
-    //         ->where('is_read', false)
-    //         ->update(['is_read' => true]);
-    
-    //     return response()->json(['message' => 'All messages marked as read']);
-    // }
+
 
       // ✅ Mark messages as read
       public function markAsRead(Request $request) {
@@ -173,5 +166,14 @@ class ChatController extends Controller
             ->update(['is_read' => true]);
 
         return response()->json(['message' => 'Messages marked as read']);
+    }
+
+    public function markAllAsRead(Request $request)
+    {
+        Message::where('receiver_id', Auth::id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'All messages marked as read']);
     }
 }
