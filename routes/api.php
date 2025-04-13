@@ -116,6 +116,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
    Route::get('getNotificationsIsUnRead', [ChatController::class, 'getNotificationsIsUnRead']);
+   Route::post('messages/mark_allAsread', [ChatController::class, 'markAllAsRead']);
 
 //    Route::get('test-count/{id}/{count}', function ($id, $count) {
 //     broadcast(new NotificationCountUpdated($id, $count));
