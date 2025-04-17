@@ -118,16 +118,9 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getNotificationsIsUnRead', [ChatController::class, 'getNotificationsIsUnRead']);
    Route::post('messages/mark_allAsread', [ChatController::class, 'markAllAsRead']);
 
-//    Route::get('test-count/{id}/{count}', function ($id, $count) {
-//     broadcast(new NotificationCountUpdated($id, $count));
-//         return 'Broadcasted!';
-//     });
-
-
-
    //Post 
    Route::resource('post',PostController::class)->names('post');
-   Route::post('/deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
+   Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
 
 });
