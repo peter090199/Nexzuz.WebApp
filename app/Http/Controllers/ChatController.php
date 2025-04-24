@@ -18,12 +18,13 @@ class ChatController extends Controller
             'message' => 'required|string',
             'receiver_id' => 'required|integer'
         ]);
-
+        $authCode = Auth::user()->code;
         $message = Message::create([
             'sender_id' => auth()->id(),
             'receiver_id' => $request->receiver_id,
             'message' => $request->message,
             'created_at' => now(),
+            'code' =>  $authCode,
             'is_read' => false
         ]);
 
