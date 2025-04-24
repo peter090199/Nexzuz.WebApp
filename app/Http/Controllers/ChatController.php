@@ -132,7 +132,6 @@ class ChatController extends Controller
     public function getNotificationsIsRead()
     {
         $userId = Auth::id();
-    
         // $notifications = Message::where('receiver_id', $userId)
         //     ->where('is_read', false)
         //     ->with('sender')
