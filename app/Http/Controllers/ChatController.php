@@ -147,12 +147,21 @@ class ChatController extends Controller
     public function getNotificationsIsUnRead()
     {
         $userId = Auth::id();
-    
-        $notifications = Message::where('receiver_id', $userId)
-            ->where('is_read', true)
-            ->with('sender')
-            ->orderByDesc('created_at')
+        // $notifications = Message::where('receiver_id', $userId)
+        //     ->where('is_read', true)
+        //     ->with('sender')
+        //     ->orderByDesc('created_at')
+        //     ->get();
+
+            $notifications = DB::table('messages')
+            ->join('users', 'messages.sender_id', '=', 'users.id')
+            ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
+            ->where('messages.receiver_id', $userId)
+            ->where('messages.is_read', false)
+            ->orderByDesc('messages.created_at')
+            ->select('messages.*', 'userprofiles.photo_pic')
             ->get();
+
     
         return response()->json([
             'notifications' => $notifications
