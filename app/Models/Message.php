@@ -14,6 +14,7 @@ class Message extends Model
         'receiver_id',
         'message',
         'is_read',
+        'code',
         'created_at'
     ];
     
