@@ -220,14 +220,22 @@ class ChatController extends Controller
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
             ->where('messages.receiver_id', $userId)
             ->where('messages.is_read', false)
-            ->orderByDesc('messages.created_at')
-            ->select('messages.receiver_id', 'messages.sender_id', 'messages.message', 'messages.created_at', 'userprofiles.photo_pic', 'users.fullname')
-            ->groupBy('messages.receiver_id', 'messages.sender_id', 'messages.message', 'messages.created_at', 'userprofiles.photo_pic', 'users.fullname')
+            ->select(
+                'messages.sender_id',
+                DB::raw('MAX(messages.id) as latest_message_id'),
+                DB::raw('MAX(messages.message) as message'),
+                DB::raw('MAX(messages.created_at) as created_at'),
+                'userprofiles.photo_pic',
+                'users.fullname'
+            )
+            ->groupBy('messages.sender_id', 'userprofiles.photo_pic', 'users.fullname')
+            ->orderByDesc('created_at')
             ->get();
     
         return response()->json([
             'notifications' => $notifications
         ]);
     }
+    
     
 }
