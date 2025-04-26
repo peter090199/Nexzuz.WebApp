@@ -134,12 +134,6 @@ class ChatController extends Controller
     public function getNotificationsIsRead()
     {
         $userId = Auth::id();
-        // $notifications = Message::where('receiver_id', $userId)
-        //     ->where('is_read', false)
-        //     ->with('sender')
-        //     ->orderByDesc('created_at')
-        //     ->get();
-
             $notifications = DB::table('messages')
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
@@ -157,12 +151,6 @@ class ChatController extends Controller
     public function getNotificationsIsUnRead()
     {
         $userId = Auth::id();
-        // $notifications = Message::where('receiver_id', $userId)
-        //     ->where('is_read', true)
-        //     ->with('sender')
-        //     ->orderByDesc('created_at')
-        //     ->get();
-
             $notifications = DB::table('messages')
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
@@ -219,4 +207,27 @@ class ChatController extends Controller
         return response()->json($messages);
     }
 
+
+
+    //mesages
+
+    public function getMessagesAll()
+    {
+        $userId = Auth::id();
+    
+        $notifications = DB::table('messages')
+            ->join('users', 'messages.sender_id', '=', 'users.id')
+            ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
+            ->where('messages.receiver_id', $userId)
+            ->where('messages.is_read', false)
+            ->orderByDesc('messages.created_at')
+            ->select('messages.receiver_id', 'messages.sender_id', 'messages.message', 'messages.created_at', 'userprofiles.photo_pic', 'users.fullname')
+            ->groupBy('messages.receiver_id', 'messages.sender_id', 'messages.message', 'messages.created_at', 'userprofiles.photo_pic', 'users.fullname')
+            ->get();
+    
+        return response()->json([
+            'notifications' => $notifications
+        ]);
+    }
+    
 }
