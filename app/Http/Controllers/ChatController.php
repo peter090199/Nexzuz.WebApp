@@ -176,6 +176,17 @@ class ChatController extends Controller
         return response()->json(['message' => 'Messages marked as read']);
     }
 
+    public function markAsReadMessage() {
+        $codeuser = Auth::user()->code;
+
+        Message::where('code', $codeuser)
+            ->where('receiver_id', Auth::id())
+            ->update(['is_read' => false]);
+
+        return response()->json(['message' => 'Messages marked as read']);
+    }
+
+
     public function markAllAsRead(Request $request)
     {
         Message::where('receiver_id', Auth::id())
