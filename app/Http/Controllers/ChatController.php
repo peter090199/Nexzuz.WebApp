@@ -151,13 +151,17 @@ class ChatController extends Controller
     {
         $userId = Auth::id();
     
+        $subQuery = DB::table('messages')
+            ->selectRaw('MAX(id) as id')
+            ->where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->groupBy('sender_id');
+    
         $notifications = DB::table('messages')
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
-            ->where('messages.receiver_id', $userId)
-            ->where('messages.is_read', false)
+            ->whereIn('messages.id', $subQuery)
             ->select('messages.*', 'userprofiles.photo_pic', 'users.fullname')
-            ->groupBy('messages.sender_id', 'messages.id', 'userprofiles.photo_pic', 'users.fullname')
             ->orderByDesc('messages.created_at')
             ->get();
     
@@ -165,6 +169,7 @@ class ChatController extends Controller
             'notifications' => $notifications
         ]);
     }
+    
     
 
 
