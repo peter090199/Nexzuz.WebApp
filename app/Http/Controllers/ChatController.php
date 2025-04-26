@@ -149,22 +149,35 @@ class ChatController extends Controller
     public function getMessagesByUserId()
     {
         $userId = Auth::id();
-
-        $notifications = DB::table('messages')
+        // Subquery to get the latest unread message per sender
+        $latestMessages = DB::table('messages as m1')
+            ->select('m1.*')
+            ->where('m1.receiver_id', $userId)
+            ->where('m1.is_read', false)
+            ->whereRaw('m1.id = (
+                SELECT m2.id FROM messages m2
+                WHERE m2.sender_id = m1.sender_id 
+                  AND m2.receiver_id = ? 
+                  AND m2.is_read = false
+                ORDER BY m2.created_at DESC
+                LIMIT 1
+            )', [$userId]);
+    
+        // Join with users and profiles
+        $notifications = DB::table(DB::raw("({$latestMessages->toSql()}) as messages"))
+            ->mergeBindings($latestMessages)
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
-            ->where('messages.receiver_id', $userId)
-            ->where('messages.is_read', false)
-            ->orderByDesc('messages.created_at')
             ->select('messages.*', 'userprofiles.photo_pic', 'users.fullname')
-            ->groupBy('messages.sender_id') // group by sender
+            ->orderByDesc('messages.created_at')
             ->get();
-
+    
         return response()->json([
             'notifications' => $notifications
         ]);
+        
     }
-
+    
 
     public function getNotificationsIsUnRead()
     {
