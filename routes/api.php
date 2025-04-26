@@ -119,6 +119,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::post('messages/mark_allAsread', [ChatController::class, 'markAllAsRead']);
    Route::get('messages_receive', [ChatController::class, 'getMessagesByUserId']);
    Route::get('messages_unReadReceive', [ChatController::class, 'getNotificationsIsUnReadBySenderId']);
+
+   
    //Post 
    Route::resource('post',PostController::class)->names('post');
    Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);

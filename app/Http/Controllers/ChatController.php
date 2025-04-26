@@ -197,6 +197,7 @@ class ChatController extends Controller
             ->where('messages.is_read', true)
             ->orderByDesc('messages.created_at')
             ->select('messages.*', 'userprofiles.photo_pic','users.fullname')
+            ->groupBy('receiver_id')
             ->get();
     
         return response()->json([
