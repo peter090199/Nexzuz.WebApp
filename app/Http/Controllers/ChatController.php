@@ -58,6 +58,8 @@ class ChatController extends Controller
         return response()->json($messages);
     }
 
+
+
     public function fetchMessagesx($receiverId)
     {
         $messages = DB::table('messages')
@@ -194,4 +196,27 @@ class ChatController extends Controller
 
         return response()->json(['message' => 'All messages marked as read']);
     }
+
+    //meesages receive
+    public function messages_receive($receiverId) 
+    {
+        $userId = Auth::id();
+
+        $messages = DB::table('messages')
+            ->select('messages.*')
+            ->where(function($query) use ($userId, $receiverId) {
+                $query->where('sender_id', $userId)
+                    ->where('receiver_id', $receiverId);
+            })
+            ->orWhere(function($query) use ($userId, $receiverId) {
+                $query->where('sender_id', $receiverId)
+                    ->where('receiver_id', $userId);
+            })
+            ->orderBy('created_at', 'desc') // latest first
+            ->groupBy('sender_id') // group by sender_id
+            ->get();
+
+        return response()->json($messages);
+    }
+
 }
