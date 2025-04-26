@@ -45,7 +45,7 @@ class ChatController extends Controller
     }
 
 
-  // ✅ get by userId chat messages
+  // ✅ Fetch chat messages
   public function fetchMessages($receiverId) {
         $userId = Auth::id();
         $messages = Message::where(function($query) use ($userId, $receiverId) {
@@ -58,7 +58,22 @@ class ChatController extends Controller
         return response()->json($messages);
     }
 
-  
+    public function fetchMessagesx($receiverId)
+    {
+        $messages = DB::table('messages')
+            ->where(function ($query) use ($receiverId) {
+                $query->where('sender_id', Auth::id())
+                      ->where('receiver_id', $receiverId);
+            })
+            ->orWhere(function ($query) use ($receiverId) {
+                $query->where('sender_id', $receiverId)
+                      ->where('receiver_id', Auth::id());
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json($messages);
+    }
 
     //DISPLAY CHAT ONLINE MESSAGES
     public function getActiveUsers()
@@ -117,6 +132,7 @@ class ChatController extends Controller
     public function getNotificationsIsRead()
     {
         $userId = Auth::id();
+     
             $notifications = DB::table('messages')
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
@@ -130,66 +146,16 @@ class ChatController extends Controller
             'notifications' => $notifications
         ]);
     }
-
-    public function getNotificationsIsUnReadBySenderId()
-    {
-        $userId = Auth::id();
-
-        $subQuery = DB::table('messages')
-            ->selectRaw('MAX(id) as id')
-            ->where('receiver_id', $userId)
-            ->where('is_read', false)
-            ->groupBy('sender_id');
-
-        $notifications = DB::table('messages')
-            ->join('users', 'messages.sender_id', '=', 'users.id')
-            ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
-            ->whereIn('messages.id', $subQuery)
-            ->select('messages.*', 'userprofiles.photo_pic', 'users.fullname')
-            ->orderByDesc('messages.created_at')
-            ->get();
-
-        return response()->json([
-            'notifications' => $notifications
-        ]);
-    }
-
-    public function getMessagesByUserId()
-    {
-        $userId = Auth::id();
-        // Subquery to get the latest unread message per sender
-        $latestMessages = DB::table('messages as m1')
-            ->select('m1.*')
-            ->where('m1.receiver_id', $userId)
-            ->where('m1.is_read', false)
-            ->whereRaw('m1.id = (
-                SELECT m2.id FROM messages m2
-                WHERE m2.sender_id = m1.sender_id 
-                  AND m2.receiver_id = ? 
-                  AND m2.is_read = false
-                ORDER BY m2.created_at DESC
-                LIMIT 1
-            )', [$userId]);
     
-        // Join with users and profiles
-        $notifications = DB::table(DB::raw("({$latestMessages->toSql()}) as messages"))
-            ->mergeBindings($latestMessages)
-            ->join('users', 'messages.sender_id', '=', 'users.id')
-            ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
-            ->select('messages.*', 'userprofiles.photo_pic', 'users.fullname')
-            ->orderByDesc('messages.created_at')
-            ->get();
-    
-        return response()->json([
-            'notifications' => $notifications
-        ]);
-
-    }
-    
-
     public function getNotificationsIsUnRead()
     {
         $userId = Auth::id();
+        // $notifications = Message::where('receiver_id', $userId)
+        //     ->where('is_read', true)
+        //     ->with('sender')
+        //     ->orderByDesc('created_at')
+        //     ->get();
+
             $notifications = DB::table('messages')
             ->join('users', 'messages.sender_id', '=', 'users.id')
             ->join('userprofiles', 'users.code', '=', 'userprofiles.code')
@@ -197,8 +163,8 @@ class ChatController extends Controller
             ->where('messages.is_read', true)
             ->orderByDesc('messages.created_at')
             ->select('messages.*', 'userprofiles.photo_pic','users.fullname')
-            ->groupBy('receiver_id')
             ->get();
+
     
         return response()->json([
             'notifications' => $notifications
