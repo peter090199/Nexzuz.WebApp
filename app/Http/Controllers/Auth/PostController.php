@@ -14,6 +14,7 @@ use App\Models\Resource;
 use App\Models\Userprofile;
 use Illuminate\Support\Str;
 use DB;
+use  App\Http\Controllers\Postcomments\CommentController;
 
 class PostController extends Controller
 {
@@ -41,6 +42,7 @@ class PostController extends Controller
                                      ->get();
                     }
                 
+                    $commentController = new CommentController();
                     // Loop through posts and add attachments to result
                     foreach ($posts as $post) {
                         // Conditional attachments based on access
@@ -53,12 +55,21 @@ class PostController extends Controller
                 
                         $attachments = $attachmentQuery->get();
                 
+
+                        // Create a new Request object with posts_uuid as query param
+                        $fakeRequest = new Request(['post_uuidOrUind' => $post->posts_uuid]);
+
+                        // Call Postcomments@index with the fake request
+                        $commentResponse = $commentController->index($fakeRequest);
+                        $commentData = json_decode($commentResponse->getContent());
+
                         $result[] = [
                             "Fullname" => $post->created_by,
                             "status" => $post->status,
                             "caption" => $post->caption,
                             "posts_uuid" => $post->posts_uuid,
-                            "posts" => $attachments
+                            "posts" => $attachments,
+                            "comments" => $commentData
                         ];
                     }
                 }
