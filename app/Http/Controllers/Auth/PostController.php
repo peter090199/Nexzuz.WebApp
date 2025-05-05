@@ -61,7 +61,7 @@ class PostController extends Controller
                             "caption" => $post->caption,
                             "posts_uuid" => $post->posts_uuid,
                             "posts" => $attachments,
-                           "comments" => (new CommentController())->getCommentsByPostUuid($post->posts_uuid),
+                           "comments" => (new CommentController())->index($post->posts_uuid),
                         ];
                     }
                 }
