@@ -11,15 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('commentreplies', function (Blueprint $table) {
             $table->id();
-            $table->string('post_uuid');        
-            $table->integer('code');           
-            $table->text('comment');  
+            $table->uuid('comment_uuid');
+            $table->integer('status')->default(0); // 0 - public, 1 - private
+            $table->integer('code'); // Assuming this references a User or another model
+            $table->text('comment');
             $table->date('date_comment');
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
-            $table->timestamps();  
+            $table->timestamps();
         });
     }
 
@@ -28,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::dropIfExists('commentreplies');
     }
 };

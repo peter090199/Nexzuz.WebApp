@@ -4,14 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 
-use App\Http\Controllers\Lookup\LookupController;
+use  App\Http\Controllers\Lookup\LookupController;
 
-use App\Http\Controllers\Auth\LoginController;
+use  App\Http\Controllers\Auth\LoginController;
 use  App\Http\Controllers\Auth\RegisterController;
 use  App\Http\Controllers\Auth\ForgetpasswordController;
 use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\ProfilepictureController;
 use  App\Http\Controllers\Auth\PostController;
+use  App\Http\Controllers\Postcomments\CommentController;
 
 use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
 
@@ -127,6 +128,12 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    //Post 
    Route::resource('post',PostController::class)->names('post');
    Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
+
+
+   //Comment
+   Route::resource('comment',CommentController::class)->names('comment');
+   Route::post('commentreply', [CommentController::class, 'commentreply']);
+
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
 
 });

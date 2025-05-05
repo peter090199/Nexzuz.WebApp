@@ -266,7 +266,7 @@
         e.preventDefault(); // Prevent default button behavior
 
         let formData = new FormData();
-        var bearerToken = '8|M7MsmUd9lZ5BpOuqJ5oQUP6B1VZQtNiwZVF09y7252cd30e8';
+        var bearerToken = '1|1jTHsVGGOImSlWPYGuyMY45b6oi4xgsWFW4U9GPxd55d7928';
 
 
 

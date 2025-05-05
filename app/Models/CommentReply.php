@@ -7,16 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Comment extends Model
+class CommentReply extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $table = 'commentreplies';
     protected $fillable = [
-        'post_uuid',
+        'comment_uuid',
+        'status',
         'code',
         'comment',
         'date_comment',
         'created_by',
-        'updated_by',
+        'updated_by'
     ];
+
 }
