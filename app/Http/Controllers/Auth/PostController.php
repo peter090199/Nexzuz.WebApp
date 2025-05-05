@@ -14,8 +14,8 @@ use App\Models\Resource;
 use App\Models\Userprofile;
 use Illuminate\Support\Str;
 use DB;
+use App\Http\Controllers\Postcomments\CommentController;
 
-use App\Http\Controllers\Postcomments;
 
 class PostController extends Controller
 {
@@ -42,7 +42,7 @@ class PostController extends Controller
                                      ->where('code', $requestedCode)
                                      ->get();
                     }
-                    $commentService = new PostCommentService();
+                    $commentService = new Postcomments();
                     // Loop through posts and add attachments to result
                     foreach ($posts as $post) {
                         // Conditional attachments based on access
@@ -61,7 +61,7 @@ class PostController extends Controller
                             "caption" => $post->caption,
                             "posts_uuid" => $post->posts_uuid,
                             "posts" => $attachments,
-                          "comments" => $commentService,
+                           "comments" => (new CommentController())->getCommentsByPostUuid($post->posts_uuid),
                         ];
                     }
                 }
