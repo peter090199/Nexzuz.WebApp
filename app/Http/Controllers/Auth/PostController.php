@@ -22,56 +22,56 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        if (Auth::check()) {
-            try {
-                $requestedCode = $request->code;
-                $authCode = Auth::user()->code;
+        // if (Auth::check()) {
+        //     try {
+        //         $requestedCode = $request->code;
+        //         $authCode = Auth::user()->code;
                 
-                $result = [];
+        //         $result = [];
                 
-                if ($requestedCode) {
-                    // Scenario 1: Viewing a specific code profile
-                    if ($authCode == $requestedCode) {
-                        // Show all posts (including private)
-                        $posts = Post::where('code', $authCode)->get();
-                    } else {
-                        // Show only public posts
-                        $posts = Post::where('status', 1)
-                                     ->where('code', $requestedCode)
-                                     ->get();
-                    }
+        //         if ($requestedCode) {
+        //             // Scenario 1: Viewing a specific code profile
+        //             if ($authCode == $requestedCode) {
+        //                 // Show all posts (including private)
+        //                 $posts = Post::where('code', $authCode)->get();
+        //             } else {
+        //                 // Show only public posts
+        //                 $posts = Post::where('status', 1)
+        //                              ->where('code', $requestedCode)
+        //                              ->get();
+        //             }
                 
-                    // Loop through posts and add attachments to result
-                    foreach ($posts as $post) {
-                        // Conditional attachments based on access
-                        $attachmentQuery = Attachmentpost::where('posts_uuid', $post->posts_uuid);
+        //             // Loop through posts and add attachments to result
+        //             foreach ($posts as $post) {
+        //                 // Conditional attachments based on access
+        //                 $attachmentQuery = Attachmentpost::where('posts_uuid', $post->posts_uuid);
                 
-                        if ($authCode != $requestedCode) {
-                            // If viewing someone else's posts, only show public attachments
-                            $attachmentQuery->where('status', 1);
-                        }
+        //                 if ($authCode != $requestedCode) {
+        //                     // If viewing someone else's posts, only show public attachments
+        //                     $attachmentQuery->where('status', 1);
+        //                 }
                 
-                        $attachments = $attachmentQuery->get();
+        //                 $attachments = $attachmentQuery->get();
                 
-                        $result[] = [
-                            "Fullname" => $post->created_by,
-                            "status" => $post->status,
-                            "caption" => $post->caption,
-                            "posts_uuid" => $post->posts_uuid,
-                            "posts" => $attachments
-                        ];
-                    }
-                }
-                return response()->json(array_values($result));
-            } catch (\Throwable $th) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'An error occurred: ' . $th->getMessage(),
-                ]);
-            }
-        }
+        //                 $result[] = [
+        //                     "Fullname" => $post->created_by,
+        //                     "status" => $post->status,
+        //                     "caption" => $post->caption,
+        //                     "posts_uuid" => $post->posts_uuid,
+        //                     "posts" => $attachments
+        //                 ];
+        //             }
+        //         }
+        //         return response()->json(array_values($result));
+        //     } catch (\Throwable $th) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'An error occurred: ' . $th->getMessage(),
+        //         ]);
+        //     }
+        // }
 
-        // return view('testuploads');
+        return view('testuploads');
     }
 
 

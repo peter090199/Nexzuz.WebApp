@@ -16,6 +16,11 @@ class CommentController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+
+    //  {
+    // "post_uuidOrUind" : 
+    // }
     public function index(Request $request)
     {
         //
@@ -23,7 +28,24 @@ class CommentController extends Controller
             $commentpost = CommentPost::where('post_uuidOrUind', $request->post_uuidOrUind)->get();
             $result = [];
             for ($i = 0; $i < count($commentpost); $i++) {
-                $result[] = [
+
+                // $replycomment = CommentReply::where('comment_uuid', $commentpost[$i]->comment_uuid)->get();
+
+                // $comment = [];
+                // for($j = 0 ; $j < count($replycomment); $j++){
+                //     $comment [$j] = [
+                //         "comment_uuid" => $replycomment[$j]->comment_uuid,
+                //         "replies_uuid" => $replycomment[$j]->replies_uuid,
+                //         "status" => $replycomment[$j]->status, 
+                //         "code" => $replycomment[$j]->code,
+                //         "comment" => $replycomment[$j]->comment, 
+                //         "date_comment" =>$replycomment[$j]->date_comment,
+                //         "created_by" => $replycomment[$j]->created_by,
+                //         "replies" => CommentReply::where('replies_uuid', $replycomment[$j]->comment_uuid)->get()
+                //     ];
+                // }
+
+                $result[$i] = [
                     "comment_uuid" => $commentpost[$i]->comment_uuid,
                     "post_uuidOrUind" => $commentpost[$i]->post_uuidOrUind,
                     "status" => $commentpost[$i]->status,
@@ -166,6 +188,7 @@ class CommentController extends Controller
 
             $comment =CommentReply::create([
                 'comment_uuid'  => $request->comment_uuid,
+                // 'replies_uuid' => (string) \Str::uuid(),
                 'status'        => $request->status ?? 0,
                 'code'          => Auth::user()->code,
                 'comment'       => $request->comment,

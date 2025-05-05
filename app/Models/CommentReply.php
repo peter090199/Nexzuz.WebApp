@@ -14,6 +14,7 @@ class CommentReply extends Model
     protected $table = 'commentreplies';
     protected $fillable = [
         'comment_uuid',
+        // 'replies_uuid',
         'status',
         'code',
         'comment',
