@@ -8,9 +8,7 @@ use Illuminate\Support\Str;
 use DB;
 use Auth;
 use App\Models\CommentPost;
-use App\Models\Resource;
-use App\Models\Userprofile;
-use App\Models\User;
+use App\Models\CommentReply;
 use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
@@ -48,10 +46,6 @@ class CommentController extends Controller
                 // }
 
                 $result[$i] = [
-                   "profile_pic" => Userprofile::where('code', $commentpost[$i]->code)->value('photo_pic') 
-                    ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
-                    "fullname" => User::where('code', $commentpost[$i]->code)
-                    ->first()?->fname . ' ' . User::where('code', $commentpost[$i]->code)->first()?->lname ?? '',
                     "comment_uuid" => $commentpost[$i]->comment_uuid,
                     "post_uuidOrUind" => $commentpost[$i]->post_uuidOrUind,
                     "status" => $commentpost[$i]->status,
