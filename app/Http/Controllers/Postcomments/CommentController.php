@@ -8,7 +8,9 @@ use Illuminate\Support\Str;
 use DB;
 use Auth;
 use App\Models\CommentPost;
+use App\Models\Userprofile;
 use App\Models\CommentReply;
+use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
@@ -44,8 +46,35 @@ class CommentController extends Controller
                 //         "replies" => CommentReply::where('replies_uuid', $replycomment[$j]->comment_uuid)->get()
                 //     ];
                 // }
+                $user = User::where('code', $commentpost[$i]->code)->first();
+
+                $reply = CommentReply::where('comment_uuid', $commentpost[$i]->comment_uuid)->get();
+
+                $replies = [];
+                
+                foreach ($reply as $rep) {
+                    $userrep = User::where('code', $rep->code)->first();
+                    $replies[] = [
+                        "profile_pic" => Userprofile::where('code', $rep->code)->value('photo_pic')
+                            ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                        "fullname" => $userrep ? ($userrep->fname . ' ' . $userrep->lname) : '',
+                        "id" => $rep->id,
+                        "comment_uuid" => $rep->comment_uuid,
+                        "status" => $rep->status,
+                        "code" => $rep->code,
+                        "comment" => $rep->comment,
+                        "date_comment" => $rep->date_comment,
+                        "created_by" => $rep->created_by,
+                        "updated_by" => $rep->updated_by,
+                        "created_at" => $rep->created_at,
+                        "updated_at" => $rep->updated_at,
+                    ];
+                }
 
                 $result[$i] = [
+                    "profile_pic" => Userprofile::where('code', $commentpost[$i]->code)->value('photo_pic')
+                    ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                    "fullname" => $user ? ($user->fname . ' ' . $user->lname) : '',
                     "comment_uuid" => $commentpost[$i]->comment_uuid,
                     "post_uuidOrUind" => $commentpost[$i]->post_uuidOrUind,
                     "status" => $commentpost[$i]->status,
@@ -53,7 +82,7 @@ class CommentController extends Controller
                     "comment" => $commentpost[$i]->comment,
                     "date_comment" => $commentpost[$i]->date_comment,
                     "fullname" => $commentpost[$i]->fullname,
-                    "replies" => CommentReply::where('comment_uuid', $commentpost[$i]->comment_uuid)->get()
+                    "replies" => $replies
                 ];
             }
         
