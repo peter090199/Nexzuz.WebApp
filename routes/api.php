@@ -128,11 +128,13 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    //Post 
    Route::resource('post',PostController::class)->names('post');
    Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
-
-
    //Comment
    Route::resource('comment',CommentController::class)->names('comment');
    Route::post('commentreply', [CommentController::class, 'commentreply']);
+   //Reactions  
+   Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
+
+
 
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
 
