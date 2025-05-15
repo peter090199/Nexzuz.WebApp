@@ -48,6 +48,8 @@ class CommentController extends Controller
                 // }
                 $user = User::where('code', $commentpost[$i]->code)->first();
 
+                // return $user;
+
                 $reply = CommentReply::where('comment_uuid', $commentpost[$i]->comment_uuid)->get();
 
                 $replies = [];
@@ -57,7 +59,7 @@ class CommentController extends Controller
                     $replies[] = [
                         "profile_pic" => Userprofile::where('code', $rep->code)->value('photo_pic')
                             ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
-                        "fullname" => $userrep ? ($userrep->fname . ' ' . $userrep->lname) : '',
+                        "fullname" => $userrep->fname . ' ' . $userrep->lname,
                         "id" => $rep->id,
                         "comment_uuid" => $rep->comment_uuid,
                         "status" => $rep->status,
@@ -71,17 +73,18 @@ class CommentController extends Controller
                     ];
                 }
 
+                // return $user;
                 $result[$i] = [
+                    
                     "profile_pic" => Userprofile::where('code', $commentpost[$i]->code)->value('photo_pic')
                     ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
-                    "fullname" => $user ? ($user->fname . ' ' . $user->lname) : '',
+                    "fullname" => $user->fname . ' ' . $user->lname,
                     "comment_uuid" => $commentpost[$i]->comment_uuid,
                     "post_uuidOrUind" => $commentpost[$i]->post_uuidOrUind,
                     "status" => $commentpost[$i]->status,
                     "code" => $commentpost[$i]->code,
                     "comment" => $commentpost[$i]->comment,
                     "date_comment" => $commentpost[$i]->date_comment,
-                    "fullname" => $commentpost[$i]->fullname,
                     "replies" => $replies
                 ];
             }
