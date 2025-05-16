@@ -20,6 +20,8 @@ class PostreactionController extends Controller
     public function index()
     {
         //
+
+        return "test";
     }
 
     /**
@@ -107,8 +109,7 @@ class PostreactionController extends Controller
                 Auth::user()->code,
                 $id,
                 $request->reaction 
-            ]);
-        
+            ]); 
    
             $messageParts = explode(';', $data[0]->result);
             $statusCode = trim($messageParts[0]);
