@@ -105,7 +105,7 @@ class PostreactionController extends Controller
     {
         //
         if (Auth::check()) {
-            $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
+            $data = DB::select('EXECUTE sprocReactionSave(?, ?, ?)', [
                 Auth::user()->code,
                 $id,
                 $request->reaction 
