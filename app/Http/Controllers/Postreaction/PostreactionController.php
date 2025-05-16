@@ -101,16 +101,16 @@ class PostreactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-public function update(Request $request, string $id)
-{
-    if (Auth::check()) {
-        DB::beginTransaction();
-        try {
+    public function update(Request $request, string $id)
+    {
+        //
+        if (Auth::check()) {
             $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
                 Auth::user()->code,
                 $id,
                 $request->reaction 
             ]); 
+   
             $messageParts = explode(';', $data[0]->result);
             $statusCode = trim($messageParts[0]);
             $message = trim($messageParts[1]);
@@ -127,20 +127,16 @@ public function update(Request $request, string $id)
                     'message' => $message,
                 ], 400);
             }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
-            ], 500);
         }
-    }
 
-    return response()->json([
-        'success' => false,
-        'message' => 'Not Authenticated',
-    ]);
-}
+        return response()->json([
+            'success' => false,
+            'message' => 'Authenticated',
+        ]);
+
+     
+        
+    }
 
     /**
      * Remove the specified resource from storage.
