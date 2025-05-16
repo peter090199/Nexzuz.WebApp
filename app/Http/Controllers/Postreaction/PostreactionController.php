@@ -20,7 +20,8 @@ class PostreactionController extends Controller
     public function index()
     {
         //
-
+        $data = DB::select('CALL sprocUsers()');
+        return $data;
         return "test";
     }
 
