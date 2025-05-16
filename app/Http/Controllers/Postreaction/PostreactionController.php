@@ -41,17 +41,52 @@ class PostreactionController extends Controller
     /**
      * Display the specified resource.
      */
+    // public function show(string $id)
+    // {
+    //     //
+    //     $data = DB::select('CALL sprocReactionDetails(?)',[
+    //         $id
+    //     ]);
+
+
+
+
+    //     $result = ["count"=>count($data),
+    //                "reaction"=>$data];
+    //     return response()->json($result);
+    // }
     public function show(string $id)
     {
-        //
-        $data = DB::select('CALL sprocReactionDetails(?)',[
-            $id
-        ]);
-
-        $result = ["count"=>count($data),
-                   "reaction"=>$data];
+        $data = DB::select('CALL sprocReactionDetails(?)', [$id]);
+        // return $data;
+        $grouped = [];
+        foreach ($data as $item) {
+            $type = $item->reaction;
+    
+            if (!isset($grouped[$type])) {
+                $grouped[$type] = [
+                    'reaction' => $type,
+                    'count' => 0,
+                    'person' => []
+                ];
+            }
+            $grouped[$type]['count']++;
+            $grouped[$type]['person'][] = [
+                "code" => $item->code,
+                "fullname" =>$item->fullname,
+                "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
+            ];
+        }
+        $react = array_values($grouped);
+        $result = [
+            'count' => count($data),
+            'reaction' => $data,
+            'react' => $react
+        ];
+    
         return response()->json($result);
     }
+    
 
     /**
      * Show the form for editing the specified resource.
