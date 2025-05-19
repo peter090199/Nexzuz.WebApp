@@ -147,8 +147,9 @@ class PostreactionController extends Controller
     {
         if (Auth::check()) {
             try {
-                // $data = DB::select('CALL testing()');
-                $data = DB::select ('SELECT getFullname(code) From users');
+                $data = DB::select('CALL testing()');
+                // $data = DB::select ('SELECT getFullname(code) From users');
+                print_r($data);
                 return response()->json($data);
             } catch (\Exception $e) {
                 return response()->json(['error' => $e->getMessage()], 500);
