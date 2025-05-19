@@ -144,27 +144,25 @@ class PostreactionController extends Controller
 
 
     public function update(Request $request, string $id)
-{
-    if (Auth::check()) {
-        try {
-
-       
-            DB::beginTransaction();
-
-            // $data = DB::select('exec sprocUsers()');
-            // // Place your update or other DB operations here
-
-            $data = DB::select('CALL sprocUsers();');
-
-            DB::commit();
-
-            return response()->json($data);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['error' => $e->getMessage()], 500);
+    {
+        if (Auth::check()) {
+            try {
+                DB::beginTransaction();
+    
+                // Call the stored procedure
+                $data = DB::select('CALL sprocUsers()');
+    
+                DB::commit();
+    
+                return response()->json($data);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['error' => $e->getMessage()], 500);
+            }
         }
+    
+        return response()->json(['error' => 'Unauthorized'], 401);
     }
-}
 
     /**
      * Remove the specified resource from storage.
