@@ -106,28 +106,33 @@ class PostreactionController extends Controller
     {
         //
         if (Auth::check()) {
-            $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
-                Auth::user()->code,
-                $id,
-                $request->reaction 
-            ]); 
+
+             $data = DB::select('CALL sprocUsers()'); 
+
+             return $data;
    
-            $messageParts = explode(';', $data[0]->result);
-            $statusCode = trim($messageParts[0]);
-            $message = trim($messageParts[1]);
-            if ($statusCode == '1') {
-                DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => $message,
-                ]);
-            } else {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => $message,
-                ], 400);
-            }
+            // $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
+            //     Auth::user()->code,
+            //     $id,
+            //     $request->reaction 
+            // ]); 
+   
+            // $messageParts = explode(';', $data[0]->result);
+            // $statusCode = trim($messageParts[0]);
+            // $message = trim($messageParts[1]);
+            // if ($statusCode == '1') {
+            //     DB::commit();
+            //     return response()->json([
+            //         'success' => true,
+            //         'message' => $message,
+            //     ]);
+            // } else {
+            //     DB::rollBack();
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => $message,
+            //     ], 400);
+            // }
         }
 
         return response()->json([
