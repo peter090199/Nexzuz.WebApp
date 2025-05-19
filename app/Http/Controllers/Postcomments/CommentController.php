@@ -179,8 +179,51 @@ class CommentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated'
+            ], 401); // Unauthorized
+        }
+    
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string',
+            'status'  => 'nullable|integer',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->all()
+            ], 422); // Unprocessable Entity
+        }
+    
+        // Find the existing comment
+        $comment = CommentPost::find($id);
+    
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Comment not found'
+            ], 404);
+        }
+    
+        // Update fields
+        $comment->comment = $request->comment;
+        $comment->status = $request->status ?? $comment->status;
+        $comment->updated_by = Auth::user()->fullname;
+        $comment->updated_at = now();
+    
+        $comment->save();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment updated successfully',
+            'data' => $comment
+        ]);
     }
+    
 
     /**
      * Remove the specified resource from storage.
