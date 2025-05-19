@@ -107,9 +107,11 @@ class PostreactionController extends Controller
         //
         if (Auth::check()) {
 
-             $data = DB::select('CALL sprocUsers()'); 
+            return phpversion();
 
-             return $data;
+            //  $data = DB::select('CALL sprocUsers()'); 
+
+            //  return $data;
    
             // $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
             //     Auth::user()->code,
