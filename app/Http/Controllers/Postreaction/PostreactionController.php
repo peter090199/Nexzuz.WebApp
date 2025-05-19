@@ -102,47 +102,64 @@ class PostreactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-        if (Auth::check()) {
+    // public function update(Request $request, string $id)
+    // {
+    //     //
+    //     if (Auth::check()) {
 
-            // return phpversion();
-            $data = DB::select('SELECT * FROM users');
-            return response()->json($data);
+  
    
-            // $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
-            //     Auth::user()->code,
-            //     $id,
-            //     $request->reaction 
-            // ]); 
+    //         $data = DB::select('CALL sprocReactionSave(?, ?, ?)', [
+    //             Auth::user()->code,
+    //             $id,
+    //             $request->reaction 
+    //         ]); 
    
-            // $messageParts = explode(';', $data[0]->result);
-            // $statusCode = trim($messageParts[0]);
-            // $message = trim($messageParts[1]);
-            // if ($statusCode == '1') {
-            //     DB::commit();
-            //     return response()->json([
-            //         'success' => true,
-            //         'message' => $message,
-            //     ]);
-            // } else {
-            //     DB::rollBack();
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => $message,
-            //     ], 400);
-            // }
-        }
+    //         $messageParts = explode(';', $data[0]->result);
+    //         $statusCode = trim($messageParts[0]);
+    //         $message = trim($messageParts[1]);
+    //         if ($statusCode == '1') {
+    //             DB::commit();
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => $message,
+    //             ]);
+    //         } else {
+    //             DB::rollBack();
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => $message,
+    //             ], 400);
+    //         }
+    //     }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Authenticated',
-        ]);
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => 'Authenticated',
+    //     ]);
 
      
         
+    // }
+
+
+    public function update(Request $request, string $id)
+{
+    if (Auth::check()) {
+        try {
+            DB::beginTransaction();
+
+            $data = DB::select('SELECT * FROM users');
+            // Place your update or other DB operations here
+
+            DB::commit();
+            return response()->json($data);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+}
 
     /**
      * Remove the specified resource from storage.
