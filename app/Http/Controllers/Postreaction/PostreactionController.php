@@ -154,7 +154,7 @@ class PostreactionController extends Controller
             // $data = DB::select('exec sprocUsers()');
             // // Place your update or other DB operations here
 
-            $data = DB::select('CALL sprocUsers()');
+            $data = DB::select('CALL sprocUsers();');
 
             DB::commit();
 
