@@ -147,13 +147,18 @@ class PostreactionController extends Controller
 {
     if (Auth::check()) {
         try {
+
+       
             DB::beginTransaction();
 
-            $data = DB::select('CALL sprocUsers()');
-            // Place your update or other DB operations here
+            // $data = DB::select('exec sprocUsers()');
+            // // Place your update or other DB operations here
+
+            $grants = DB::select("SHOW GRANTS FOR CURRENT_USER");
 
             DB::commit();
-            return response()->json($data);
+
+            return response()->json($grants);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
