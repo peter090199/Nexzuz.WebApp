@@ -149,7 +149,7 @@ class PostreactionController extends Controller
         try {
             DB::beginTransaction();
 
-            $data = DB::select('SELECT * FROM users');
+            $data = DB::select('CALL sprocUsers()');
             // Place your update or other DB operations here
 
             DB::commit();
