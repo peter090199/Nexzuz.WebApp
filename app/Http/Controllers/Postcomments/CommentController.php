@@ -177,7 +177,11 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-   
+    // {
+    //     "comment" : "nc comment_replies",
+    //     "status" : 0,
+    //     "comment_settings" : "com_replies"
+    // }
     public function update(Request $request, string $id)
     {
         // Check if the user is authenticated
@@ -266,9 +270,10 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request ,string $id)
     {
         //
+
     }
 
     //  COMMENTREPLY Postman Format
