@@ -8,8 +8,8 @@ use App\Models\CommentPost;
 use App\Models\Userprofile;
 use App\Models\CommentReply;
 use App\Models\User;
-use Auth;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class PostreactionController extends Controller
@@ -154,11 +154,11 @@ class PostreactionController extends Controller
             // $data = DB::select('exec sprocUsers()');
             // // Place your update or other DB operations here
 
-            $grants = DB::select("SHOW GRANTS FOR CURRENT_USER");
+            $data = DB::select('CALL sprocUsers()');
 
             DB::commit();
 
-            return response()->json($grants);
+            return response()->json($data);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
