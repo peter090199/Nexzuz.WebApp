@@ -147,18 +147,15 @@ class PostreactionController extends Controller
     {
         if (Auth::check()) {
             try {
-                // Call the stored procedure
                 $data = DB::select('CALL sprocUsers()');
-                return response()->json([
-                    'count' => count($data),
-                    'data' => $data
-                ]);
+                return response()->json($data);
             } catch (\Exception $e) {
                 return response()->json(['error' => $e->getMessage()], 500);
             }
         }
         return response()->json(['error' => 'Unauthorized'], 401);
     }
+    
 
     /**
      * Remove the specified resource from storage.
