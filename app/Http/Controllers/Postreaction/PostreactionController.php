@@ -143,20 +143,41 @@ class PostreactionController extends Controller
     // }
 
 
+
+
+
+    // Like , Love , Care , Haha ,Wow , Sad , Angry
+
     public function update(Request $request, string $id)
     {
         if (Auth::check()) {
             try {
-                // $data = DB::select('CALL testing()');
-                // $data = DB::select ('SELECT getFullname(code) From users');
-                print_r($data);
-                return response()->json($data);
+                DB::beginTransaction();
+                if ($id == '0') {
+                    // Insert new reaction
+                    DB::insert('INSERT INTO reactions (code, post_uuidOrUind, reaction, created_at)
+                                VALUES (?, ?, ?, NOW())', [
+                                    Auth::user()->code,
+                                    $request->post_uuidOrUind,
+                                    $request->reaction
+                                ]);
+                } else {
+                    // Update existing reaction (assuming $id is the primary key of the row to update)
+                    DB::update('UPDATE reactions SET reaction = ? WHERE post_uuidOrUind = ?', [
+                        $request->reaction,
+                        $id
+                    ]);
+                }
+                DB::commit();
+                return response()->json(['status'=>true,'message' => 'Success'.$request->reaction.''], 200);
             } catch (\Exception $e) {
+                DB::rollBack();
                 return response()->json(['error' => $e->getMessage()], 500);
             }
         }
         return response()->json(['error' => 'Unauthorized'], 401);
     }
+    
     
 
     /**
