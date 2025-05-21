@@ -93,7 +93,7 @@ class PostreactionController extends Controller
     {
 
 
-        $data = DB::select('SELECT getFullname(code)');
+        $data = DB::select('SELECT getFullname(711)');
 
         return $data;
 
