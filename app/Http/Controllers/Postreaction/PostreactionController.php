@@ -201,14 +201,14 @@ class PostreactionController extends Controller
                 // Update existing reaction
                 DB::update('UPDATE reactions SET reaction = ? WHERE code = ? AND post_uuidOrUind = ?', [
                     $request->reaction,
-                    $userCode,
+                    Auth::user()->code,
                     $id
                 ]);
             } else {
                 // Insert new reaction
                 DB::insert('INSERT INTO reactions (code, post_uuidOrUind, reaction, created_at)
                             VALUES (?, ?, ?, NOW())', [
-                    $userCode,
+                     Auth::user()->code,
                     $id,
                     $request->reaction
                 ]);
