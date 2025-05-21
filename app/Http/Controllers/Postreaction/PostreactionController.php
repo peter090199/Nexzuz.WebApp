@@ -184,34 +184,49 @@ class PostreactionController extends Controller
 
     public function update(Request $request, string $id)
     {
-        if (Auth::check()) {
-            try {
-                DB::beginTransaction();
-                if ($id == '0') {
-                    // Insert new reaction
-                    DB::insert('INSERT INTO reactions (code, post_uuidOrUind, reaction, created_at)
-                                VALUES (?, ?, ?, NOW())', [
-                                    Auth::user()->code,
-                                    $request->post_uuidOrUind,
-                                    $request->reaction
-                                ]);
-                } else {
-                    // Update existing reaction (assuming $id is the primary key of the row to update)
-                    DB::update('UPDATE reactions SET reaction = ? WHERE post_uuidOrUind = ?', [
-                        $request->reaction,
-                        $id
-                    ]);
-                }
-                DB::commit();
-                return response()->json(['status'=>true,'message' => 'Success'.$request->reaction.''], 200);
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return response()->json(['error' => 'Unauthorized'], 401);
+
+        try {
+            DB::beginTransaction();
+
+            $userCode = Auth::user()->code;
+
+            // Check if this user has already reacted to this post
+            $exists = DB::select('SELECT COUNT(*) AS count FROM reactions WHERE code = ? AND post_uuidOrUind = ?', [
+                $userCode,
+                $id
+            ]);
+
+            if ($exists[0]->count > 0) {
+                // Update existing reaction
+                DB::update('UPDATE reactions SET reaction = ? WHERE code = ? AND post_uuidOrUind = ?', [
+                    $request->reaction,
+                    $userCode,
+                    $id
+                ]);
+            } else {
+                // Insert new reaction
+                DB::insert('INSERT INTO reactions (code, post_uuidOrUind, reaction, created_at)
+                            VALUES (?, ?, ?, NOW())', [
+                    $userCode,
+                    $id,
+                    $request->reaction
+                ]);
+            }
+            DB::commit();
+            return response()->json([
+                'status' => true,
+                'message' => 'Success: ' . $request->reaction
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-    
+
     
 
     /**
