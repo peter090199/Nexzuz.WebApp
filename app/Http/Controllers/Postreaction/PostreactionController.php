@@ -191,11 +191,9 @@ class PostreactionController extends Controller
         try {
             DB::beginTransaction();
 
-            $userCode = Auth::user()->code;
-
             // Check if this user has already reacted to this post
             $exists = DB::select('SELECT COUNT(*) AS count FROM reactions WHERE code = ? AND post_uuidOrUind = ?', [
-                $userCode,
+                Auth::user()->code,
                 $id
             ]);
 
