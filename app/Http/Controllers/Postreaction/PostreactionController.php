@@ -92,6 +92,8 @@ class PostreactionController extends Controller
     public function show(string $id)
     {
         $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
+
+        return $data;
         $grouped = [];
         foreach ($data as $item) {
             $type = $item->reaction;
