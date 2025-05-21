@@ -93,11 +93,11 @@ class PostreactionController extends Controller
     {
 
 
-        $data = DB::select('SELECT getFullname(711)');
+        $data = DB::select('SELECT code,SELECT getFullname(711) AS fullname,SELECT getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
 
         return $data;
 
-        // $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
+        // $data = DB::select('SELECT code,SELECT getFullname(711) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
 
         // return $data;
         // $grouped = [];
