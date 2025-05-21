@@ -94,7 +94,7 @@ class PostreactionController extends Controller
 
 
         $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,
-            post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind = ?', [$id]);
+            post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind = ? AND reaction !="Unlike"', [$id]);
 
         $grouped = [];
         foreach ($data as $item) {
