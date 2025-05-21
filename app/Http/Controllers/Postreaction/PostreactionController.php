@@ -91,35 +91,41 @@ class PostreactionController extends Controller
     // }
     public function show(string $id)
     {
-        $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
+
+
+        $data = DB::select('SELECT getFullname(code)');
 
         return $data;
-        $grouped = [];
-        foreach ($data as $item) {
-            $type = $item->reaction;
+
+        // $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
+
+        // return $data;
+        // $grouped = [];
+        // foreach ($data as $item) {
+        //     $type = $item->reaction;
     
-            if (!isset($grouped[$type])) {
-                $grouped[$type] = [
-                    'reaction' => $type,
-                    'count' => 0,
-                    'person' => []
-                ];
-            }
-            $grouped[$type]['count']++;
-            $grouped[$type]['person'][] = [
-                "code" => $item->code,
-                "fullname" =>$item->fullname,
-                "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
-            ];
-        }
-        $react = array_values($grouped);
-        $result = [
-            'count' => count($data),
-            'reaction' => $data,
-            'react' => $react
-        ];
+        //     if (!isset($grouped[$type])) {
+        //         $grouped[$type] = [
+        //             'reaction' => $type,
+        //             'count' => 0,
+        //             'person' => []
+        //         ];
+        //     }
+        //     $grouped[$type]['count']++;
+        //     $grouped[$type]['person'][] = [
+        //         "code" => $item->code,
+        //         "fullname" =>$item->fullname,
+        //         "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
+        //     ];
+        // }
+        // $react = array_values($grouped);
+        // $result = [
+        //     'count' => count($data),
+        //     'reaction' => $data,
+        //     'react' => $react
+        // ];
     
-        return response()->json($result);
+        // return response()->json($result);
     }
 
 
