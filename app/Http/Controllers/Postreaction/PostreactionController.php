@@ -58,10 +58,40 @@ class PostreactionController extends Controller
     //                "reaction"=>$data];
     //     return response()->json($result);
     // }
+    // public function show(string $id)
+    // {
+    //     $data = DB::select('CALL sprocReactionDetails(?)', [$id]);
+    //     // return $data;
+    //     $grouped = [];
+    //     foreach ($data as $item) {
+    //         $type = $item->reaction;
+    
+    //         if (!isset($grouped[$type])) {
+    //             $grouped[$type] = [
+    //                 'reaction' => $type,
+    //                 'count' => 0,
+    //                 'person' => []
+    //             ];
+    //         }
+    //         $grouped[$type]['count']++;
+    //         $grouped[$type]['person'][] = [
+    //             "code" => $item->code,
+    //             "fullname" =>$item->fullname,
+    //             "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
+    //         ];
+    //     }
+    //     $react = array_values($grouped);
+    //     $result = [
+    //         'count' => count($data),
+    //         'reaction' => $data,
+    //         'react' => $react
+    //     ];
+    
+    //     return response()->json($result);
+    // }
     public function show(string $id)
     {
-        $data = DB::select('CALL sprocReactionDetails(?)', [$id]);
-        // return $data;
+        $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind', [$id]);
         $grouped = [];
         foreach ($data as $item) {
             $type = $item->reaction;
@@ -89,6 +119,10 @@ class PostreactionController extends Controller
     
         return response()->json($result);
     }
+
+
+
+
     
 
     /**
