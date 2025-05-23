@@ -182,6 +182,8 @@ class CommentController extends Controller
     //     "status" : 0,
     //     "comment_settings" : "com_replies"
     // }
+
+
     public function update(Request $request, string $id)
     {
         // Check if the user is authenticated
@@ -204,7 +206,6 @@ class CommentController extends Controller
                 'message' => $validator->errors()->all()
             ], 422); // Unprocessable Entity
         }
-    
         if ($request->comment_settings == "com_headers") {
             // Find the existing comment by UUID and user code
             $comment = CommentPost::where('comment_uuid', $id)
@@ -258,7 +259,6 @@ class CommentController extends Controller
                 'data' => $reply
             ]);
         }
-    
         return response()->json([
             'success' => false,
             'message' => 'Invalid comment_settings value'
