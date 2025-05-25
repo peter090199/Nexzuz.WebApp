@@ -44,4 +44,17 @@ class Controller extends BaseController
             return response()->json(['success' => false, 'message' => "Unauthorized"], 403); // Access denied
         }
     }
+
+    public function getFullname(Request $request)
+    {
+        $data = DB::select('SELECT UPPER(CONCAT_WS(" ", fname, lname)) AS fullname FROM resources WHERE code = ? LIMIT 1', [
+            $request->code
+        ]);
+        
+        if (count($data) > 0) {
+            return response()->json(['fullname' => $data[0]->fullname], 200);
+        } else {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+    }
 }

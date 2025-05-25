@@ -177,17 +177,103 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // {
+    //     "comment" : "nc comment_replies",
+    //     "status" : 0,
+    //     "comment_settings" : "com_replies"
+    // }
+
+
     public function update(Request $request, string $id)
     {
-        //
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'User not authenticated'
+            ], 401); // Unauthorized
+        }
+    
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string',
+            'status'  => 'nullable|integer',
+            'comment_settings' => 'required|string'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->all()
+            ], 422); // Unprocessable Entity
+        }
+        if ($request->comment_settings == "com_headers") {
+            // Find the existing comment by UUID and user code
+            $comment = CommentPost::where('comment_uuid', $id)
+                ->where('code', Auth::user()->code)
+                ->first();
+    
+            if (!$comment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Comment not found'
+                ], 404);
+            }
+    
+            // Update fields
+            $comment->comment = $request->comment;
+            $comment->status = $request->status ?? $comment->status;
+            $comment->updated_by = Auth::user()->fullname;
+            $comment->updated_at = now();
+    
+            $comment->save();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Comment updated successfully',
+                'data' => $comment
+            ]);
+        } 
+        else if ($request->comment_settings == "com_replies") {
+            // Assuming you have a different model or logic for replies
+            $reply = CommentReply::where('id', $id)
+                ->where('code', Auth::user()->code)
+                ->first();
+    
+            if (!$reply) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Reply not found'
+                ], 404);
+            }
+    
+            $reply->comment = $request->comment;
+            $reply->status = $request->status ?? $reply->status;
+            $reply->updated_by = Auth::user()->fullname;
+            $reply->updated_at = now();
+    
+            $reply->save();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Reply updated successfully',
+                'data' => $reply
+            ]);
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid comment_settings value'
+        ], 400);
     }
+     
+    
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request ,string $id)
     {
         //
+
     }
 
     //  COMMENTREPLY Postman Format
