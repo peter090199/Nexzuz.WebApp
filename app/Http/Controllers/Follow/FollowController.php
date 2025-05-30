@@ -25,7 +25,7 @@ class FollowController extends Controller
     {
         //
         $data = DB::select('SELECT getUserprofilepic(p.code) AS profile_pic, getFullname(p.code) AS fullname,
-            p.posts_uuid,p.caption,p.status,p.created_at,p.updated_at FROM post AS p
+            p.posts_uuid,p.caption,p.status,p.created_at,p.updated_at FROM posts AS p
         LEFT JOIN follows AS f ON f.following_code = p.code AND f.follower_code = ?
         WHERE p.status = 1
         AND (f.follower_code IS NOT NULL OR p.code = ?)
