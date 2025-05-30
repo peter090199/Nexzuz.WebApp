@@ -133,8 +133,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::post('commentreply', [CommentController::class, 'commentreply']);
    //Reactions  
    Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
-
-
+   //Follow  App\Http\Controllers\Follow
+   Route::resource('follow',App\Http\Controllers\Follow\FollowController::class)->names('follow');
 
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
 

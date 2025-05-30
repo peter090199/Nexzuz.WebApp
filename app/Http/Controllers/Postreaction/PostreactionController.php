@@ -17,12 +17,12 @@ class PostreactionController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // HOME
     public function index()
     {
         //
-        $data = DB::select('CALL sprocUsers()');
-        return $data;
-        return "test";
+
+
     }
 
     /**
