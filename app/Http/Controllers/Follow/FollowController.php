@@ -47,8 +47,6 @@ class FollowController extends Controller
                     WHERE posts_uuid = ? AND (status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?))', [
                     $data[$i]->posts_uuid, Auth::user()->code, $data[$i]->posts_uuid
                 ]);
-
-
                 $result[$i] = [
                     "profile_pic" => $data[$i]->profile_pic,
                     "Fullname" => $data[$i]->fullname,
@@ -60,8 +58,7 @@ class FollowController extends Controller
                     "attachments" => $attachements,
                 ];
             }
-
-            return $result;
+            return response()->json($result);
         }
 
         
@@ -80,6 +77,9 @@ class FollowController extends Controller
     public function store(Request $request)
     {
         //
+
+
+
     }
 
     /**
@@ -103,8 +103,46 @@ class FollowController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        if ($id == Auth::user()->code) {
+            return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
+        }
+    
+        DB::beginTransaction();
+    
+        try {
+            $exists = DB::select('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
+                Auth::user()->code,
+                $id,
+            ]);
+    
+            if (count($exists) > 0) {
+                // Delete (unfollow)
+                DB::delete('DELETE FROM follows WHERE follower_code = ? AND following_code = ?', [
+                    Auth::user()->code,
+                    $id,
+                ]);
+                $message = 'Unfollowed';
+            } else {
+                // Insert (follow)
+                DB::insert('INSERT INTO follows (follower_code, following_code, created_at) VALUES (?, ?, NOW())', [
+                    Auth::user()->code,
+                    $id,
+                ]);
+                $message = 'Followed';
+            }
+    
+            DB::commit();
+    
+            return response()->json(['status' => true, 'message' => $message]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => 'Operation failed', 'error' => $e->getMessage()], 500);
+        }
     }
+    
+
+    
 
     /**
      * Remove the specified resource from storage.
