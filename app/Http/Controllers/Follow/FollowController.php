@@ -24,12 +24,22 @@ class FollowController extends Controller
     public function index()
     {
         //
-        $data = DB::select('SELECT (select getUserprofilepic(p.code AS profile_pic, (select getFullname(p.code)) AS fullname,
-        p.posts_uuid, p.caption, p.status, p.created_at, p.updated_at FROM posts AS p
-        LEFT JOIN follows AS f ON f.following_code = p.code AND f.follower_code = ?
-        WHERE p.status = 1
-        AND (f.follower_code IS NOT NULL OR p.code = ?)
-        ORDER BY p.created_at DESC', [Auth::user()->code, Auth::user()->code]);
+        $data = DB::select(' SELECT 
+                (SELECT getUserprofilepic(p.code)) AS profile_pic,
+                (SELECT getFullname(p.code)) AS fullname,
+                p.posts_uuid,
+                p.caption,
+                p.status,
+                p.created_at,
+                p.updated_at
+            FROM posts AS p
+            LEFT JOIN follows AS f 
+                ON f.following_code = p.code AND f.follower_code = ?
+            WHERE p.status = 1
+            AND (f.follower_code IS NOT NULL OR p.code = ?)
+            ORDER BY p.created_at DESC
+        ', [Auth::user()->code, Auth::user()->code]);
+    
 
         $result = [];
         for($i = 0; $i < count($data); $i++){
