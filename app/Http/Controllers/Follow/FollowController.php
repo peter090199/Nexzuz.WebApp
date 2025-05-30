@@ -43,9 +43,11 @@ class FollowController extends Controller
             $result = [];
             for ($i = 0; $i < count($data); $i++) {
 
-                $attachements = DB::select('SELECT * FROM attachmentposts WHERE status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?) AND posts_uuid = ?', [
-                    Auth::user()->code, $data[$i]->posts_uuid, $data[$i]->posts_uuid
+                $attachements = DB::select('SELECT * FROM attachmentposts 
+                    WHERE posts_uuid = ? AND (status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?))', [
+                    $data[$i]->posts_uuid, Auth::user()->code, $data[$i]->posts_uuid
                 ]);
+
 
                 $result[$i] = [
                     "profile_pic" => $data[$i]->profile_pic,
