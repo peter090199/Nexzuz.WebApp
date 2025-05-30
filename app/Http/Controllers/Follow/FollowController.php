@@ -24,12 +24,7 @@ class FollowController extends Controller
     public function index()
     {
         //
-
-        $test = DB::select('SELECT * FROM follows');
-
-        return $test;
-
-        $data = DB::select('SELECT p.code AS profile_pic, p.code AS fullname,
+        $data = DB::select('SELECT (select getUserprofilepic(p.code AS profile_pic, (select getFullname(p.code)) AS fullname,
         p.posts_uuid, p.caption, p.status, p.created_at, p.updated_at FROM posts AS p
         LEFT JOIN follows AS f ON f.following_code = p.code AND f.follower_code = ?
         WHERE p.status = 1
