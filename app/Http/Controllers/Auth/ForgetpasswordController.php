@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class ForgetpasswordController extends Controller
 {
+
     public function forgetpassword(Request $request)
     {
       
@@ -55,7 +56,7 @@ class ForgetpasswordController extends Controller
         ];
        
         try {
-            Mail::to($user->email)->send(new Forgetpassword($data));
+            Mail::to($user->email)->queue(new Forgetpassword($data));
             return response()->json(['success' => true, 'message' => 'Password reset email sent.']);
         } catch (\Exception $e) {
             return response()->json([
