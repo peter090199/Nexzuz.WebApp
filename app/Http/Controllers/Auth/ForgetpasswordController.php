@@ -51,7 +51,7 @@ class ForgetpasswordController extends Controller
             'fullname' => $user->fullname,
             'email' =>  $request->email,
             'token' => $token,
-            'expiration' => 60 
+            'expiration' => 5 
         ];
        
         try {
@@ -88,7 +88,7 @@ class ForgetpasswordController extends Controller
                 $createdAt = Carbon::parse($token[0]->created_at);
                 $now = Carbon::now();
             
-                if ($createdAt->diffInSeconds($now) > 60) {
+                if ($createdAt->diffInSeconds($now) > 300) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Token has expired. Please request a new one.'
