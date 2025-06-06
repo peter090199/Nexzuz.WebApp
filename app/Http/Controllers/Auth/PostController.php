@@ -164,8 +164,6 @@ class PostController extends Controller
                 return response()->json(array_values($result));
                 }
 
-                return $request->headers;
-
 
             } catch (\Throwable $th) {
                 return response()->json([
