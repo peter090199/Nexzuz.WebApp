@@ -74,7 +74,7 @@ class PostController extends Controller
                 //     }
                 // }
                 // return response()->json(array_values($result));
-                if($request->headers === 'Home'){
+                if($request->headers == 'Home'){
 
                     $data = DB::select(' SELECT 
                     (SELECT getUserprofilepic(p.code)) AS profile_pic,
@@ -112,7 +112,7 @@ class PostController extends Controller
                         ];
                     }
                     return response()->json($result);
-                }else if ($request->headers === 'Profile'){
+                }else if ($request->headers == 'Profile'){
                      $requestedCode = $request->code;
                 $authCode = Auth::user()->code;
                 
