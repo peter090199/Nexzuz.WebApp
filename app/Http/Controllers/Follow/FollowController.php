@@ -55,7 +55,7 @@ class FollowController extends Controller
                     "status" => $data[$i]->status,
                     "created_at" => $data[$i]->created_at,
                     "updated_at" => $data[$i]->updated_at,
-                    "attachments" => $attachements,
+                    "posts" => $attachements,
                 ];
             }
             return response()->json($result);
