@@ -16,9 +16,9 @@ class ClientsBAL extends Controller
         $this->resourceDAL = $resourceDAL;
     }
 
-    public function getListClients()
+    public function getListClients2()
     {
-       return $this->resourceDAL->getListClients();
+       return $this->resourceDAL->getListClients2();
     }
 
 }

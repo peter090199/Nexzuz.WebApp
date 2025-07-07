@@ -47,7 +47,7 @@ class Resource extends Model
     ];
 
 
-     public function getListClients()
+     public function getListClients2()
     {
         return DB::table('resources')
             ->select('fullname', 'profession', 'role_code')
