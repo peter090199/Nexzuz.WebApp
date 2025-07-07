@@ -23,7 +23,9 @@ use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\Follow\ClientsBAL;
+
+use App\Business\ClientsBAL;
+
 
 use App\Events\MessageSent; 
 use App\Events\Message;
