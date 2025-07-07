@@ -23,7 +23,7 @@ use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
-
+use App\Http\Controllers\Follow\Clients;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -137,5 +137,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::resource('follow',App\Http\Controllers\Follow\FollowController::class)->names('follow');
 
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
+
+
+    //List clients base on rrofile
+    Route::get('getListClients', [Clients::class, 'getListClients']);
+
 
 });
