@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Follow;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
-use App\Models\ClientsDAL; // DAL 
+use App\Models\DAL\ClientsDAL; // DAL 
 
 class ClientsBAL extends Controller
 {
@@ -16,9 +16,9 @@ class ClientsBAL extends Controller
         $this->resourceDAL = $resourceDAL;
     }
 
-    public function getListClients2()
+    public function getListClients()
     {
-       return $this->resourceDAL->getListClients2();
+       return $this->resourceDAL->getListClients();
     }
 
 }
