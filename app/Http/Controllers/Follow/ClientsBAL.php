@@ -4,7 +4,7 @@ namespace App\Business;
 
 use App\DataAccess\ClientsDAL;
 
-class ClientsBAL
+class ClientsBAL extends Controller
 {
     protected $resourceDAL;
 
