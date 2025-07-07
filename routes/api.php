@@ -25,6 +25,7 @@ use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
 
 use App\Business\ClientsBAL;
+use App\Http\Controllers\Follow;
 
 
 use App\Events\MessageSent; 
