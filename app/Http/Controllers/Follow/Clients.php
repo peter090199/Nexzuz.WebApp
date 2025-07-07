@@ -10,7 +10,7 @@ use App\Models\Resource; // DAL
 class Clients extends Controller
 {
   
-    public function getListClients()
+    public function getListClients2()
     {
         $data = DB::table('resources')
             ->select('fullname', 'profession', 'role_code')

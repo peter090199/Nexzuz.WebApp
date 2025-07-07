@@ -143,7 +143,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
-    Route::get('getListClients', [Clients::class, 'getListClients']);
+    Route::get('getListClients2', [Clients::class, 'getListClients2']);
 
  
 
