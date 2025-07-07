@@ -23,7 +23,7 @@ use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\Follow\Clients;
+use App\Http\Controllers\Follow\ClientsBAL;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -140,7 +140,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
 
     //List clients base on rrofile
-    Route::get('getListClients', [Clients::class, 'getListClients']);
+    Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
 
 
 });

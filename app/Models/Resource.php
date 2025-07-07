@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
+
 
 class Resource extends Model
 {
@@ -43,4 +45,15 @@ class Resource extends Model
         'created_by',
         'updated_by'
     ];
+
+
+     public function getListClients()
+    {
+        return DB::table('resources')
+            ->select('fullname', 'profession', 'role_code')
+            ->get();
+    }
+
+
+
 }
