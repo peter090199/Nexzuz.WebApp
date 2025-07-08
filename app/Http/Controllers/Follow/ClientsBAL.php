@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Business;
+namespace App\Http\Controllers\Follow;
 
-use App\DataAccess\ClientsDAL;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\ClientsDAL;
 
-class ClientsBAL 
+class ClientsBAL extends Controller
 {
     protected $resourceDAL;
 
