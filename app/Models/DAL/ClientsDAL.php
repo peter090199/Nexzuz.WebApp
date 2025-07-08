@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DataAccess;
+namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 

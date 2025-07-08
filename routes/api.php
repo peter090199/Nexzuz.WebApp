@@ -24,8 +24,7 @@ use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
 
-use App\Business\ClientsBAL;
-use App\Http\Controllers\Follow;
+use App\Http\Controllers\Follow\ClientsBAL;
 
 
 use App\Events\MessageSent; 
