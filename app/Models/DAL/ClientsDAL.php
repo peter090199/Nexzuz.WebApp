@@ -46,13 +46,21 @@ class ClientsDAL extends Model
         'updated_by'
     ];
 
-
-     public function getListClients()
+   
+    public function getListClients()
     {
-        return DB::table('resources')
-            ->select('fullname', 'profession', 'role_code')
-            ->get();
+       return DB::table('resources')
+        ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+        ->select(
+            'userprofiles.photo_pic',
+            'resources.fullname',
+            'resources.profession'
+        )
+        ->get();
     }
+
+
+
 
 
 

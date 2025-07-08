@@ -19,4 +19,6 @@ class ClientsBAL extends Controller
     {
         return $this->resourceDAL->getListClients();
     }
+    
+
 }
