@@ -49,13 +49,18 @@ class ClientsDAL extends Model
    
     public function getListClients()
     {
-       return DB::table('resources')
+      return DB::table('resources')
         ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+        ->leftJoin('users', 'resources.code', '=', 'users.code')
         ->select(
             'userprofiles.photo_pic',
             'resources.fullname',
-            'resources.profession'
+            'resources.profession',
+            'resources.company',
+            'resources.industry',
+            'users.is_online'
         )
+        ->where('users.status', 'A')
         ->get();
     }
 
