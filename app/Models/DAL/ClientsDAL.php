@@ -46,24 +46,46 @@ class ClientsDAL extends Model
         'updated_by'
     ];
 
-   
     public function getListClients()
     {
-      return DB::table('resources')
-        ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-        ->leftJoin('users', 'resources.code', '=', 'users.code')
-        ->select(
-            'userprofiles.photo_pic',
-            'resources.fullname',
-            'resources.profession',
-            'resources.company',
-            'resources.industry',
-            'users.code',
-            'users.is_online'
-        )
-        ->where('users.status', 'A')
-        ->get();
+        $clients = DB::table('resources')
+            ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+            ->leftJoin('users', 'resources.code', '=', 'users.code')
+            ->select(
+                'userprofiles.photo_pic',
+                'resources.fullname',
+                'resources.profession',
+                'resources.company',
+                'resources.industry',
+                'users.code',
+                'users.is_online'
+            )
+            ->where('users.status', 'A')
+            ->get();
+
+        return [
+            'count' => $clients->count(),
+            'data' => $clients
+        ];
     }
+
+    // public function getListClients()
+    // {
+    //   return DB::table('resources')
+    //     ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+    //     ->leftJoin('users', 'resources.code', '=', 'users.code')
+    //     ->select(
+    //         'userprofiles.photo_pic',
+    //         'resources.fullname',
+    //         'resources.profession',
+    //         'resources.company',
+    //         'resources.industry',
+    //         'users.code',
+    //         'users.is_online'
+    //     )
+    //     ->where('users.status', 'A')
+    //     ->get();
+    // }
 
 
 
