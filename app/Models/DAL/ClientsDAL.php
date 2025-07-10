@@ -58,6 +58,7 @@ class ClientsDAL extends Model
             'resources.profession',
             'resources.company',
             'resources.industry',
+            'users.code',
             'users.is_online'
         )
         ->where('users.status', 'A')
