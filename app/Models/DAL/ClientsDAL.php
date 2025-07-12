@@ -46,6 +46,7 @@ class ClientsDAL extends Model
         'updated_by'
     ];
 
+
     public function getListClients()
     {
         $clients = DB::table('resources')
@@ -69,27 +70,7 @@ class ClientsDAL extends Model
         ];
     }
 
-    // public function getListClients()
-    // {
-    //   return DB::table('resources')
-    //     ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-    //     ->leftJoin('users', 'resources.code', '=', 'users.code')
-    //     ->select(
-    //         'userprofiles.photo_pic',
-    //         'resources.fullname',
-    //         'resources.profession',
-    //         'resources.company',
-    //         'resources.industry',
-    //         'users.code',
-    //         'users.is_online'
-    //     )
-    //     ->where('users.status', 'A')
-    //     ->get();
-    // }
-
-
-
-
+ 
     public function getFollowStatus(string $code)
     {
         $currentUserCode = Auth::user()->code;
@@ -110,5 +91,40 @@ class ClientsDAL extends Model
         ]);
     }
 
+
+
+    public function acceptFollowRequest(string $followerCode)
+    {
+        $currentUserCode = Auth::user()->code;
+
+        try {
+            // Check if a pending request exists
+            $follow = DB::selectOne('
+                SELECT * FROM follows 
+                WHERE follower_code = ? AND following_code = ? AND follow_status = "pending"
+            ', [$followerCode, $currentUserCode]);
+
+            if (!$follow) {
+                return response()->json(['status' => false, 'message' => 'No pending request found'], 404);
+            }
+
+            // Update follow status to 'accepted'
+            DB::update('
+                UPDATE follows 
+                SET follow_status = "accepted", updated_at = NOW()
+                WHERE follower_code = ? AND following_code = ?
+            ', [$followerCode, $currentUserCode]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Follow request accepted',
+                'follow_status' => 'accepted',
+                'follower_code' => $followerCode,
+                'following_code' => $currentUserCode
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => false, 'message' => 'Operation failed', 'error' => $e->getMessage()], 500);
+        }
+    }
 
 }
