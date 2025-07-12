@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 
 class ClientsDAL extends Model
 {
@@ -88,6 +88,25 @@ class ClientsDAL extends Model
     // }
 
 
+    public function getFollowStatus(string $code)
+    {
+        $currentUserCode = Auth::user()->code;
+
+        if ($code === $currentUserCode) {
+            return response()->json(['follow_status' => null]);
+        }
+
+        $record = DB::selectOne('
+            SELECT follow_status 
+            FROM follows 
+            WHERE follower_code = ? AND following_code = ? 
+            LIMIT 1
+        ', [$currentUserCode, $code]);
+
+        return response()->json([
+            'follow_status' => $record->follow_status ?? 'none'
+        ]);
+    }
 
 
 

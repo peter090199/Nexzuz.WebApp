@@ -19,6 +19,12 @@ class ClientsBAL extends Controller
     {
         return $this->resourceDAL->getListClients();
     }
+    public function getFollowStatus()
+    {
+        return $this->resourceDAL->getFollowStatus();
+    }
+
+
     
 
 }
