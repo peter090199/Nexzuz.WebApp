@@ -146,7 +146,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getFollowStatus/{code}', [ClientsBAL::class, 'getFollowStatus']);
    
     //List clients base on PENDING
-    Route::get('getPendingFollowRequests', [FollowController::class, 'getPendingFollowRequests']);
+    Route::get('getPendingFollowRequests', [ClientsBAL::class, 'getPendingFollowRequests']);
     Route::put('acceptFollowRequest/{followerCode}', [ClientsBAL::class, 'acceptFollowRequest']);
 
  
