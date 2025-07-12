@@ -92,7 +92,39 @@ class ClientsDAL extends Model
     }
 
 
+    //pending
+    public function getPendingFollowRequests()
+    {
+        $currentUserCode = Auth::user()->code;
 
+        $pendingFollows = DB::table('follows')
+            ->join('users', 'users.code', '=', 'follows.following_code')
+            ->join('resources', 'resources.code', '=', 'users.code')
+            ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
+            ->select(
+                'userprofiles.photo_pic',
+                'resources.fullname',
+                'resources.profession',
+                'resources.company',
+                'resources.industry',
+                'users.code',
+                'users.is_online',
+                'follows.follower_code',
+                'follows.follow_status'
+            )
+            ->where('follows.follower_code', $currentUserCode)
+            ->where('follows.follow_status', 'pending')
+            ->where('users.status', 'A')
+            ->get();
+
+        return response()->json([
+            'count' => $pendingFollows->count(),
+            'data' => $pendingFollows
+        ]);
+    }
+
+
+    //accepted
     public function acceptFollowRequest(string $followerCode)
     {
         $currentUserCode = Auth::user()->code;

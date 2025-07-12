@@ -25,6 +25,11 @@ class ClientsBAL extends Controller
     {
         return $this->clientsDAL->getFollowStatus($code);
     }
+    
+    public function getPendingFollowRequests()
+    {
+        return $this->clientsDAL->getPendingFollowRequests();
+    }
 
      public function acceptFollowRequest($code)
     {
