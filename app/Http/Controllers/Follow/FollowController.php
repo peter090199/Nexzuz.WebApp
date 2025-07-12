@@ -125,6 +125,7 @@ class FollowController extends Controller
                     $id,
                 ]);
                 $message = 'Follow request cancelled or unfollowed';
+                $followStatus = 'cancelled';
             } else {
                 // Insert with 'pending' status
                 DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
@@ -133,11 +134,16 @@ class FollowController extends Controller
                     'pending'
                 ]);
                 $message = 'Follow request sent';
+                $followStatus = 'pending';
             }
 
             DB::commit();
 
-            return response()->json(['status' => true, 'message' => $message]);
+            return response()->json([
+                'status' => true,
+                'message' => $message,
+                'follow_status' => $followStatus
+        ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
