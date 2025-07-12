@@ -88,6 +88,8 @@ class ClientsDAL extends Model
     // }
 
 
+
+
     public function getFollowStatus(string $code)
     {
         $currentUserCode = Auth::user()->code;
@@ -107,8 +109,6 @@ class ClientsDAL extends Model
             'follow_status' => $record->follow_status ?? 'none'
         ]);
     }
-
-
 
 
 }

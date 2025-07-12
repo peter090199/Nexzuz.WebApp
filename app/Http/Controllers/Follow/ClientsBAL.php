@@ -5,24 +5,25 @@ namespace App\Http\Controllers\Follow;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DAL\ClientsDAL;
+use Illuminate\Support\Facades\Auth;
 
 class ClientsBAL extends Controller
 {
-    protected $resourceDAL;
+    protected $clientsDAL;
 
-    public function __construct(ClientsDAL $resourceDAL)
+    public function __construct(ClientsDAL $clientsDAL)
     {
-        $this->resourceDAL = $resourceDAL;
+        $this->clientsDAL = $clientsDAL;
     }
 
     public function getListClients()
     {
-        return $this->resourceDAL->getListClients();
+        return $this->clientsDAL->getListClients();
     }
-    
-    public function getFollowStatus()
+
+    public function getFollowStatus($code)
     {
-        return $this->resourceDAL->getFollowStatus();
+        return $this->clientsDAL->getFollowStatus($code);
     }
 
 
