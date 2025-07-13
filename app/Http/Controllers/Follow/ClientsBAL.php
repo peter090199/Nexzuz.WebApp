@@ -40,6 +40,10 @@ class ClientsBAL extends Controller
     {
         return $this->clientsDAL->getfollowingPending();
     }
+    public function getPendingFollowStatus()
+    {
+        return $this->clientsDAL->getPendingFollowStatus();
+    }
 
 
     

@@ -144,7 +144,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
     Route::get('getFollowStatus/{code}', [ClientsBAL::class, 'getFollowStatus']);
-   
+    Route::get('getPendingFollowStatus/{code}', [ClientsBAL::class, 'getPendingFollowStatus']);
+
     //List clients base on PENDING
     Route::get('getPendingFollowRequests', [ClientsBAL::class, 'getPendingFollowRequests']);
     Route::get('getfollowingPending', [ClientsBAL::class, 'getfollowingPending']);
