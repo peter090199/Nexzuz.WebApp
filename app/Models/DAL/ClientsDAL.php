@@ -143,7 +143,7 @@ class ClientsDAL extends Model
             // Update follow status to 'accepted'
             DB::update('
                 UPDATE follows 
-                SET follow_status = "accepted", updated_at = NOW()
+                SET follow_status = "accepted", created_at = NOW()
                 WHERE follower_code = ? AND following_code = ?
             ', [$followerCode, $currentUserCode]);
 
