@@ -47,7 +47,38 @@ class ClientsDAL extends Model
     ];
 
     //get list user and clients
-        public function getListClients()
+    public function getListClients()
+    {
+        $currentUserCode = Auth::user()->code;
+
+        $clients = DB::table('resources')
+            ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+            ->leftJoin('users', 'resources.code', '=', 'users.code')
+            ->leftJoin('follows', function ($join) use ($currentUserCode) {
+                $join->on('follows.follows_code', '=', 'users.code')
+                    ->where('follows.code', '=', $currentUserCode);
+            })
+            ->select(
+                'userprofiles.photo_pic',
+                'resources.fullname',
+                'resources.profession',
+                'resources.company',
+                'resources.industry',
+                'users.code',
+                'users.is_online',
+                'follows.follows_code as is_following' // Will be null if not followed
+            )
+            ->where('users.status', 'A')
+            ->where('users.code', '!=', $currentUserCode) // Exclude self
+            ->get();
+
+        return [
+            'count' => $clients->count(),
+            'data' => $clients
+        ];
+    }
+
+        public function getListClientsx1()
         {
             $currentUserCode = Auth::user()->code;
 
