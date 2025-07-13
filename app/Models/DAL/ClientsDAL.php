@@ -52,9 +52,9 @@ class ClientsDAL extends Model
     $currentUserCode = Auth::user()->code;
 
     $clients = DB::table('resources')
-        ->join('users', 'resources.code', '=', 'users.code')
+        ->leftJoin('users', 'resources.code', '=', 'users.code')
         ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-        ->join('follows', function ($join) use ($currentUserCode) {
+        ->leftJoin('follows', function ($join) use ($currentUserCode) {
             $join->on('follows.follower_code', '=', 'users.code')
                  ->orOn('follows.following_code', '=', 'users.code');
         })
@@ -72,12 +72,6 @@ class ClientsDAL extends Model
             'resources.industry',
             'users.code',
             'users.is_online',
-            // Optional: to show relationship type
-            DB::raw("CASE 
-                        WHEN follows.follower_code = '$currentUserCode' THEN 'you_follow'
-                        WHEN follows.following_code = '$currentUserCode' THEN 'follows_you'
-                        ELSE 'unknown'
-                     END as connection_type")
         )
         ->distinct()
         ->get();
