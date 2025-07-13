@@ -147,13 +147,14 @@ class ClientsDAL extends Model
             SELECT follow_status 
             FROM follows 
             WHERE follower_code = ? AND following_code = ? 
-            LIMIT 1
+            AND follow_status = "accepted"
         ', [$currentUserCode, $code]);
 
         return response()->json([
             'follow_status' => $record->follow_status ?? 'none'
         ]);
     }
+
 
 
     //get follower pending
