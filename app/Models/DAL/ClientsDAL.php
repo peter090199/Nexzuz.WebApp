@@ -47,40 +47,31 @@ class ClientsDAL extends Model
     ];
 
     //get list user and clients
-  public function getListClients()
-{
-    $currentUserCode = Auth::user()->code;
+    public function getListClients()
+    {
+          $currentUserCode = Auth::user()->code;
 
-    $clients = DB::table('resources')
-        ->leftJoin('users', 'resources.code', '=', 'users.code')
-        ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-        ->leftJoin('follows', function ($join) use ($currentUserCode) {
-            $join->on('follows.follower_code', '=', 'users.code')
-                 ->orOn('follows.following_code', '=', 'users.code');
-        })
-        ->where(function ($query) use ($currentUserCode) {
-            $query->where('follows.follower_code', $currentUserCode)
-                  ->orWhere('follows.following_code', $currentUserCode);
-        })
-        ->where('users.code', '!=', $currentUserCode)
-        ->where('users.status', 'A')
-        ->select(
-            'userprofiles.photo_pic',
-            'resources.fullname',
-            'resources.profession',
-            'resources.company',
-            'resources.industry',
-            'users.code',
-            'users.is_online',
-        )
-        ->distinct()
-        ->get();
+            $clients = DB::table('resources')
+                ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+                ->leftJoin('users', 'resources.code', '=', 'users.code')
+                ->select(
+                    'userprofiles.photo_pic',
+                    'resources.fullname',
+                    'resources.profession',
+                    'resources.company',
+                    'resources.industry',
+                    'users.code',
+                    'users.is_online'
+                )
+                ->where('users.status', 'A')
+                ->where('users.code', '!=', $currentUserCode) // Exclude current user
+                ->get();
 
-    return [
-        'count' => $clients->count(),
-        'data' => $clients
-    ];
-}
+            return [
+                'count' => $clients->count(),
+                'data' => $clients
+            ]; 
+        }
 
         public function getListClientsxxc()
         {
