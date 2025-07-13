@@ -134,7 +134,7 @@ class ClientsDAL extends Model
         ];
     }
 
-    public function getPendingFollowStatus(string $code)
+   public function getPendingFollowStatus(string $code)
     {
         $currentUserCode = Auth::user()->code;
 
@@ -150,7 +150,6 @@ class ClientsDAL extends Model
                 OR 
                 (follower_code = ? AND following_code = ?)
             )
-            AND follow_status = "pending"
             LIMIT 1
         ', [$currentUserCode, $code, $code, $currentUserCode]);
 
@@ -158,7 +157,6 @@ class ClientsDAL extends Model
             'follow_status' => $record->follow_status ?? 'none'
         ]);
     }
-
 
     //get follow status
     public function getFollowStatus(string $code)
