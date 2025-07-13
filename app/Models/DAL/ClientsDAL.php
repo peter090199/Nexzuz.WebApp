@@ -47,7 +47,7 @@ class ClientsDAL extends Model
     ];
 
     //get list user and clients
-   public function getListClients()
+  public function getListClients()
 {
     $currentUserCode = Auth::user()->code;
 
@@ -71,7 +71,13 @@ class ClientsDAL extends Model
             'resources.company',
             'resources.industry',
             'users.code',
-            'users.is_online'
+            'users.is_online',
+            // Optional: to show relationship type
+            DB::raw("CASE 
+                        WHEN follows.follower_code = '$currentUserCode' THEN 'you_follow'
+                        WHEN follows.following_code = '$currentUserCode' THEN 'follows_you'
+                        ELSE 'unknown'
+                     END as connection_type")
         )
         ->distinct()
         ->get();
@@ -82,8 +88,7 @@ class ClientsDAL extends Model
     ];
 }
 
-
-        public function getListClientsx1()
+        public function getListClientsxxc()
         {
             $currentUserCode = Auth::user()->code;
 
