@@ -52,10 +52,12 @@ class ClientsDAL extends Model
         $currentUserCode = Auth::user()->code;
 
         $clients = DB::table('resources')
+            ->join('users', 'resources.code', '=', 'users.code')
             ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-            ->leftJoin('users', 'resources.code', '=', 'users.code')
-            ->leftJoin('follows', function ($join) use ($currentUserCode) {
-                $join->on('follows.following_code', '=', $currentUserCode)
+            ->join('follows', function ($join) use ($currentUserCode) {
+                $join->on('follows.follower_code', '=', 'users.code')
+                    ->where('follows.following_code', '=', $currentUserCode)
+                    ->orOn('follows.following_code', '=', 'users.code')
                     ->where('follows.follower_code', '=', $currentUserCode);
             })
             ->select(
@@ -65,10 +67,11 @@ class ClientsDAL extends Model
                 'resources.company',
                 'resources.industry',
                 'users.code',
-                'users.is_online',
+                'users.is_online'
             )
             ->where('users.status', 'A')
-            ->where('users.code', '!=', $currentUserCode) // Exclude current user
+            ->where('users.code', '!=', $currentUserCode) // Exclude self
+            ->distinct()
             ->get();
 
         return [
@@ -76,7 +79,6 @@ class ClientsDAL extends Model
             'data' => $clients
         ];
     }
-
 
         public function getListClientsx1()
         {
