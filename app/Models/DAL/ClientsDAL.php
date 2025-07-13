@@ -128,34 +128,35 @@ class ClientsDAL extends Model
     public function getfollowingPending()
     {
         $currentUserCode = Auth::user()->code;
-        $pendingFollows = DB::table('follows')
-            ->join('users', 'users.code', '=', 'follows.follower_code')
-            ->join('resources', 'resources.code', '=', 'users.code')
-            ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
+
+        $pendingFollows = DB::table('resources')
+            ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+            ->leftJoin('users', 'resources.code', '=', 'users.code')
+            ->leftJoin('follows', function ($join) use ($currentUserCode) {
+                $join->on('follows.following_code', '=', 'users.code')
+                    ->where('follows.follower_code', '=', $currentUserCode);
+            })
             ->select(
                 'userprofiles.photo_pic',
                 'resources.fullname',
                 'resources.profession',
                 'resources.company',
                 'resources.industry',
-                'follows.follower_code',
-                'follows.following_code',
+                'users.code',
+                'users.is_online',
                 'follows.follow_status',
-                'users.is_online'
+                'follows.follower_code',
+                'follows.following_code'
             )
-            ->where('follows.follower_code', $currentUserCode)
-            ->where('follows.follow_status', 'pending')
-            ->where('users.status', 'A')
+            ->where('follows.follow_status', '=', 'pending')
             ->get();
 
-            return response()->json([
+        return response()->json([
             'status' => true,
             'count' => $pendingFollows->count(),
             'data' => $pendingFollows
         ]);
-
     }
-
 
     //accepted follow 
     public function acceptFollowRequest(string $followerCode)
