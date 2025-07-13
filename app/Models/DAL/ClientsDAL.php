@@ -55,7 +55,7 @@ class ClientsDAL extends Model
             ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
             ->leftJoin('users', 'resources.code', '=', 'users.code')
             ->leftJoin('follows', function ($join) use ($currentUserCode) {
-                $join->on('follows.follows_code', '=', 'users.code')
+                $join->on('follows.following_code', '=', 'users.code')
                     ->where('follows.follower_code', '=', $currentUserCode);
             })
             ->select(
@@ -66,7 +66,6 @@ class ClientsDAL extends Model
                 'resources.industry',
                 'users.code',
                 'users.is_online',
-                'follows.follows_code as is_following' // Will be null if not followed
             )
             ->where('users.status', 'A')
             ->where('users.code', '!=', $currentUserCode) // Exclude current user
