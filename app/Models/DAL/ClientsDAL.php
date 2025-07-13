@@ -97,30 +97,62 @@ class ClientsDAL extends Model
     {
         $currentUserCode = Auth::user()->code;
 
-        $pendingFollows = DB::table('follows')
-            ->join('users', 'users.code', '=', 'follows.following_code')
-            ->join('resources', 'resources.code', '=', 'users.code')
-            ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
-            ->select(
-                'userprofiles.photo_pic',
-                'resources.fullname',
-                'resources.profession',
-                'resources.company',
-                'resources.industry',
-                'users.code',
-                'users.is_online',
-                'follows.follower_code',
-                'follows.follow_status'
-            )
-            ->where('follows.follower_code', $currentUserCode)
-            ->where('follows.follow_status', 'pending')
-            ->where('users.status', 'A')
-            ->get();
+        try {
+            $pendingRequests = DB::table('follows')
+                ->join('users', 'follows.follower_code', '=', 'users.code')
+                ->leftJoin('userprofiles', 'users.code', '=', 'userprofiles.code')
+                ->where('follows.following_code', $currentUserCode)
+                ->where('follows.follow_status', 'pending')
+                ->select(
+                    'follows.follower_code',
+                    'users.name as fullname',
+                    'users.email',
+                    'userprofiles.profession',
+                    'userprofiles.photo_pic',
+                    'follows.created_at'
+                )
+                ->orderBy('follows.created_at', 'desc')
+                ->get();
 
-        return response()->json([
-            'count' => $pendingFollows->count(),
-            'data' => $pendingFollows
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Pending follow requests retrieved.',
+                'data' => $pendingRequests
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to get pending requests.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        // $currentUserCode = Auth::user()->code;
+
+        // $pendingFollows = DB::table('follows')
+        //     ->join('users', 'users.code', '=', 'follows.following_code')
+        //     ->join('resources', 'resources.code', '=', 'users.code')
+        //     ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
+        //     ->select(
+        //         'userprofiles.photo_pic',
+        //         'resources.fullname',
+        //         'resources.profession',
+        //         'resources.company',
+        //         'resources.industry',
+        //         'users.code',
+        //         'users.is_online',
+        //         'follows.follower_code',
+        //         'follows.follow_status'
+        //     )
+        //     ->where('follows.follower_code', $currentUserCode)
+        //     ->where('follows.follow_status', 'pending')
+        //     ->where('users.status', 'A')
+        //     ->get();
+
+        // return response()->json([
+        //     'count' => $pendingFollows->count(),
+        //     'data' => $pendingFollows
+        // ]);
     }
 
 
