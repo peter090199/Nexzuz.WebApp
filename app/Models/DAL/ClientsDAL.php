@@ -56,7 +56,7 @@ class ClientsDAL extends Model
             ->leftJoin('users', 'resources.code', '=', 'users.code')
             ->leftJoin('follows', function ($join) use ($currentUserCode) {
                 $join->on('follows.follows_code', '=', 'users.code')
-                    ->where('follows.code', '=', $currentUserCode);
+                    ->where('follows.follower_code', '=', $currentUserCode);
             })
             ->select(
                 'userprofiles.photo_pic',
@@ -69,7 +69,7 @@ class ClientsDAL extends Model
                 'follows.follows_code as is_following' // Will be null if not followed
             )
             ->where('users.status', 'A')
-            ->where('users.code', '!=', $currentUserCode) // Exclude self
+            ->where('users.code', '!=', $currentUserCode) // Exclude current user
             ->get();
 
         return [
@@ -77,6 +77,7 @@ class ClientsDAL extends Model
             'data' => $clients
         ];
     }
+
 
         public function getListClientsx1()
         {
