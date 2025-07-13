@@ -147,6 +147,13 @@ class ClientsDAL extends Model
             ->where('follows.follow_status', 'pending')
             ->where('users.status', 'A')
             ->get();
+
+            return response()->json([
+            'status' => true,
+            'count' => $pendingFollows->count(),
+            'data' => $pendingFollows
+        ]);
+
     }
 
 
