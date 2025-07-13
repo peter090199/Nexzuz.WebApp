@@ -47,31 +47,42 @@ class ClientsDAL extends Model
     ];
 
     //get list user and clients
-    public function getListClients()
+    public function getConnectedClients()
     {
-          $currentUserCode = Auth::user()->code;
+        $currentUserCode = Auth::user()->code;
 
-            $clients = DB::table('resources')
-                ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
-                ->leftJoin('users', 'resources.code', '=', 'users.code')
-                ->select(
-                    'userprofiles.photo_pic',
-                    'resources.fullname',
-                    'resources.profession',
-                    'resources.company',
-                    'resources.industry',
-                    'users.code',
-                    'users.is_online'
-                )
-                ->where('users.status', 'A')
-                ->where('users.code', '!=', $currentUserCode) // Exclude current user
-                ->get();
+        $clients = DB::table('follows')
+            ->leftJoin('users', function ($join) {
+                $join->on('users.code', '=', 'follows.follower_code')
+                    ->orOn('users.code', '=', 'follows.following_code');
+            })
+            ->leftJoin('resources', 'resources.code', '=', 'users.code')
+            ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
+            ->select(
+                'userprofiles.photo_pic',
+                'resources.fullname',
+                'resources.profession',
+                'resources.company',
+                'resources.industry',
+                'follows.follower_code',
+                'follows.following_code',
+                'users.code',
+                'users.is_online'
+            )
+            ->where('users.status', 'A')
+            ->where('users.code', '!=', $currentUserCode)
+            ->where(function ($query) use ($currentUserCode) {
+                $query->where('follows.follower_code', $currentUserCode)
+                    ->orWhere('follows.following_code', $currentUserCode);
+            })
+            ->distinct()
+            ->get();
 
-            return [
-                'count' => $clients->count(),
-                'data' => $clients
-            ]; 
-        }
+        return [
+            'count' => $clients->count(),
+            'data' => $clients
+        ];
+    }
 
         public function getListClientsxxc()
         {
