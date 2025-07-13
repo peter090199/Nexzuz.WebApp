@@ -177,7 +177,7 @@ class FollowController extends Controller
                     $id,
                 ]);
                 $message = 'Follow request cancelled or unfollowed';
-                $followStatus = 'cancelled';
+                $followStatus = 'none';
             } else {
                 // Insert with 'pending' status
                 DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
