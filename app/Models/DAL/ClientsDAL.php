@@ -146,14 +146,20 @@ class ClientsDAL extends Model
         $record = DB::selectOne('
             SELECT follow_status 
             FROM follows 
-            WHERE follower_code = ? AND following_code = ? 
+            WHERE (
+                (follower_code = ? AND following_code = ?)
+                OR 
+                (follower_code = ? AND following_code = ?)
+            )
             AND follow_status = "accepted"
-        ', [$currentUserCode, $code]);
+            LIMIT 1
+        ', [$currentUserCode, $code, $code, $currentUserCode]);
 
         return response()->json([
             'follow_status' => $record->follow_status ?? 'none'
         ]);
     }
+
 
 
 
