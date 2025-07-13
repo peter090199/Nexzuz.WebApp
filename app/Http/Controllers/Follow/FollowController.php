@@ -23,7 +23,10 @@ class FollowController extends Controller
         // following_code	The user who is being followed
         public function index()
         {
-            $data = DB::select(' SELECT 
+            $currentUserCode = Auth::user()->code;
+
+            $data = DB::select('
+                SELECT 
                     (SELECT getUserprofilepic(p.code)) AS profile_pic,
                     (SELECT getFullname(p.code)) AS fullname,
                     p.posts_uuid,
@@ -33,33 +36,82 @@ class FollowController extends Controller
                     p.updated_at,
                     p.code AS post_owner
                 FROM posts AS p
-                LEFT JOIN follows AS f 
-                    ON f.following_code = p.code AND f.follower_code = ? AND f.follow_status = "accepted"
+                LEFT JOIN follows AS f1 
+                    ON f1.following_code = p.code AND f1.follower_code = ? AND f1.follow_status = "accepted"
+                LEFT JOIN follows AS f2 
+                    ON f2.follower_code = p.code AND f2.following_code = ? AND f2.follow_status = "accepted"
                 WHERE p.status = 1
-                AND (f.follower_code IS NOT NULL OR p.code = ?)
+                AND (
+                    f1.follower_code IS NOT NULL
+                    OR f2.following_code IS NOT NULL
+                    OR p.code = ?
+                )
                 ORDER BY p.created_at DESC
-            ', [Auth::user()->code, Auth::user()->code]);
+            ', [$currentUserCode, $currentUserCode, $currentUserCode]);
 
             $result = [];
-            for ($i = 0; $i < count($data); $i++) {
 
-                $attachements = DB::select('SELECT * FROM attachmentposts 
-                    WHERE posts_uuid = ? AND (status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?))', [
-                    $data[$i]->posts_uuid, Auth::user()->code, $data[$i]->posts_uuid
-                ]);
-                $result[$i] = [
-                    "profile_pic" => $data[$i]->profile_pic,
-                    "Fullname" => $data[$i]->fullname,
-                    "posts_uuid" => $data[$i]->posts_uuid,
-                    "caption" => $data[$i]->caption,
-                    "status" => $data[$i]->status,
-                    "created_at" => $data[$i]->created_at,
-                    "updated_at" => $data[$i]->updated_at,
-                    "posts" => $attachements,
+            foreach ($data as $post) {
+                $attachments = DB::select('
+                    SELECT * FROM attachmentposts 
+                    WHERE posts_uuid = ?
+                    AND (status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?))
+                ', [$post->posts_uuid, $currentUserCode, $post->posts_uuid]);
+
+                $result[] = [
+                    "profile_pic" => $post->profile_pic,
+                    "Fullname" => $post->fullname,
+                    "posts_uuid" => $post->posts_uuid,
+                    "caption" => $post->caption,
+                    "status" => $post->status,
+                    "created_at" => $post->created_at,
+                    "updated_at" => $post->updated_at,
+                    "posts" => $attachments,
                 ];
             }
+
             return response()->json($result);
         }
+
+        // public function index()
+        // {
+        //     $data = DB::select(' SELECT 
+        //             (SELECT getUserprofilepic(p.code)) AS profile_pic,
+        //             (SELECT getFullname(p.code)) AS fullname,
+        //             p.posts_uuid,
+        //             p.caption,
+        //             p.status,
+        //             p.created_at,
+        //             p.updated_at,
+        //             p.code AS post_owner
+        //         FROM posts AS p
+        //         LEFT JOIN follows AS f 
+        //             ON f.following_code = p.code AND f.follower_code = ? AND f.follow_status = "accepted"
+        //         WHERE p.status = 1
+        //         AND (f.follower_code IS NOT NULL OR p.code = ?)
+        //         ORDER BY p.created_at DESC
+        //     ', [Auth::user()->code, Auth::user()->code]);
+
+        //     $result = [];
+        //     for ($i = 0; $i < count($data); $i++) {
+
+        //         $attachements = DB::select('SELECT * FROM attachmentposts 
+        //             WHERE posts_uuid = ? AND (status = 1 OR ? = (SELECT code FROM posts WHERE posts_uuid = ?))', [
+        //             $data[$i]->posts_uuid, Auth::user()->code, $data[$i]->posts_uuid
+        //         ]);
+        //         $result[$i] = [
+        //             "profile_pic" => $data[$i]->profile_pic,
+        //             "Fullname" => $data[$i]->fullname,
+        //             "posts_uuid" => $data[$i]->posts_uuid,
+        //             "caption" => $data[$i]->caption,
+        //             "status" => $data[$i]->status,
+        //             "created_at" => $data[$i]->created_at,
+        //             "updated_at" => $data[$i]->updated_at,
+        //             "posts" => $attachements,
+        //         ];
+        //     }
+        //     return response()->json($result);
+        // }
 
         
 
