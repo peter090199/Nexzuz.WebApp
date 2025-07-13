@@ -46,7 +46,7 @@ class ClientsDAL extends Model
         'updated_by'
     ];
 
-
+    //get list user and clients
     public function getListClients()
     {
         $clients = DB::table('resources')
@@ -70,7 +70,7 @@ class ClientsDAL extends Model
         ];
     }
 
- 
+    //get follow status
     public function getFollowStatus(string $code)
     {
         $currentUserCode = Auth::user()->code;
@@ -92,7 +92,7 @@ class ClientsDAL extends Model
     }
 
 
-    //pending
+    //get follower pending
     public function getPendingFollowRequests()
     {
         $currentUserCode = Auth::user()->code;
@@ -123,7 +123,34 @@ class ClientsDAL extends Model
         ]);
     }
 
-    //accepted
+
+    //get following pending
+    public function getfollowingPending()
+    {
+        $currentUserCode = Auth::user()->code;
+        $pendingFollows = DB::table('follows')
+            ->join('users', 'users.code', '=', 'follows.follower_code')
+            ->join('resources', 'resources.code', '=', 'users.code')
+            ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
+            ->select(
+                'userprofiles.photo_pic',
+                'resources.fullname',
+                'resources.profession',
+                'resources.company',
+                'resources.industry',
+                'follows.follower_code',
+                'follows.following_code',
+                'follows.follow_status',
+                'users.is_online'
+            )
+            ->where('follows.follower_code', $currentUserCode)
+            ->where('follows.follow_status', 'pending')
+            ->where('users.status', 'A')
+            ->get();
+    }
+
+
+    //accepted follow 
     public function acceptFollowRequest(string $followerCode)
     {
         $currentUserCode = Auth::user()->code;
