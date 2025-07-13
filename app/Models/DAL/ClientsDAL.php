@@ -55,7 +55,7 @@ class ClientsDAL extends Model
             ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
             ->leftJoin('users', 'resources.code', '=', 'users.code')
             ->leftJoin('follows', function ($join) use ($currentUserCode) {
-                $join->on('follows.following_code', '=', 'users.code')
+                $join->on('follows.following_code', '=', $currentUserCode)
                     ->where('follows.follower_code', '=', $currentUserCode);
             })
             ->select(
