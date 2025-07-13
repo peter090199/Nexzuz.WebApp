@@ -76,7 +76,7 @@ class ClientsDAL extends Model
                 $query->where('follows.follower_code', $currentUserCode)
                     ->orWhere('follows.following_code', $currentUserCode);
             })
-            ->distinct()
+           // ->distinct()
             ->get();
 
         return [
