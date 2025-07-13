@@ -66,6 +66,7 @@ class ClientsDAL extends Model
                 'resources.industry',
                 'follows.follower_code',
                 'follows.following_code',
+                'follows.follow_status',
                 'users.code',
                 'users.is_online'
             )
