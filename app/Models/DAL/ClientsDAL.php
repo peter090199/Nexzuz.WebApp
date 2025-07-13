@@ -47,7 +47,7 @@ class ClientsDAL extends Model
     ];
 
     //get list user and clients
-    public function getConnectedClients()
+    public function getListClients()
     {
         $currentUserCode = Auth::user()->code;
 
