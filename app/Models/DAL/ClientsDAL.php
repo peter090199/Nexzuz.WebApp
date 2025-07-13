@@ -105,7 +105,7 @@ class ClientsDAL extends Model
                 ->where('follows.follow_status', 'pending')
                 ->select(
                     'follows.follower_code',
-                    'users.name as fullname',
+                    'users.fullname',
                     'users.email',
                     'userprofiles.profession',
                     'userprofiles.photo_pic',
