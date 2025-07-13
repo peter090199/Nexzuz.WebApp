@@ -112,7 +112,7 @@ class ClientsDAL extends Model
                 'follows.follower_code',
                 'follows.follow_status'
             )
-            ->where('follows.follower_code', $currentUserCode) // <- YOU are the one being followed
+            ->where('follows.following_code', $currentUserCode) // <- YOU are the one being followed
             ->where('follows.follow_status', 'pending')
             ->where('users.status', 'A')
             ->get();
