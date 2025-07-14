@@ -155,18 +155,9 @@ class FollowController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // Always get the follower code from authenticated user
-        $followerCode = Auth::check() ? Auth::user()->code : null;
-        $followingCode = $id;
-
-        if (!$followerCode) {
-            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
-        }
-
-        if ($followerCode == $followingCode) {
+        if ($id == Auth::user()->code) {
             return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
         }
-
         DB::beginTransaction();
 
         try {
