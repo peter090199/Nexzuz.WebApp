@@ -150,39 +150,45 @@ class FollowController extends Controller
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        if ($id == Auth::user()->code) {
+        // ✅ Declare followerCode and followingCode properly
+        $followerCode = Auth::check() ? Auth::user()->code : null;
+        $followingCode = $id;
+
+        if (!$followerCode) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        if ($followerCode == $followingCode) {
             return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
         }
-            DB::beginTransaction();
-            try {
-            // Check if follow relationship already exists
-            $existingFollow = DB::selectOne('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
-                $followerCode,
-                $followingCode,
-            ]);
+
+        DB::beginTransaction();
+
+        try {
+            // ✅ Use selectOne to fetch a single row (object), not a list
+            $existingFollow = DB::selectOne(
+                'SELECT * FROM follows WHERE follower_code = ? AND following_code = ?',
+                [$followerCode, $followingCode]
+            );
 
             if ($existingFollow) {
-                // Unfollow or cancel even if status is 'accepted' or 'pending'
-                DB::delete('DELETE FROM follows WHERE follower_code = ? AND following_code = ?', [
-                    $followerCode,
-                    $followingCode,
-                ]);
+                // ✅ Delete regardless of follow_status ('pending' or 'accepted')
+                DB::delete(
+                    'DELETE FROM follows WHERE follower_code = ? AND following_code = ?',
+                    [$followerCode, $followingCode]
+                );
                 $message = $existingFollow->follow_status === 'accepted'
                     ? 'Unfollowed successfully'
                     : 'Follow request cancelled';
                 $followStatus = 'none';
             } else {
-                // Send a new follow request with pending status
-                DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
-                    $followerCode,
-                    $followingCode,
-                    'pending'
-                ]);
+                // ✅ Insert new follow request with 'pending' status
+                DB::insert(
+                    'INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())',
+                    [$followerCode, $followingCode, 'pending']
+                );
                 $message = 'Follow request sent';
                 $followStatus = 'pending';
             }
