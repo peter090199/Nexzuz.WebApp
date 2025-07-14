@@ -169,14 +169,14 @@ class FollowController extends Controller
         try {
             // ✅ Use selectOne to fetch a single row (object), not a list
             $existingFollow = DB::selectOne(
-                'SELECT * FROM follows WHERE follower_code = ? AND following_code = ?',
-                [$followerCode, $followingCode]
+                'SELECT * FROM follows WHERE follower_code = ?',
+                [$followerCode]
             );
 
             if ($existingFollow) {
                 // ✅ Delete regardless of follow_status ('pending' or 'accepted')
                 DB::delete(
-                    'DELETE FROM follows WHERE following_code = ? AND follower_code = ?',
+                    'DELETE FROM follows WHERE follower_code = ? AND following_code = ?',
                     [$followerCode, $followingCode]
                 );
                 $message = $existingFollow->follow_status === 'accepted'
