@@ -143,7 +143,7 @@ class ClientsDAL extends Model
         }
 
         $record = DB::selectOne('
-            SELECT follow_status 
+            SELECT  * 
             FROM follows 
             WHERE (
                 (follower_code = ? AND following_code = ?)
