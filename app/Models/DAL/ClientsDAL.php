@@ -134,7 +134,40 @@ class ClientsDAL extends Model
         ];
     }
 
-   public function getPendingFollowStatus(string $code)
+    public function getPendingFollowStatus(string $code)
+    {
+        $currentUserCode = Auth::user()->code;
+
+        // Prevent checking follow status with yourself
+        if ($code === $currentUserCode) {
+            return response()->json([
+                'follow_status' => null,
+                'data' => []
+            ]);
+        }
+
+        // Get all follow records between the two users (bi-directional)
+        $records = DB::select('
+            SELECT * 
+            FROM follows 
+            WHERE (
+                (follower_code = ? AND following_code = ?)
+                OR 
+                (follower_code = ? AND following_code = ?)
+            )
+        ', [$currentUserCode, $code, $code, $currentUserCode]);
+
+        // Determine follow_status from the first record if available
+        $status = count($records) > 0 ? $records[0]->follow_status : 'none';
+
+        // Return full data and status
+        return response()->json([
+            'follow_status' => $status,
+            'data' => $records
+        ]);
+    }
+
+   public function getPendingFollowStatusxx(string $code)
     {
         $currentUserCode = Auth::user()->code;
 
@@ -154,7 +187,8 @@ class ClientsDAL extends Model
         ', [$currentUserCode, $code, $code, $currentUserCode]);
 
         return response()->json([
-            'follow_status' => $record->follow_status ?? 'none'
+            'follow_status' => $record->follow_status ?? 'none',
+
         ]);
     }
 
