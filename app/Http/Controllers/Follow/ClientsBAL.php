@@ -44,6 +44,10 @@ class ClientsBAL extends Controller
     {
         return $this->clientsDAL->getPendingFollowStatus($code);
     }
+    public function unfollow($id)
+    {
+        return $this->clientsDAL->unfollow($id);
+    }
 
 
     

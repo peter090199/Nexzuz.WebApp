@@ -322,4 +322,37 @@ class ClientsDAL extends Model
         }
     }
 
+
+    //unfollow
+    public function unfollow($id)
+    {
+        $currentUserCode = Auth::user()->code;
+
+        // Optional: Check if the record belongs to the authenticated user
+        $follow = DB::table('follows')
+            ->where('id', $id)
+            ->where(function ($query) use ($currentUserCode) {
+                $query->where('follower_code', $currentUserCode)
+                    ->orWhere('following_code', $currentUserCode);
+            })
+            ->first();
+
+        if (!$follow) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Follow record not found or access denied.'
+            ], 404);
+        }
+
+        // Delete the record
+        DB::table('follows')->where('id', $id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Unfollowed successfully.',
+            'follow_status' => 'none'
+        ]);
+    }
+
+
 }

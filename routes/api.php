@@ -150,7 +150,9 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getPendingFollowRequests', [ClientsBAL::class, 'getPendingFollowRequests']);
     Route::get('getfollowingPending', [ClientsBAL::class, 'getfollowingPending']);
     Route::put('acceptFollowRequest/{followerCode}', [ClientsBAL::class, 'acceptFollowRequest']);
+    
+    //unfollow
+    Route::delete('unfollow/{id}', [ClientsBAL::class, 'unfollow']);
 
- 
 
 });
