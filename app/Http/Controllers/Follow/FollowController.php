@@ -149,41 +149,44 @@ class FollowController extends Controller
     {
         //
     }
-
     public function update(Request $request, string $id)
     {
-        if ($id == Auth::user()->code) {
+        $followerCode = Auth::user()->code;
+
+        if ($id === $followerCode) {
             return response()->json([
                 'status' => false,
-                'message' => 'Cannot follow yourself'
+                'message' => 'You cannot follow yourself.'
             ], 400);
         }
 
         DB::beginTransaction();
 
         try {
-            $followerCode = Auth::user()->code;
+            $followExists = DB::table('follows')
+                ->where('follower_code', $followerCode)
+                ->where('following_code', $id)
+                ->exists();
 
-            $existing = DB::select(
-                'SELECT * FROM follows WHERE follower_code = ? AND following_code = ?',
-                [$followerCode, $id]
-            );
+            if ($followExists) {
+                // Unfollow (delete record)
+                DB::table('follows')
+                    ->where('follower_code', $followerCode)
+                    ->where('following_code', $id)
+                    ->delete();
 
-            if (count($existing) > 0) {
-                // Unfollow or cancel follow request
-                DB::delete(
-                    'DELETE FROM follows WHERE follower_code = ? AND following_code = ?',
-                    [$followerCode, $id]
-                );
-                $message = 'Unfollowed or follow request cancelled';
+                $message = 'Unfollowed successfully.';
                 $followStatus = 'none';
             } else {
-                // Send new follow request
-                DB::insert(
-                    'INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())',
-                    [$followerCode, $id, 'pending']
-                );
-                $message = 'Follow request sent';
+                // Follow (insert record)
+                DB::table('follows')->insert([
+                    'follower_code' => $followerCode,
+                    'following_code' => $id,
+                    'follow_status' => 'pending',
+                    'created_at' => now(),
+                ]);
+
+                $message = 'Follow request sent.';
                 $followStatus = 'pending';
             }
 
@@ -199,11 +202,66 @@ class FollowController extends Controller
 
             return response()->json([
                 'status' => false,
-                'message' => 'Operation failed',
+                'message' => 'Operation failed.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
+    // public function update(Request $request, string $id)
+    // {
+    //     if ($id == Auth::user()->code) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Cannot follow yourself'
+    //         ], 400);
+    //     }
+
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $followerCode = Auth::user()->code;
+
+    //         $existing = DB::select(
+    //             'SELECT * FROM follows WHERE follower_code = ? AND following_code = ?',
+    //             [$followerCode, $id]
+    //         );
+
+    //         if (count($existing) > 0) {
+    //             // Unfollow or cancel follow request
+    //             DB::delete(
+    //                 'DELETE FROM follows WHERE follower_code = ? AND following_code = ?',
+    //                 [$followerCode, $id]
+    //             );
+    //             $message = 'Unfollowed or follow request cancelled';
+    //             $followStatus = 'none';
+    //         } else {
+    //             // Send new follow request
+    //             DB::insert(
+    //                 'INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())',
+    //                 [$followerCode, $id, 'pending']
+    //             );
+    //             $message = 'Follow request sent';
+    //             $followStatus = 'pending';
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => $message,
+    //             'follow_status' => $followStatus
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Operation failed',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     // public function update(Request $request, string $id)
     // {
