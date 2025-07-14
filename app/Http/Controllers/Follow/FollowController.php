@@ -153,15 +153,64 @@ class FollowController extends Controller
     /**
      * Update the specified resource in storage.
      */
-
     public function update(Request $request, string $id)
+    {
+        $followerCode = $request->input('follower_code');
+        $followingCode = $id;
+
+        if ($followerCode == $followingCode) {
+            return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $exists = DB::select('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
+                $followerCode,
+                $followingCode,
+            ]);
+
+            if (count($exists) > 0) {
+                // Delete (cancel request or unfollow)
+                DB::delete('DELETE FROM follows WHERE follower_code = ? AND following_code = ?', [
+                    $followerCode,
+                    $followingCode,
+                ]);
+                $message = 'Follow request cancelled or unfollowed';
+                $followStatus = 'none';
+            } else {
+                // Insert with 'pending' status
+                DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
+                    $followerCode,
+                    $followingCode,
+                    'pending'
+                ]);
+                $message = 'Follow request sent';
+                $followStatus = 'pending';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => $message,
+                'follow_status' => $followStatus
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => 'Operation failed', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updatex(Request $request, string $id)
     {
         if ($id == Auth::user()->code) {
             return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
         }
 
         DB::beginTransaction();
-
+ 
         try {
             $followerCode = Auth::user()->code;
 
