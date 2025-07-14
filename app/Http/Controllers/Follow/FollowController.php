@@ -158,25 +158,26 @@ class FollowController extends Controller
         if ($id == Auth::user()->code) {
             return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
         }
-        DB::beginTransaction();
-
-        try {
+            DB::beginTransaction();
+            try {
             // Check if follow relationship already exists
-            $exists = DB::select('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
+            $existingFollow = DB::selectOne('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
                 $followerCode,
                 $followingCode,
             ]);
 
-            if (count($exists) > 0) {
-                // Unfollow or cancel request
+            if ($existingFollow) {
+                // Unfollow or cancel even if status is 'accepted' or 'pending'
                 DB::delete('DELETE FROM follows WHERE follower_code = ? AND following_code = ?', [
                     $followerCode,
                     $followingCode,
                 ]);
-                $message = 'Follow request cancelled or unfollowed';
+                $message = $existingFollow->follow_status === 'accepted'
+                    ? 'Unfollowed successfully'
+                    : 'Follow request cancelled';
                 $followStatus = 'none';
             } else {
-                // Create new follow request with pending status
+                // Send a new follow request with pending status
                 DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
                     $followerCode,
                     $followingCode,
