@@ -169,7 +169,7 @@ class FollowController extends Controller
         try {
             // ✅ Use selectOne to fetch a single row (object), not a list
             $existingFollow = DB::selectOne(
-                'SELECT * FROM follows WHERE follower_code = ? AND following_code = ?',
+                'SELECT * FROM follows WHERE follower_code = ? OR following_code = ?',
                 [$followerCode, $followingCode]
             );
 
