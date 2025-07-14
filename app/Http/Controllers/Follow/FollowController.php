@@ -155,8 +155,13 @@ class FollowController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $followerCode = $request->input('follower_code');
+        // Always get the follower code from authenticated user
+        $followerCode = Auth::check() ? Auth::user()->code : null;
         $followingCode = $id;
+
+        if (!$followerCode) {
+            return response()->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
 
         if ($followerCode == $followingCode) {
             return response()->json(['status' => false, 'message' => 'Cannot follow yourself'], 400);
@@ -165,13 +170,14 @@ class FollowController extends Controller
         DB::beginTransaction();
 
         try {
+            // Check if follow relationship already exists
             $exists = DB::select('SELECT * FROM follows WHERE follower_code = ? AND following_code = ?', [
                 $followerCode,
                 $followingCode,
             ]);
 
             if (count($exists) > 0) {
-                // Delete (cancel request or unfollow)
+                // Unfollow or cancel request
                 DB::delete('DELETE FROM follows WHERE follower_code = ? AND following_code = ?', [
                     $followerCode,
                     $followingCode,
@@ -179,7 +185,7 @@ class FollowController extends Controller
                 $message = 'Follow request cancelled or unfollowed';
                 $followStatus = 'none';
             } else {
-                // Insert with 'pending' status
+                // Create new follow request with pending status
                 DB::insert('INSERT INTO follows (follower_code, following_code, follow_status, created_at) VALUES (?, ?, ?, NOW())', [
                     $followerCode,
                     $followingCode,
@@ -199,7 +205,11 @@ class FollowController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => false, 'message' => 'Operation failed', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'status' => false,
+                'message' => 'Operation failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
