@@ -361,9 +361,10 @@ class ClientsDAL extends Model
      // Suggested users based on profession or industry of followed people
         public function getPeopleyoumayknow(): JsonResponse
         {
-            try {
+          try {
                 $code = Auth::user()->code;
 
+                // Get user's profession
                 $profession = DB::table('resources')->where('code', $code)->value('profession');
 
                 $results = DB::select("
@@ -376,8 +377,9 @@ class ClientsDAL extends Model
                         s.code,
                         s.is_online,
                         s.source,
-                        COALESCE(f.follow_status, 'pending') AS follow_status
+                        COALESCE(f.follow_status, 'not_connected') AS follow_status
                     FROM (
+                        -- Suggested based on profession or mutual industry
                         SELECT 
                             up.photo_pic,
                             r.fullname,
@@ -399,12 +401,13 @@ class ClientsDAL extends Model
                                 FROM follows f
                                 JOIN resources r2 ON f.following_code = r2.code
                                 WHERE f.follower_code = ?
-                                AND r2.industry = r.industry
+                                    AND r2.industry = r.industry
                             )
                         )
 
                         UNION
 
+                        -- History (viewed before)
                         SELECT 
                             up.photo_pic,
                             r.fullname,
@@ -420,13 +423,17 @@ class ClientsDAL extends Model
                         WHERE u.status = 'A'
                         AND u.code != ?
                         AND EXISTS (
-                            SELECT 1 FROM user_activity ua
+                            SELECT 1 
+                            FROM user_activity ua
                             WHERE ua.viewer_code = ?
-                            AND ua.viewed_code = u.code
+                                AND ua.viewed_code = u.code
                         )
                     ) s
+                    LEFT JOIN follows f 
+                        ON f.follower_code = ?
+                    AND f.following_code = s.code
                     ORDER BY s.fullname ASC
-                ", [$code, $profession, $code, $code, $code]);
+                ", [$code, $profession, $code, $code, $code, $code]);
 
                 return response()->json([
                     'success' => true,
@@ -435,14 +442,11 @@ class ClientsDAL extends Model
                 ]);
 
             } catch (\Exception $e) {
-                // Log the error (for internal debugging)
-                Log::error('Error fetching people you may know', [
+                \Log::error('People you may know error', [
                     'user_code' => Auth::user()->code,
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
+                    'message' => $e->getMessage()
                 ]);
 
-                // Return generic response to client
                 return response()->json([
                     'success' => false,
                     'message' => 'Something went wrong. Please try again later.'
