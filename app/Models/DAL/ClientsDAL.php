@@ -377,6 +377,7 @@ class ClientsDAL extends Model
                         s.code,
                         s.is_online,
                         s.source,
+                        f.id,
                         COALESCE(f.follow_status, 'none') AS follow_status
                     FROM (
                         SELECT 
