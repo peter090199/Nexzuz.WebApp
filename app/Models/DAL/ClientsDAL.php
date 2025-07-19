@@ -9,6 +9,9 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+
 class ClientsDAL extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -356,81 +359,171 @@ class ClientsDAL extends Model
 
 
      // Suggested users based on profession or industry of followed people
-    public function getPeopleyoumayknow()
-    {
-        $code = Auth::user()->code;
+        public function getPeopleyoumayknow(): JsonResponse
+        {
+            try {
+                $code = Auth::user()->code;
 
-        $profession = DB::table('resources')->where('code', $code)->value('profession');
+                $profession = DB::table('resources')->where('code', $code)->value('profession');
 
-        $results = DB::select("
-            SELECT 
-                s.photo_pic,
-                s.fullname,
-                s.profession,
-                s.company,
-                s.industry,
-                s.code,
-                s.is_online,
-                s.source
-            FROM (
-                -- Suggested
-                SELECT 
-                    up.photo_pic,
-                    r.fullname,
-                    r.profession,
-                    r.company,
-                    r.industry,
-                    u.code,
-                    u.is_online,
-                    'suggested' AS source
-                FROM users u
-                INNER JOIN resources r ON u.code = r.code
-                LEFT JOIN userprofiles up ON u.code = up.code
-                WHERE u.status = 'A'
-                AND u.code != ?
-                AND (
-                    r.profession = ?
-                    OR EXISTS (
-                        SELECT 1
-                        FROM follows f
-                        JOIN resources r2 ON f.following_code = r2.code
-                        WHERE f.follower_code = ?
-                        AND r2.industry = r.industry
-                    )
-                )
+                $results = DB::select("
+                    SELECT 
+                        s.photo_pic,
+                        s.fullname,
+                        s.profession,
+                        s.company,
+                        s.industry,
+                        s.code,
+                        s.is_online,
+                        s.source
+                    FROM (
+                        SELECT 
+                            up.photo_pic,
+                            r.fullname,
+                            r.profession,
+                            r.company,
+                            r.industry,
+                            u.code,
+                            u.is_online,
+                            'suggested' AS source
+                        FROM users u
+                        INNER JOIN resources r ON u.code = r.code
+                        LEFT JOIN userprofiles up ON u.code = up.code
+                        WHERE u.status = 'A'
+                        AND u.code != ?
+                        AND (
+                            r.profession = ?
+                            OR EXISTS (
+                                SELECT 1
+                                FROM follows f
+                                JOIN resources r2 ON f.following_code = r2.code
+                                WHERE f.follower_code = ?
+                                AND r2.industry = r.industry
+                            )
+                        )
 
-                UNION
+                        UNION
 
-                -- From history
-                SELECT 
-                    up.photo_pic,
-                    r.fullname,
-                    r.profession,
-                    r.company,
-                    r.industry,
-                    u.code,
-                    u.is_online,
-                    'history' AS source
-                FROM users u
-                INNER JOIN resources r ON u.code = r.code
-                LEFT JOIN userprofiles up ON u.code = up.code
-                WHERE u.status = 'A'
-                AND u.code != ?
-                AND EXISTS (
-                    SELECT 1 FROM user_activity ua
-                    WHERE ua.viewer_code = ?
-                    AND ua.viewed_code = u.code
-                )
-            ) s
-            ORDER BY s.fullname ASC
-        ", [$code, $profession, $code, $code, $code]);
+                        SELECT 
+                            up.photo_pic,
+                            r.fullname,
+                            r.profession,
+                            r.company,
+                            r.industry,
+                            u.code,
+                            u.is_online,
+                            'history' AS source
+                        FROM users u
+                        INNER JOIN resources r ON u.code = r.code
+                        LEFT JOIN userprofiles up ON u.code = up.code
+                        WHERE u.status = 'A'
+                        AND u.code != ?
+                        AND EXISTS (
+                            SELECT 1 FROM user_activity ua
+                            WHERE ua.viewer_code = ?
+                            AND ua.viewed_code = u.code
+                        )
+                    ) s
+                    ORDER BY s.fullname ASC
+                ", [$code, $profession, $code, $code, $code]);
 
-        return response()->json([
-            'success' => true,
-            'count' => count($results),
-            'data' => $results,
-        ]);
-    }
+                return response()->json([
+                    'success' => true,
+                    'count' => count($results),
+                    'data' => $results,
+                ]);
+
+            } catch (\Exception $e) {
+                // Log the error (for internal debugging)
+                Log::error('Error fetching people you may know', [
+                    'user_code' => Auth::user()->code,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                // Return generic response to client
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong. Please try again later.'
+                ], 500);
+            }
+        }
+
+    // public function getPeopleyoumayknow()
+    // {
+    //     $code = Auth::user()->code;
+
+    //     $profession = DB::table('resources')->where('code', $code)->value('profession');
+
+    //     $results = DB::select("
+    //         SELECT 
+    //             s.photo_pic,
+    //             s.fullname,
+    //             s.profession,
+    //             s.company,
+    //             s.industry,
+    //             s.code,
+    //             s.is_online,
+    //             s.source
+    //         FROM (
+    //             -- Suggested
+    //             SELECT 
+    //                 up.photo_pic,
+    //                 r.fullname,
+    //                 r.profession,
+    //                 r.company,
+    //                 r.industry,
+    //                 u.code,
+    //                 u.is_online,
+    //                 'suggested' AS source
+    //             FROM users u
+    //             INNER JOIN resources r ON u.code = r.code
+    //             LEFT JOIN userprofiles up ON u.code = up.code
+    //             WHERE u.status = 'A'
+    //             AND u.code != ?
+    //             AND (
+    //                 r.profession = ?
+    //                 OR EXISTS (
+    //                     SELECT 1
+    //                     FROM follows f
+    //                     JOIN resources r2 ON f.following_code = r2.code
+    //                     WHERE f.follower_code = ?
+    //                     AND r2.industry = r.industry
+    //                 )
+    //             )
+
+    //             UNION
+
+    //             -- From history
+    //             SELECT 
+    //                 up.photo_pic,
+    //                 r.fullname,
+    //                 r.profession,
+    //                 r.company,
+    //                 r.industry,
+    //                 u.code,
+    //                 u.is_online,
+    //                 'history' AS source
+    //             FROM users u
+    //             INNER JOIN resources r ON u.code = r.code
+    //             LEFT JOIN userprofiles up ON u.code = up.code
+    //             WHERE u.status = 'A'
+    //             AND u.code != ?
+    //             AND EXISTS (
+    //                 SELECT 1 FROM user_activity ua
+    //                 WHERE ua.viewer_code = ?
+    //                 AND ua.viewed_code = u.code
+    //             )
+    //         ) s
+    //         ORDER BY s.fullname ASC
+    //     ", [$code, $profession, $code, $code, $code]);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'count' => count($results),
+    //         'data' => $results,
+    //     ]);
+    // }
 
 
 
