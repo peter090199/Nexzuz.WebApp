@@ -154,7 +154,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //unfollow
     Route::delete('unfollow/{id}', [ClientsBAL::class, 'unfollow']);
     
-     //people you may know history/suggested list data 
+    // Suggested users based on profession or industry of followed people
      Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
 
 });
