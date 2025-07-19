@@ -359,11 +359,21 @@ class ClientsDAL extends Model
     public function getPeopleyoumayknow()
     {
         $code = Auth::user()->code;
+
         $profession = DB::table('resources')->where('code', $code)->value('profession');
-        // Perform optimized single UNION inside a derived table with proper indexes usage
+
         $results = DB::select("
-            SELECT * FROM (
-              
+            SELECT 
+                s.photo_pic,
+                s.fullname,
+                s.profession,
+                s.company,
+                s.industry,
+                s.code,
+                s.is_online,
+                s.source
+            FROM (
+                -- Suggested
                 SELECT 
                     up.photo_pic,
                     r.fullname,
@@ -391,7 +401,7 @@ class ClientsDAL extends Model
 
                 UNION
 
-                -- Viewed users based on user_activity
+                -- From history
                 SELECT 
                     up.photo_pic,
                     r.fullname,
@@ -411,9 +421,8 @@ class ClientsDAL extends Model
                     WHERE ua.viewer_code = ?
                     AND ua.viewed_code = u.code
                 )
-            ) AS suggestions
-            GROUP BY code
-            ORDER BY fullname ASC
+            ) s
+            ORDER BY s.fullname ASC
         ", [$code, $profession, $code, $code, $code]);
 
         return response()->json([
@@ -422,6 +431,7 @@ class ClientsDAL extends Model
             'data' => $results,
         ]);
     }
+
 
 
 
