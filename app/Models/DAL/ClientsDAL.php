@@ -375,7 +375,8 @@ class ClientsDAL extends Model
                         s.industry,
                         s.code,
                         s.is_online,
-                        s.source
+                        s.source,
+                        COALESCE(f.follow_status, 'pending') AS follow_status
                     FROM (
                         SELECT 
                             up.photo_pic,
