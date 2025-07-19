@@ -379,7 +379,6 @@ class ClientsDAL extends Model
                         s.source,
                         COALESCE(f.follow_status, 'not_connected') AS follow_status
                     FROM (
-                        -- Suggested based on profession or mutual industry
                         SELECT 
                             up.photo_pic,
                             r.fullname,
