@@ -355,18 +355,15 @@ class ClientsDAL extends Model
     }
 
 
-     //people you may know history/suggested list data 
+     // Suggested users based on profession or industry of followed people
     public function getPeopleyoumayknow()
     {
         $code = Auth::user()->code;
-
-        // Fetch profession only once
         $profession = DB::table('resources')->where('code', $code)->value('profession');
-
         // Perform optimized single UNION inside a derived table with proper indexes usage
         $results = DB::select("
             SELECT * FROM (
-                -- Suggested users based on profession or industry of followed people
+              
                 SELECT 
                     up.photo_pic,
                     r.fullname,
