@@ -48,7 +48,11 @@ class ClientsBAL extends Controller
     {
         return $this->clientsDAL->unfollow($id);
     }
-
+    
+    public function getPeopleyoumayknow()
+    {
+        return $this->clientsDAL->getPeopleyoumayknow();
+    }
 
     
 

@@ -355,4 +355,78 @@ class ClientsDAL extends Model
     }
 
 
+     //people you may know history/suggested list data 
+    public function getPeopleyoumayknow()
+    {
+        $code = Auth::user()->code;
+
+        // Fetch profession only once
+        $profession = DB::table('resources')->where('code', $code)->value('profession');
+
+        // Perform optimized single UNION inside a derived table with proper indexes usage
+        $results = DB::select("
+            SELECT * FROM (
+                -- Suggested users based on profession or industry of followed people
+                SELECT 
+                    up.photo_pic,
+                    r.fullname,
+                    r.profession,
+                    r.company,
+                    r.industry,
+                    u.code,
+                    u.is_online,
+                    'suggested' AS source
+                FROM users u
+                INNER JOIN resources r ON u.code = r.code
+                LEFT JOIN userprofiles up ON u.code = up.code
+                WHERE u.status = 'A'
+                AND u.code != ?
+                AND (
+                    r.profession = ?
+                    OR EXISTS (
+                        SELECT 1
+                        FROM follows f
+                        JOIN resources r2 ON f.following_code = r2.code
+                        WHERE f.follower_code = ?
+                        AND r2.industry = r.industry
+                    )
+                )
+
+                UNION
+
+                -- Viewed users based on user_activity
+                SELECT 
+                    up.photo_pic,
+                    r.fullname,
+                    r.profession,
+                    r.company,
+                    r.industry,
+                    u.code,
+                    u.is_online,
+                    'history' AS source
+                FROM users u
+                INNER JOIN resources r ON u.code = r.code
+                LEFT JOIN userprofiles up ON u.code = up.code
+                WHERE u.status = 'A'
+                AND u.code != ?
+                AND EXISTS (
+                    SELECT 1 FROM user_activity ua
+                    WHERE ua.viewer_code = ?
+                    AND ua.viewed_code = u.code
+                )
+            ) AS suggestions
+            GROUP BY code
+            ORDER BY fullname ASC
+        ", [$code, $profession, $code, $code, $code]);
+
+        return response()->json([
+            'success' => true,
+            'count' => count($results),
+            'data' => $results,
+        ]);
+    }
+
+
+
+
 }
