@@ -59,36 +59,88 @@ class SearchHistoryDAL extends Model
             ->where('viewed_code', $viewedCode)
             ->exists();
     }
-
+    
     public function getSearchHistory()
     {
-        $currentUser = Auth::user();
+        $currentUserCode = Auth::user()->code;
 
-        if (!$currentUser || !$currentUser->code) {
-            return response()->json([
-                'message' => '❌ Unauthorized access. User not authenticated.',
-            ], 401);
-        }
-
-        $currentUserCode = $currentUser->code;
-        
         $history = DB::table('user_activity')
-            ->where('viewer_code', $currentUserCode)
-            ->orderBy('timestamp', 'desc')
-            ->get();
+            ->leftJoin('resources', 'user_activity.viewed_code', '=', 'resources.code')
+            ->leftJoin('userprofiles', 'user_activity.viewed_code', '=', 'userprofiles.code')
+            ->select(
+                'user_activity.activity_type',
+                'user_activity.timestamp',
+                'user_activity.viewed_code',
+                'resources.fullname',
+                'resources.profession',
+                'userprofiles.photo_pic'
+            )
+            ->where('user_activity.viewer_code', $currentUserCode)
+            ->orderBy('user_activity.timestamp', 'desc')
+            ->get()
+            ->map(function ($item) {
+                // Handle "search" activity differently
+                if ($item->activity_type === 'search') {
+                    return [
+                        'type'       => 'search',
+                        'keyword'    => $item->viewed_code,
+                        'timestamp'  => $item->timestamp,
+                    ];
+                }
+
+                // For "view" activity, show user profile info
+                return [
+                    'type'       => 'view',
+                    'code'       => $item->viewed_code,
+                    'fullname'   => $item->fullname,
+                    'profession' => $item->profession,
+                    'photo_pic'  => $item->photo_pic,
+                    'timestamp'  => $item->timestamp,
+                ];
+            });
 
         if ($history->isEmpty()) {
             return response()->json([
-                'message' => '📭 No search history found for user: ' . $currentUserCode,
-                'data'    => [],
+                'message' => 'No search history found.',
+                'data' => [],
             ], 404);
         }
 
         return response()->json([
             'message' => '✅ Search history retrieved successfully.',
             'data'    => $history,
-        ], 200);
+        ]);
     }
+
+    // public function getSearchHistory()
+    // {
+    //     $currentUser = Auth::user();
+
+    //     if (!$currentUser || !$currentUser->code) {
+    //         return response()->json([
+    //             'message' => '❌ Unauthorized access. User not authenticated.',
+    //         ], 401);
+    //     }
+
+    //     $currentUserCode = $currentUser->code;
+
+    //     $history = DB::table('user_activity')
+    //         ->where('viewer_code', $currentUserCode)
+    //         ->orderBy('timestamp', 'desc')
+    //         ->get();
+
+    //     if ($history->isEmpty()) {
+    //         return response()->json([
+    //             'message' => '📭 No search history found for user: ' . $currentUserCode,
+    //             'data'    => [],
+    //         ], 404);
+    //     }
+
+    //     return response()->json([
+    //         'message' => '✅ Search history retrieved successfully.',
+    //         'data'    => $history,
+    //     ], 200);
+    // }
 
 
 
