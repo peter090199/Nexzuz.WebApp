@@ -14,20 +14,6 @@ class UserController extends Controller
     {
         $search = trim($request->input('search', ''));
     
-          // ✅ Only log non-empty searches
-            if (!empty($search)) {
-                $viewerCode = Auth::user()?->code;
-
-                if ($viewerCode) {
-                    // 🔁 Save search keyword to search history
-                    app(\App\Models\DAL\SearchHistoryDAL::class)->saveSearchHistory([
-                        'viewer_code'   => $viewerCode,
-                        'activity_type' => 'search',
-                        'viewed_code'   => $search, // Storing search keyword here
-                    ]);
-                }
-            }
-            
         $users = DB::table('users')
             ->leftJoin('userprofiles', 'userprofiles.code', '=', 'users.code')
             ->leftJoin('userskills', 'userskills.code', '=', 'users.code')
