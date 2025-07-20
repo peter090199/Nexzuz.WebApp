@@ -16,7 +16,7 @@ class SearchHistoryBAL extends Controller
         $this->searchHistoryDAL = $searchHistoryDAL;
     }
 
-    public function saveSearchHistory(Request $data)
+    public function saveSearchHistory($data)
     {
         return $this->searchHistoryDAL->saveSearchHistory($data);
     }
