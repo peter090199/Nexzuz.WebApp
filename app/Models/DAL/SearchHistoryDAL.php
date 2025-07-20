@@ -28,7 +28,7 @@ class SearchHistoryDAL extends Model
             'viewed_code' => 'nullable|string',
         ]);
 
-        $activity = UserActivity::create([
+        $activity = user_activity::create([
             'viewer_code' => $data->viewer_code,
             'viewed_code' => $data->viewed_code,
             'activity_type' => $data->activity_type,
