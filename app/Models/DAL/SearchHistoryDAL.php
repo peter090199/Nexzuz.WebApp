@@ -13,6 +13,7 @@ use Carbon\Carbon;
 class SearchHistoryDAL extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
+
     protected $table = 'user_activity';
 
     protected $fillable = [
@@ -24,16 +25,23 @@ class SearchHistoryDAL extends Model
 
     public $timestamps = false;
 
-
-    public function saveSearchHistory(array $data)
+    /**
+     * Save search history data using DB facade.
+     *
+     * @param array $data
+     * @return bool
+     */
+    public function saveSearchHistory(array $data): bool
     {
-        return $table::create([
-            'viewer_code' => $data['viewer_code'],
-            'viewed_code' => $data['viewed_code'] ?? null,
+        if (empty($data) || !isset($data['viewer_code'], $data['activity_type'])) {
+            return false;
+        }
+
+        return DB::table($this->table)->insert([
+            'viewer_code'   => $data['viewer_code'],
+            'viewed_code'   => $data['viewed_code'] ?? null,
             'activity_type' => $data['activity_type'],
-            'timestamp' => Carbon::now(),
+            'timestamp'     => Carbon::now(),
         ]);
     }
-    
-
 }
