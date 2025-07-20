@@ -27,13 +27,13 @@ class SearchHistoryDAL extends Model
 
     public function saveSearchHistory(array $data)
     {
-        return $table::create([
+        return $self::create([
             'viewer_code' => $data['viewer_code'],
             'viewed_code' => $data['viewed_code'] ?? null,
             'activity_type' => $data['activity_type'],
             'timestamp' => Carbon::now(),
         ]);
     }
-    
+
 
 }
