@@ -62,25 +62,34 @@ class SearchHistoryDAL extends Model
 
     public function getSearchHistory()
     {
-        $currentUserCode = Auth::user()->code;
+        $currentUser = Auth::user();
 
+        if (!$currentUser || !$currentUser->code) {
+            return response()->json([
+                'message' => '❌ Unauthorized access. User not authenticated.',
+            ], 401);
+        }
+
+        $currentUserCode = $currentUser->code;
+        
         $history = DB::table('user_activity')
-            ->where('viewer_code', $currentUserCode['viewer_code'])
+            ->where('viewer_code', $currentUserCode)
             ->orderBy('timestamp', 'desc')
             ->get();
 
         if ($history->isEmpty()) {
             return response()->json([
-                'message' => 'No search history: ' . $currentUserCode['viewer_code'],
-                'data' => [],
+                'message' => '📭 No search history found for user: ' . $currentUserCode,
+                'data'    => [],
             ], 404);
         }
-        
+
         return response()->json([
             'message' => '✅ Search history retrieved successfully.',
-            'data' => $history,
-        ]);
+            'data'    => $history,
+        ], 200);
     }
+
 
 
 }
