@@ -31,12 +31,20 @@ class SearchHistoryDAL extends Model
      * @param array $data
      * @return bool
      */
-    public function saveSearchHistory(array $data): bool
+   public function saveSearchHistory(array $data): bool
     {
-        if (empty($data) || !isset($data['viewer_code'], $data['activity_type'])) {
-            return false;
+        // Check if a similar activity already exists
+        $exists = DB::table($this->table)
+            ->where('viewer_code', $data['viewer_code'])
+            ->where('viewed_code', $data['viewed_code'] ?? null)
+            ->where('activity_type', $data['activity_type'])
+            ->exists();
+
+        if ($exists) {
+            return false; // Skip insert to avoid duplication
         }
 
+        // Insert new activity
         return DB::table($this->table)->insert([
             'viewer_code'   => $data['viewer_code'],
             'viewed_code'   => $data['viewed_code'] ?? null,
@@ -44,4 +52,5 @@ class SearchHistoryDAL extends Model
             'timestamp'     => Carbon::now(),
         ]);
     }
+
 }
