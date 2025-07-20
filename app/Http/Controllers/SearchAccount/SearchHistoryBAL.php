@@ -23,8 +23,12 @@ class SearchHistoryBAL extends Controller
             'viewed_code'   => 'nullable|string',
         ]);
 
-        // ✅ Save using DAL
-        $result = $this->searchHistoryDAL->saveSearchHistory($validated);
+    
+         if (empty($validated)) {
+            return response()->json([
+                'message' => '⚠️ No data provided.'
+            ], 400);
+        }
 
         if (!$result) {
             return response()->json([
@@ -32,6 +36,8 @@ class SearchHistoryBAL extends Controller
             ], 500); // or 400 depending on context
         }
 
+        // ✅ Save using DAL
+        $result = $this->searchHistoryDAL->saveSearchHistory($validated);
         return response()->json([
             'message' => '✅ Search history saved successfully.',
             'data'    => $validated
