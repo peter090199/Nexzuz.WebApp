@@ -25,7 +25,7 @@ use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
 
 use App\Http\Controllers\Follow\ClientsBAL;
-
+use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -150,11 +150,11 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getPendingFollowRequests', [ClientsBAL::class, 'getPendingFollowRequests']);
     Route::get('getfollowingPending', [ClientsBAL::class, 'getfollowingPending']);
     Route::put('acceptFollowRequest/{followerCode}', [ClientsBAL::class, 'acceptFollowRequest']);
-    
     //unfollow
     Route::delete('unfollow/{id}', [ClientsBAL::class, 'unfollow']);
-    
     // Suggested users based on profession or industry of followed people
      Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
+
+     Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
     
 });
