@@ -34,5 +34,6 @@ class SearchHistoryDAL extends Model
             'timestamp' => Carbon::now(),
         ]);
     }
+    
 
 }
