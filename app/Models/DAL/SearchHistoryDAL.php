@@ -33,14 +33,12 @@ class SearchHistoryDAL extends Model
      */
    public function saveSearchHistory(array $data): bool
     {
-        
         // Check if a similar activity already exists
         $exists = DB::table($this->table)
             ->where('viewer_code', $data['viewer_code'])
             ->where('viewed_code', $data['viewed_code'] ?? null)
             ->where('activity_type', $data['activity_type'])
             ->exists();
-
      
         // Insert new activity
         return DB::table($this->table)->insert([
