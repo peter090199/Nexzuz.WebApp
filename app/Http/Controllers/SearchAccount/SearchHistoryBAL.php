@@ -27,7 +27,7 @@ class SearchHistoryBAL extends Controller
         if (empty($validated)) {
             return response()->json([
                 'message' => '⚠️ No data provided.'
-            ], 400);
+            ], 500);
         }
 
         // 🚫 Prevent saving history of your own profile
