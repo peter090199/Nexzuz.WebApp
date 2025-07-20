@@ -18,6 +18,11 @@ class SearchHistoryDAL
      */
     public function saveSearchHistory(array $data): bool
     {
+        // Prevent DB insert if data is empty or missing critical fields
+        if (empty($data['viewer_code']) || empty($data['activity_type'])) {
+            return false;
+        }
+
         return DB::table($this->table)->insert([
             'viewer_code'   => $data['viewer_code'],
             'viewed_code'   => $data['viewed_code'] ?? null,
@@ -25,4 +30,5 @@ class SearchHistoryDAL
             'timestamp'     => Carbon::now(),
         ]);
     }
+
 }
