@@ -60,5 +60,27 @@ class SearchHistoryDAL extends Model
             ->exists();
     }
 
+    public function getSearchHistory()
+    {
+        $currentUserCode = Auth::user()->code;
+
+        $history = DB::table('user_activity')
+            ->where('viewer_code', $currentUserCode['viewer_code'])
+            ->orderBy('timestamp', 'desc')
+            ->get();
+
+        if ($history->isEmpty()) {
+            return response()->json([
+                'message' => 'No search history: ' . $currentUserCode['viewer_code'],
+                'data' => [],
+            ], 404);
+        }
+        
+        return response()->json([
+            'message' => '✅ Search history retrieved successfully.',
+            'data' => $history,
+        ]);
+    }
+
 
 }

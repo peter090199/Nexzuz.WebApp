@@ -82,5 +82,11 @@ class SearchHistoryBAL extends Controller
         ], 201);
     }
 
+    public function getSearchHistory()
+    {
+        return $this->searchHistoryDAL->getSearchHistory();
+    }
+
+
 
 }
