@@ -15,7 +15,7 @@ class SearchHistoryBAL extends Controller
         $this->searchHistoryDAL = $searchHistoryDAL;
     }
     
-   public function saveSearchHistory(Request $request)
+    public function saveSearchHistory(Request $request)
     {
         $validated = $request->validate([
             'viewer_code'   => 'required|string',
@@ -23,31 +23,37 @@ class SearchHistoryBAL extends Controller
             'viewed_code'   => 'nullable|string',
         ]);
 
-        // Optional: Extra check in case data is missing after validation
         if (empty($validated)) {
             return response()->json([
                 'message' => '⚠️ No data provided.'
             ], 400);
         }
 
-       // 🚫 Prevent saving if the viewer is trying to log their own profile
+        // 🚫 Prevent saving history of your own profile
         if (
             isset($validated['viewed_code']) &&
             $validated['viewer_code'] === $validated['viewed_code']
         ) {
             return response()->json([
-                'message' => '⚠️ You cannot save activity for your own profile.',
-            ], 403); // Forbidden
+                'message' => '⚠️ Cannot save activity for your own profile.',
+            ], 403);
         }
 
-      
-          // ✅ Save using DAL
+        // ❌ Prevent duplicate viewed_code for the same viewer_code
+        $exists = $this->searchHistoryDAL->existsHistory($validated['viewer_code'], $validated['viewed_code']);
+        if ($exists) {
+            return response()->json([
+                'message' => '⚠️ Duplicate viewed_code. This activity already exists.'
+            ], 409);
+        }
+
+        // ✅ Save using DAL
         $result = $this->searchHistoryDAL->saveSearchHistory($validated);
 
         if (!$result) {
             return response()->json([
-                'message' => 'Dulicate viewed_code to save search history.'
-            ], 400); // or 400 if it's a client-side error
+                'message' => '❌ Failed to save search history.'
+            ], 500);
         }
 
         return response()->json([
@@ -55,5 +61,6 @@ class SearchHistoryBAL extends Controller
             'data'    => $validated
         ], 201);
     }
+
 
 }
