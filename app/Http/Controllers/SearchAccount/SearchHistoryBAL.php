@@ -36,7 +36,7 @@ class SearchHistoryBAL extends Controller
             $validated['viewer_code'] === $validated['viewed_code']
         ) {
             return response()->json([
-                'message' => '⚠️ You cannot save activity for your own code.',
+                'message' => '⚠️ You cannot save activity for your own profile.',
             ], 403); // Forbidden
         }
 
