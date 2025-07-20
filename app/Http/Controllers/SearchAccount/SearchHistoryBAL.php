@@ -42,12 +42,23 @@ class SearchHistoryBAL extends Controller
         // 🚫 Reject if viewed_code is non-empty and not numeric
         if (
             isset($validated['viewed_code']) &&
-            (!is_numeric($validated['viewed_code']) || !is_numeric($validated['viewer_code']) || $validated['viewed_code'] === '')
+            (!is_numeric($validated['viewed_code']) || $validated['viewed_code'] === '')
         ) {
             return response()->json([
                 'message' => '❌ Invalid viewed_code. It must be a number or null.'
             ], 400);
         }
+
+        if (
+         !is_numeric($validated['viewer_code']) ||
+            $validated['viewer_code'] === ''
+        ) {
+            return response()->json([
+                'message' => '❌ Invalid viewer_code. It must be a number.'
+            ], 400);
+        }
+
+
         // ❌ Prevent duplicate viewed_code for the same viewer_code
         $exists = $this->searchHistoryDAL->existsHistory($validated['viewer_code'], $validated['viewed_code']);
         if ($exists) {
