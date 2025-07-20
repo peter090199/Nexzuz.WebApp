@@ -5,7 +5,6 @@ namespace App\Http\Controllers\SearchAccount;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DAL\SearchHistoryDAL;
-use Illuminate\Support\Facades\Auth;
 
 class SearchHistoryBAL extends Controller
 {
@@ -15,9 +14,10 @@ class SearchHistoryBAL extends Controller
     {
         $this->searchHistoryDAL = $searchHistoryDAL;
     }
-
-    public function saveSearchHistory($data)
+    public function saveSearchHistory(Request $request)
     {
+        $data = $request->only(['viewer_code', 'viewed_code', 'activity_type']);
+
         return $this->searchHistoryDAL->saveSearchHistory($data);
     }
 }
