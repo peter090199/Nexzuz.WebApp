@@ -14,10 +14,22 @@ class SearchHistoryBAL extends Controller
     {
         $this->searchHistoryDAL = $searchHistoryDAL;
     }
-    public function saveSearchHistory(Request $request)
+    
+    public function store(Request $request)
     {
-        $data = $request->only(['viewer_code', 'viewed_code', 'activity_type']);
+        // ✅ Validate the request
+        $validated = $request->validate([
+            'viewer_code' => 'required|string',
+            'activity_type' => 'required|string',
+            'viewed_code' => 'nullable|string',
+        ]);
 
-        return $this->searchHistoryDAL->saveSearchHistory($data);
+        // ✅ Save using DAL
+        $result = $this->searchHistoryDAL->saveSearchHistory($validated);
+
+        return response()->json([
+            'message' => 'Search history saved successfully.',
+            'data' => $result
+        ], 201);
     }
 }

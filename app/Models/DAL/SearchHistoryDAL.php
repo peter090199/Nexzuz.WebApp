@@ -8,36 +8,20 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SearchHistoryDAL extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
+    protected $table = 'user_activity'; // ✅ Table this DAL works with
 
-     protected $fillable = [
-        'viewer_code',
-        'viewed_code',
-        'activity_type',
-        'timestamp',
-    ];
-
-    public function saveSearchHistory($data)
+    public function saveSearchHistory(array $data)
     {
-        $data->validate([
-            'viewer_code' => 'required|string',
-            'activity_type' => 'required|string',
-            'viewed_code' => 'nullable|string',
-        ]);
-
-        $activity = user_activity::create([
-            'viewer_code' => $data->viewer_code,
-            'viewed_code' => $data->viewed_code,
-            'activity_type' => $data->activity_type,
+        return user_activity::create([
+            'viewer_code' => $data['viewer_code'],
+            'viewed_code' => $data['viewed_code'] ?? null,
+            'activity_type' => $data['activity_type'],
             'timestamp' => Carbon::now(),
-        ]);
-
-        return response()->json([
-            'message' => 'Activity recorded.',
-            'data' => $activity
         ]);
     }
 
