@@ -33,6 +33,9 @@ class SearchHistoryDAL extends Model
      */
    public function saveSearchHistory(array $data): bool
     {
+        if (!isset($data['viewed_code'])) {
+            return false; // or throw exception if needed
+        }
         // Check if a similar activity already exists
         $exists = DB::table($this->table)
             ->where('viewer_code', $data['viewer_code'])
