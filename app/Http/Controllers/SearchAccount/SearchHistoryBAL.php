@@ -36,7 +36,7 @@ class SearchHistoryBAL extends Controller
         if (!$result) {
             return response()->json([
                 'message' => 'Dulicate viewed_code to save search history.'
-            ], 201); // or 400 if it's a client-side error
+            ], 400); // or 400 if it's a client-side error
         }
 
         return response()->json([
