@@ -30,6 +30,16 @@ class SearchHistoryBAL extends Controller
             ], 400);
         }
 
+       // 🚫 Prevent saving if the viewer is trying to log their own profile
+        if (
+            isset($validated['viewed_code']) &&
+            $validated['viewer_code'] === $validated['viewed_code']
+        ) {
+            return response()->json([
+                'message' => '⚠️ You cannot save activity for your own code.',
+            ], 403); // Forbidden
+        }
+        
         // ✅ Save using DAL
         $result = $this->searchHistoryDAL->saveSearchHistory($validated);
 
