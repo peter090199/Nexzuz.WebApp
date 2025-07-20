@@ -51,4 +51,13 @@ class SearchHistoryDAL extends Model
         ]);
     }
 
+    public function existsHistory(string $viewerCode, ?string $viewedCode): bool
+    {
+        return DB::table($this->table)
+            ->where('viewer_code', $viewerCode)
+            ->where('viewed_code', $viewedCode)
+            ->exists();
+    }
+
+
 }
