@@ -13,7 +13,6 @@ use Carbon\Carbon;
 class SearchHistoryDAL extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
-    protected $table = 'user_activity'; // ✅ Table this DAL works with
 
     public function saveSearchHistory(array $data)
     {
