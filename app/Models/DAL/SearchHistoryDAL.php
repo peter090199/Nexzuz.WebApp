@@ -13,10 +13,21 @@ use Carbon\Carbon;
 class SearchHistoryDAL extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
+    protected $table = 'user_activity';
+
+    protected $fillable = [
+        'viewer_code',
+        'viewed_code',
+        'activity_type',
+        'timestamp',
+    ];
+
+    public $timestamps = false;
+
 
     public function saveSearchHistory(array $data)
     {
-        return user_activity::create([
+        return $table::create([
             'viewer_code' => $data['viewer_code'],
             'viewed_code' => $data['viewed_code'] ?? null,
             'activity_type' => $data['activity_type'],
