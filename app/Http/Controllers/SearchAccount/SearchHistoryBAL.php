@@ -42,7 +42,7 @@ class SearchHistoryBAL extends Controller
         // 🚫 Reject if viewed_code is non-empty and not numeric
         if (
             isset($validated['viewed_code']) &&
-            (!is_numeric($validated['viewed_code']) || $validated['viewed_code'] === '')
+            (!is_numeric($validated['viewed_code']) || !is_numeric($validated['viewer_code']) || $validated['viewed_code'] === '')
         ) {
             return response()->json([
                 'message' => '❌ Invalid viewed_code. It must be a number or null.'
