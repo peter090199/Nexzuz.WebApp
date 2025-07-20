@@ -18,9 +18,9 @@ class SearchHistoryBAL extends Controller
     public function saveSearchHistory(Request $request)
     {
        $validated = $request->validate([
-            'viewer_code'   => 'required|numeric',
+            'viewer_code'   => 'required|integer',
             'activity_type' => 'required|string',
-            'viewed_code'   => 'nullable|numeric',
+            'viewed_code'   => 'nullable|integer',
         ]);
 
 
