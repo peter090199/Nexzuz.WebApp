@@ -156,5 +156,5 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     
     // Suggested users based on profession or industry of followed people
      Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
-
+    
 });
