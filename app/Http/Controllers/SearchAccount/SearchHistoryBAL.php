@@ -39,15 +39,16 @@ class SearchHistoryBAL extends Controller
                 'message' => '⚠️ You cannot save activity for your own code.',
             ], 403); // Forbidden
         }
-        
-        // ✅ Save using DAL
-        $result = $this->searchHistoryDAL->saveSearchHistory($validated);
 
+      
         if (!$result) {
             return response()->json([
                 'message' => 'Dulicate viewed_code to save search history.'
             ], 400); // or 400 if it's a client-side error
         }
+
+          // ✅ Save using DAL
+        $result = $this->searchHistoryDAL->saveSearchHistory($validated);
 
         return response()->json([
             'message' => '✅ Search history saved successfully.',
