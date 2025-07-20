@@ -20,7 +20,7 @@ class SearchHistoryDAL extends Model
         'timestamp',
     ];
 
-    public function saveSearchHistory(Request $data)
+    public function saveSearchHistory($data)
     {
         $data->validate([
             'viewer_code' => 'required|string',
