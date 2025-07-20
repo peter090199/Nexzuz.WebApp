@@ -156,6 +156,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
      Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
 
      Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
-     Route::get('getSearchHistory', [ClientsBAL::class, 'getSearchHistory']);
+     Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
 
 });
