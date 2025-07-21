@@ -153,10 +153,12 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //unfollow
     Route::delete('unfollow/{id}', [ClientsBAL::class, 'unfollow']);
     // Suggested users based on profession or industry of followed people
-     Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
+    Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
+    Route::get('getPeopleRecentActivity', [ClientsBAL::class, 'getPeopleRecentActivity']);
+    
+    Route::delete('deleteSearchHistory', [SearchHistoryBAL::class, 'deleteSearchHistory']);
+    Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
+    Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
 
-     Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
-     Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
-     Route::get('getPeopleRecentActivity', [ClientsBAL::class, 'getPeopleRecentActivity']);
 
 });

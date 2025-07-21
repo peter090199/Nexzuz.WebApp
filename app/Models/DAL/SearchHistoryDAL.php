@@ -59,7 +59,7 @@ class SearchHistoryDAL extends Model
             ->where('viewed_code', $viewedCode)
             ->exists();
     }
-    
+
     public function getSearchHistory()
     {
         $currentUserCode = Auth::user()->code;
@@ -112,35 +112,34 @@ class SearchHistoryDAL extends Model
         ]);
     }
 
-    // public function getSearchHistory()
-    // {
-    //     $currentUser = Auth::user();
+    public function deleteSearchHistory()
+    {
+        try {
+            $currentUserCode = Auth::user()->code;
 
-    //     if (!$currentUser || !$currentUser->code) {
-    //         return response()->json([
-    //             'message' => '❌ Unauthorized access. User not authenticated.',
-    //         ], 401);
-    //     }
+            $deleted = DB::table('user_activity')
+                ->where('viewer_code', $currentUserCode)
+                ->delete();
 
-    //     $currentUserCode = $currentUser->code;
+            return response()->json([
+                'success' => true,
+                'message' => $deleted > 0
+                    ? '✅ Search history cleared successfully.'
+                    : '⚠️ No history found to delete.',
+                'deleted_rows' => $deleted,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete search history', [
+                'user_code' => Auth::user()->code,
+                'error' => $e->getMessage(),
+            ]);
 
-    //     $history = DB::table('user_activity')
-    //         ->where('viewer_code', $currentUserCode)
-    //         ->orderBy('timestamp', 'desc')
-    //         ->get();
-
-    //     if ($history->isEmpty()) {
-    //         return response()->json([
-    //             'message' => '📭 No search history found for user: ' . $currentUserCode,
-    //             'data'    => [],
-    //         ], 404);
-    //     }
-
-    //     return response()->json([
-    //         'message' => '✅ Search history retrieved successfully.',
-    //         'data'    => $history,
-    //     ], 200);
-    // }
+            return response()->json([
+                'success' => false,
+                'message' => '❌ Failed to delete search history. Please try again.',
+            ], 500);
+        }
+    }
 
 
 

@@ -86,6 +86,11 @@ class SearchHistoryBAL extends Controller
     {
         return $this->searchHistoryDAL->getSearchHistory();
     }
+        public function deleteSearchHistory()
+    {
+        return $this->searchHistoryDAL->deleteSearchHistory();
+    }
+
 
 
 
