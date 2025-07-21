@@ -359,7 +359,79 @@ class ClientsDAL extends Model
 
 
      // Suggested users based on profession or industry of followed people
-        public function getPeopleyoumayknow(): JsonResponse
+    public function getPeopleyoumayknow(): JsonResponse
+    {
+        try {
+            $code = Auth::user()->code;
+
+            // Get user's profession
+            $profession = DB::table('resources')->where('code', $code)->value('profession');
+
+            $results = DB::select("
+                SELECT 
+                    s.photo_pic,
+                    s.fullname,
+                    s.profession,
+                    s.company,
+                    s.industry,
+                    s.code,
+                    s.is_online,
+                    s.source,
+                    f.id,
+                    COALESCE(f.follow_status, 'none') AS follow_status
+                FROM (
+                    -- Suggested users only (no UNION, no history)
+                    SELECT 
+                        up.photo_pic,
+                        r.fullname,
+                        r.profession,
+                        r.company,
+                        r.industry,
+                        u.code,
+                        u.is_online,
+                        'suggested' AS source
+                    FROM users u
+                    INNER JOIN resources r ON u.code = r.code
+                    LEFT JOIN userprofiles up ON u.code = up.code
+                    WHERE u.status = 'A'
+                    AND u.code != ?
+                    AND (
+                        r.profession = ?
+                        OR EXISTS (
+                            SELECT 1
+                            FROM follows f
+                            JOIN resources r2 ON f.following_code = r2.code
+                            WHERE f.follower_code = ?
+                            AND r2.industry = r.industry
+                        )
+                    )
+                ) s
+                LEFT JOIN follows f 
+                    ON f.follower_code = ?
+                    AND f.following_code = s.code
+                ORDER BY s.fullname ASC
+            ", [$code, $profession, $code, $code]);
+
+            return response()->json([
+                'success' => true,
+                'count' => count($results),
+                'data' => $results,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('People you may know error', [
+                'user_code' => Auth::user()->code,
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again later.'
+            ], 500);
+        }
+    }
+
+     public function getPeopleyoumayknowxxx(): JsonResponse
         {
           try {
                 $code = Auth::user()->code;
