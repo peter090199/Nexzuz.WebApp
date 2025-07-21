@@ -53,6 +53,10 @@ class ClientsBAL extends Controller
     {
         return $this->clientsDAL->getPeopleyoumayknow();
     }
+        public function getPeopleRecentActivity()
+    {
+        return $this->clientsDAL->getPeopleRecentActivity();
+    }
 
     
 

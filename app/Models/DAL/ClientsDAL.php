@@ -431,6 +431,58 @@ class ClientsDAL extends Model
         }
     }
 
+    public function getPeopleRecentActivity(): JsonResponse
+    {
+        try {
+            $code = Auth::user()->code;
+
+            $results = DB::select("
+                SELECT 
+                    up.photo_pic,
+                    r.fullname,
+                    r.profession,
+                    r.company,
+                    r.industry,
+                    u.code,
+                    u.is_online,
+                    'history' AS source,
+                    f.id,
+                    COALESCE(f.follow_status, 'none') AS follow_status
+                FROM users u
+                INNER JOIN resources r ON u.code = r.code
+                LEFT JOIN userprofiles up ON u.code = up.code
+                LEFT JOIN follows f ON f.follower_code = ? AND f.following_code = u.code
+                WHERE u.status = 'A'
+                    AND u.code != ?
+                    AND EXISTS (
+                        SELECT 1 
+                        FROM user_activity ua
+                        WHERE ua.viewer_code = ?
+                            AND ua.viewed_code = u.code
+                    )
+                ORDER BY r.fullname ASC
+            ", [$code, $code, $code]);
+
+            return response()->json([
+                'success' => true,
+                'count' => count($results),
+                'data' => $results,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('People you may know error', [
+                'user_code' => Auth::user()->code,
+                'message' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again later.'
+            ], 500);
+        }
+    }
+
+
      public function getPeopleyoumayknowxxx(): JsonResponse
         {
           try {
