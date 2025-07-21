@@ -124,8 +124,8 @@ class SearchHistoryDAL extends Model
             return response()->json([
                 'success' => true,
                 'message' => $deleted > 0
-                    ? '✅ Search history cleared successfully.'
-                    : '⚠️ No history found to delete.',
+                    ? 'Search history cleared successfully.'
+                    : 'No history found to delete.',
                 'deleted_rows' => $deleted,
             ]);
         } catch (\Exception $e) {
@@ -136,7 +136,7 @@ class SearchHistoryDAL extends Model
 
             return response()->json([
                 'success' => false,
-                'message' => '❌ Failed to delete search history. Please try again.',
+                'message' => 'Failed to delete search history. Please try again.',
             ], 500);
         }
     }
