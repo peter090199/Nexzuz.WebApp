@@ -431,7 +431,6 @@ class ClientsDAL extends Model
         }
     }
 
-
     public function getPeopleRecentActivity(): JsonResponse
     {
         try {
@@ -447,7 +446,8 @@ class ClientsDAL extends Model
                     u.code,
                     u.is_online,
                     'history' AS source,
-                    f.id
+                    f.id,
+                    COALESCE(f.follow_status, 'none') AS follow_status
                 FROM users u
                 INNER JOIN resources r ON u.code = r.code
                 LEFT JOIN userprofiles up ON u.code = up.code
