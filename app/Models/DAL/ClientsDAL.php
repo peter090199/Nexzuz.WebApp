@@ -431,6 +431,7 @@ class ClientsDAL extends Model
         }
     }
 
+
     public function getPeopleRecentActivity(): JsonResponse
     {
         try {
@@ -446,38 +447,22 @@ class ClientsDAL extends Model
                     u.code,
                     u.is_online,
                     'history' AS source,
-                    f1.id AS f1_id,
-                    f2.id AS f2_id,
-                    f1.follower_code AS f1_follower_code,
-                    f1.following_code AS f1_following_code,
-                    f2.follower_code AS f2_follower_code,
-                    f2.following_code AS f2_following_code,
-                    'accepted' AS follow_status
+                    f.id,
+                    COALESCE(f.follow_status, 'none') AS follow_status
                 FROM users u
                 INNER JOIN resources r ON u.code = r.code
                 LEFT JOIN userprofiles up ON u.code = up.code
-                -- Current user follows the other user
-                LEFT JOIN follows f1 
-                    ON f1.follower_code = ? 
-                AND f1.following_code = u.code 
-                AND f1.follow_status = 'accepted'
-                -- Other user follows current user
-                LEFT JOIN follows f2 
-                    ON f2.follower_code = u.code 
-                AND f2.following_code = ? 
-                AND f2.follow_status = 'accepted'
+                LEFT JOIN follows f ON f.follower_code = ? AND f.following_code = u.code
                 WHERE u.status = 'A'
-                AND u.code != ?
-                AND f1.id IS NOT NULL
-                AND f2.id IS NOT NULL
-                AND EXISTS (
-                    SELECT 1 
-                    FROM user_activity ua
-                    WHERE ua.viewer_code = ?
-                        AND ua.viewed_code = u.code
-                )
+                    AND u.code != ?
+                    AND EXISTS (
+                        SELECT 1 
+                        FROM user_activity ua
+                        WHERE ua.viewer_code = ?
+                            AND ua.viewed_code = u.code
+                    )
                 ORDER BY r.fullname ASC
-            ", [$code, $code, $code, $code]);
+            ", [$code, $code, $code]);
 
             return response()->json([
                 'success' => true,
@@ -486,7 +471,7 @@ class ClientsDAL extends Model
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('People recent activity error', [
+            \Log::error('People you may know error', [
                 'user_code' => Auth::user()->code,
                 'message' => $e->getMessage()
             ]);
@@ -497,57 +482,6 @@ class ClientsDAL extends Model
             ], 500);
         }
     }
-
-    // public function getPeopleRecentActivity(): JsonResponse
-    // {
-    //     try {
-    //         $code = Auth::user()->code;
-
-    //         $results = DB::select("
-    //             SELECT 
-    //                 up.photo_pic,
-    //                 r.fullname,
-    //                 r.profession,
-    //                 r.company,
-    //                 r.industry,
-    //                 u.code,
-    //                 u.is_online,
-    //                 'history' AS source,
-    //                 f.id,
-    //                 COALESCE(f.follow_status, 'none') AS follow_status
-    //             FROM users u
-    //             INNER JOIN resources r ON u.code = r.code
-    //             LEFT JOIN userprofiles up ON u.code = up.code
-    //             LEFT JOIN follows f ON f.follower_code = ? AND f.following_code = u.code
-    //             WHERE u.status = 'A'
-    //                 AND u.code != ?
-    //                 AND EXISTS (
-    //                     SELECT 1 
-    //                     FROM user_activity ua
-    //                     WHERE ua.viewer_code = ?
-    //                         AND ua.viewed_code = u.code
-    //                 )
-    //             ORDER BY r.fullname ASC
-    //         ", [$code, $code, $code]);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'count' => count($results),
-    //             'data' => $results,
-    //         ]);
-
-    //     } catch (\Exception $e) {
-    //         \Log::error('People you may know error', [
-    //             'user_code' => Auth::user()->code,
-    //             'message' => $e->getMessage()
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Something went wrong. Please try again later.'
-    //         ], 500);
-    //     }
-    // }
 
 
      public function getPeopleyoumayknowxxx(): JsonResponse
