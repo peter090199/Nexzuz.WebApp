@@ -448,7 +448,7 @@ class ClientsDAL extends Model
                     u.is_online,
                     'history' AS source,
                     f.id,
-                    COALESCE(f.follow_status, 'none') AS follow_status
+                    COALESCE(f.follow_status, 'accepted') AS follow_status
                 FROM users u
                 INNER JOIN resources r ON u.code = r.code
                 LEFT JOIN userprofiles up ON u.code = up.code
