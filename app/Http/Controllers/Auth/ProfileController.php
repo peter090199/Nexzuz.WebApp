@@ -19,6 +19,7 @@ use App\Models\Usercertificate;
 use DB;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -450,7 +451,7 @@ class ProfileController extends Controller
                 'contact_no' => 'nullable|string|max:255',
                 'contact_visibility' => 'nullable|boolean',
                 'email_visibility' => 'nullable|boolean',
-                'date_birth' => 'nullable|date',
+                'date_birth' => 'nullable|string', // validate as string first
                 'photo_pic' => 'nullable|file|image|max:2048',
             ]);
 
@@ -466,6 +467,19 @@ class ProfileController extends Controller
             $now = now();
             $photoPath = null;
 
+            // Convert date_birth to Y-m-d if provided
+            $formattedDateBirth = null;
+            if (!empty($data['date_birth'])) {
+                try {
+                    $formattedDateBirth = Carbon::createFromFormat('n/j/Y', $data['date_birth'])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Invalid date format. Please use MM/DD/YYYY format.',
+                    ], 422);
+                }
+            }
+
             // Handle image upload
             if ($request->hasFile('photo_pic')) {
                 $file = $request->file('photo_pic');
@@ -474,21 +488,22 @@ class ProfileController extends Controller
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
 
-                // Build your full URL path (based on your Hostinger storage URL)
                 $photoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
             }
 
-            // Check if user profile exists
+            // Prepare visibility defaults (Laravel casts "false"/"0" properly)
+            $contactVisibility = isset($data['contact_visibility']) ? (bool) $data['contact_visibility'] : false;
+            $emailVisibility = isset($data['email_visibility']) ? (bool) $data['email_visibility'] : false;
+
             $exists = UserProfile::where('code', $userCode)->first();
 
             if ($exists) {
-                // Update profile including image if present
                 $updateData = [
-                    'contact_no' => $data['contact_no'],
-                    'contact_visibility' => $data['contact_visibility'],
+                    'contact_no' => $data['contact_no'] ?? null,
+                    'contact_visibility' => $contactVisibility,
                     'email' => $email,
-                    'email_visibility' => $data['email_visibility'],
-                    'date_birth' => $data['date_birth'],
+                    'email_visibility' => $emailVisibility,
+                    'date_birth' => $formattedDateBirth,
                     'updated_at' => $now,
                 ];
                 if ($photoPath) {
@@ -497,28 +512,26 @@ class ProfileController extends Controller
 
                 UserProfile::where('code', $userCode)->update($updateData);
             } else {
-                // Insert new profile
                 $transNo = UserProfile::max('transNo');
                 $newTrans = empty($transNo) ? 1 : $transNo + 1;
 
                 UserProfile::insert([
                     'code' => $userCode,
                     'transNo' => $newTrans,
-                    'contact_no' => $data['contact_no'],
-                    'contact_visibility' => $data['contact_visibility'],
+                    'contact_no' => $data['contact_no'] ?? null,
+                    'contact_visibility' => $contactVisibility,
                     'email' => $email,
-                    'email_visibility' => $data['email_visibility'],
-                    'date_birth' => $data['date_birth'],
+                    'email_visibility' => $emailVisibility,
+                    'date_birth' => $formattedDateBirth,
                     'photo_pic' => $photoPath,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
             }
 
-            // Optional: update 'resources' table
             DB::table('resources')->where('code', $userCode)->update([
-                'contact_no' => $data['contact_no'],
-                'date_birth' => $data['date_birth'],
+                'contact_no' => $data['contact_no'] ?? null,
+                'date_birth' => $formattedDateBirth,
                 'updated_at' => $now,
             ]);
 
