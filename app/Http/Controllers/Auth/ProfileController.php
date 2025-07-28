@@ -566,13 +566,15 @@ class ProfileController extends Controller
                 'message' => 'Error occurred: ' . $th->getMessage(),
             ], 500);
         }
+        
     }
+
 
     public function getProfileByCode()
     {
         try {
             $code = Auth::user()->code;
-            $profile = DB::table('user_profiles as u')
+            $profile = DB::table('userprofiles as u')
                 ->leftJoin('resources as r', 'u.code', '=', 'r.code')
                 ->where('u.code', $code)
                 ->select(
