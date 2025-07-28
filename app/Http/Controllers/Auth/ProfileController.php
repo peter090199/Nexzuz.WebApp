@@ -568,6 +568,49 @@ class ProfileController extends Controller
         }
     }
 
+    public function getProfileByCode()
+    {
+        try {
+            $code = Auth::user()->code;
+            $profile = DB::table('user_profiles as u')
+                ->leftJoin('resources as r', 'u.code', '=', 'r.code')
+                ->where('u.code', $code)
+                ->select(
+                    'u.code',
+                    'u.contact_no',
+                    'u.contact_visibility',
+                    'u.email',
+                    'u.email_visibility',
+                    'u.date_birth',
+                    'u.photo_pic',
+                    'r.profession',
+                    'r.company',
+                    'r.industry',
+                    'u.created_at',
+                    'u.updated_at'
+                )
+                ->first();
+
+            if (!$profile) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Profile not found.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $profile,
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 
 
