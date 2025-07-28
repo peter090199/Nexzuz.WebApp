@@ -18,7 +18,7 @@ use App\Models\Useremploymentrecord;
 use App\Models\Usercertificate;
 use DB;
 use Illuminate\Support\Facades\File; 
-
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
@@ -540,7 +540,7 @@ class ProfileController extends Controller
     }
 
 
-    
+
 
 }
 
