@@ -160,5 +160,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
     Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
 
+     Route::post('saveProfile', [ProfileController::class, 'saveProfile']);
 
 });
