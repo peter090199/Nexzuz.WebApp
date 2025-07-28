@@ -498,6 +498,14 @@ class ProfileController extends Controller
             $exists = UserProfile::where('code', $userCode)->first();
 
             if ($exists) {
+                
+                  if (!$exists->photo_pic && !$photoPath) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Please select a profile photo to complete your profile.',
+                        ], 422);
+                    }
+
                 $updateData = [
                     'contact_no' => $data['contact_no'] ?? null,
                     'contact_visibility' => $contactVisibility,
@@ -512,6 +520,14 @@ class ProfileController extends Controller
 
                 UserProfile::where('code', $userCode)->update($updateData);
             } else {
+
+                if (!$photoPath) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Please select a photo before saving your profile.',
+                    ], 422);
+                }
+
                 $transNo = UserProfile::max('transNo');
                 $newTrans = empty($transNo) ? 1 : $transNo + 1;
 
