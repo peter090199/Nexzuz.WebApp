@@ -430,6 +430,118 @@ class ProfileController extends Controller
             return response()->json(['success'=>false,'message' => 'User is not authenticated']);
         }
     }
+
+
+    public function saveProfile(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $data = $request->all();
+
+            $validator = Validator::make($data, [
+                'contact_no' => 'nullable|string|max:255',
+                'contact_visibility' => 'nullable|boolean',
+                'email_visibility' => 'nullable|boolean',
+                'date_birth' => 'nullable|date',
+                'photo_pic' => 'nullable|file|image|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->all(),
+                ]);
+            }
+
+            $userCode = Auth::user()->code;
+            $email = Auth::user()->email;
+            $now = now();
+            $photoPath = null;
+
+            // Handle image upload
+            if ($request->hasFile('photo_pic')) {
+                $file = $request->file('photo_pic');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$userCode}/cvphoto/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+                // Build your full URL path (based on your Hostinger storage URL)
+                $photoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
+            }
+
+            // Check if user profile exists
+            $exists = UserProfile::where('code', $userCode)->first();
+
+            if ($exists) {
+                // Update profile including image if present
+                $updateData = [
+                    'contact_no' => $data['contact_no'],
+                    'contact_visibility' => $data['contact_visibility'],
+                    'email' => $email,
+                    'email_visibility' => $data['email_visibility'],
+                    'date_birth' => $data['date_birth'],
+                    'updated_at' => $now,
+                ];
+                if ($photoPath) {
+                    $updateData['photo_pic'] = $photoPath;
+                }
+
+                UserProfile::where('code', $userCode)->update($updateData);
+            } else {
+                // Insert new profile
+                $transNo = UserProfile::max('transNo');
+                $newTrans = empty($transNo) ? 1 : $transNo + 1;
+
+                UserProfile::insert([
+                    'code' => $userCode,
+                    'transNo' => $newTrans,
+                    'contact_no' => $data['contact_no'],
+                    'contact_visibility' => $data['contact_visibility'],
+                    'email' => $email,
+                    'email_visibility' => $data['email_visibility'],
+                    'date_birth' => $data['date_birth'],
+                    'photo_pic' => $photoPath,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
+            // Optional: update 'resources' table
+            DB::table('resources')->where('code', $userCode)->update([
+                'contact_no' => $data['contact_no'],
+                'date_birth' => $data['date_birth'],
+                'updated_at' => $now,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'photo_path' => $photoPath,
+                'message' => $exists ? 'Profile updated successfully.' : 'Profile created successfully.',
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred: ' . $th->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    
+
 }
 
 
