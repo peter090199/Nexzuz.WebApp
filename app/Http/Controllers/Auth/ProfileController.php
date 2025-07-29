@@ -432,9 +432,7 @@ class ProfileController extends Controller
             'data' => [
                 'code' => $profile->code,
                 'transNo' => $profile->transNo ?? null,
-                'contact_no' => $profile->contact_no ?? null,
                 'contact_visibility' => (bool) $profile->contact_visibility,
-                'email' => $profile->email ?? null,
                 'email_visibility' => (bool) $profile->email_visibility,
                 'date_birth' => $profile->date_birth,
                 'photo_pic' => $profile->photo_pic 
