@@ -494,6 +494,8 @@ class ProfileController extends Controller
                 'current_state' => 'nullable|string|max:255', // ✅ validate home_state
                 'current_location' => 'nullable|string|max:255',
                 'photo_pic' => 'nullable|file|image|max:2048',
+                'summary' => 'nullable|string|max:255',
+
             ]);
 
             if ($validator->fails()) {
@@ -551,6 +553,7 @@ class ProfileController extends Controller
                     'home_country' => $data['home_country'] ?? null,
                     'current_state' => $data['current_state'] ?? null,
                     'current_location' => $data['current_location'] ?? null,
+                    'summary' => $data['summary'] ?? null,
                     'updated_at' => $now,
                 ];
                 if ($photoPath) {
