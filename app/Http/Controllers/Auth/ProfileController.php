@@ -589,7 +589,6 @@ class ProfileController extends Controller
             $profile = UserProfile::where('code', $userCode)->first();
             return response()->json([
                 'success' => true,
-                'data' => $profile,
                 'message' => $exists ? 'Profile updated successfully.' : 'Profile created successfully.',
             ]);
 
