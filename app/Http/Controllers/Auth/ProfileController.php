@@ -407,30 +407,78 @@ class ProfileController extends Controller
         //
     }
     
-    public function userAuth(){
-        if (Auth::check()) {
-            $user = Resource::where('code',Auth::user()->code)->get();
-            $result = [];
-            for($i = 0 ; $i < count($user); $i++){
-                $result [] = [
-                    "fullname" => $user[$i]->fullname,
-                    "email" =>  $user[$i]->email,
-                    "fname" => $user[$i]->fname,
-                    "lname" => $user[$i]->lname,
-                    "code" => $user[$i]->code,
-                    "contact_no" => $user[$i]->contact_no,
-                    "profession" => $user[$i]->profession,
-                    "industry" => $user[$i]->industry,
-                    "companywebsite" =>  $user[$i]->companywebsite,
-                    
-                ];
-            }         
-            return response()->json(['success' => true,'message' => $result]);
-        } 
-        else {
-            return response()->json(['success'=>false,'message' => 'User is not authenticated']);
+    public function userAuth()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is not authenticated'
+            ]);
         }
+
+        $code = Auth::user()->code;
+
+        $resource = Resource::where('code', $code)->first();
+        $profile = UserProfile::where('code', $code)->first();
+
+        if (!$resource || !$profile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User or profile not found'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                // From resources table
+                'fullname' => $resource->fullname,
+                'fname' => $resource->fname,
+                'lname' => $resource->lname,
+                'email' => $resource->email,
+                'code' => $resource->code,
+                'contact_no' => $resource->contact_no,
+                'profession' => $resource->profession,
+                'industry' => $resource->industry,
+                'companywebsite' => $resource->companywebsite,
+
+                // From user_profiles table
+                'transNo' => $profile->transNo,
+                'contact_visibility' => $profile->contact_visibility,
+                'email_visibility' => $profile->email_visibility,
+                'date_birth' => $profile->date_birth,
+                'photo_pic' => $profile->photo_pic,
+                'created_at' => $profile->created_at,
+                'updated_at' => $profile->updated_at,
+            ],
+            'message' => 'Profile loaded successfully.'
+        ]);
     }
+
+    // public function userAuth(){
+    //     if (Auth::check()) {
+    //         $user = Resource::where('code',Auth::user()->code)->get();
+    //         $result = [];
+    //         for($i = 0 ; $i < count($user); $i++){
+    //             $result [] = [
+    //                 "fullname" => $user[$i]->fullname,
+    //                 "email" =>  $user[$i]->email,
+    //                 "fname" => $user[$i]->fname,
+    //                 "lname" => $user[$i]->lname,
+    //                 "code" => $user[$i]->code,
+    //                 "contact_no" => $user[$i]->contact_no,
+    //                 "profession" => $user[$i]->profession,
+    //                 "industry" => $user[$i]->industry,
+    //                 "companywebsite" =>  $user[$i]->companywebsite,
+                    
+    //             ];
+    //         }         
+    //         return response()->json(['success' => true,'message' => $result]);
+    //     } 
+    //     else {
+    //         return response()->json(['success'=>false,'message' => 'User is not authenticated']);
+    //     }
+    // }
 
 
     public function saveProfile(Request $request)
@@ -552,10 +600,11 @@ class ProfileController extends Controller
             ]);
 
             DB::commit();
-
+            
+            $profile = UserProfile::where('code', $userCode)->first();
             return response()->json([
                 'success' => true,
-                'photo_path' => $photoPath,
+                'data' => $profile,
                 'message' => $exists ? 'Profile updated successfully.' : 'Profile created successfully.',
             ]);
 
