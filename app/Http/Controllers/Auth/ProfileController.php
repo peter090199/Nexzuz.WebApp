@@ -489,7 +489,10 @@ class ProfileController extends Controller
                 'contact_visibility' => 'nullable|boolean',
                 'email_visibility' => 'nullable|boolean',
                 'date_birth' => 'nullable|string',
-                'home_state' => 'nullable|string|max:255', // ✅ validate home_state
+                'home_country' => 'nullable|string|max:255', // ✅ validate home_state
+                'home_state' => 'nullable|string|max:255',
+                'current_state' => 'nullable|string|max:255', // ✅ validate home_state
+                'current_location' => 'nullable|string|max:255',
                 'photo_pic' => 'nullable|file|image|max:2048',
             ]);
 
@@ -535,7 +538,7 @@ class ProfileController extends Controller
                     return response()->json([
                         'success' => false,
                         'message' => 'Please select a profile photo to complete your profile.',
-                    ], 422);
+                    ], 404);
                 }
 
                 $updateData = [
@@ -544,7 +547,10 @@ class ProfileController extends Controller
                     'email' => $email,
                     'email_visibility' => $emailVisibility,
                     'date_birth' => $formattedDateBirth,
-                    'home_state' => $data['home_state'] ?? null, // ✅ added
+                    'home_state' => $data['home_state'] ?? null,
+                    'home_country' => $data['home_country'] ?? null,
+                    'current_state' => $data['current_state'] ?? null,
+                    'current_location' => $data['current_location'] ?? null,
                     'updated_at' => $now,
                 ];
                 if ($photoPath) {
