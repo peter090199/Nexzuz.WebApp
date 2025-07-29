@@ -573,7 +573,6 @@ class ProfileController extends Controller
                     'email_visibility' => $emailVisibility,
                     'date_birth' => $formattedDateBirth,
                     'photo_pic' => $photoPath,
-                    'home_state' => $data['home_state'] ?? null, // ✅ added
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
