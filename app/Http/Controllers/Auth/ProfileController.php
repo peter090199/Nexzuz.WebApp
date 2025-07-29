@@ -470,7 +470,6 @@ class ProfileController extends Controller
         }
     }
 
-
     public function saveProfile(Request $request)
     {
         if (!Auth::check()) {
@@ -489,7 +488,8 @@ class ProfileController extends Controller
                 'contact_no' => 'nullable|string|max:255',
                 'contact_visibility' => 'nullable|boolean',
                 'email_visibility' => 'nullable|boolean',
-                'date_birth' => 'nullable|string', // validate as string first
+                'date_birth' => 'nullable|string',
+                'home_state' => 'nullable|string|max:255', // ✅ validate home_state
                 'photo_pic' => 'nullable|file|image|max:2048',
             ]);
 
@@ -504,8 +504,6 @@ class ProfileController extends Controller
             $email = Auth::user()->email;
             $now = now();
             $photoPath = null;
-
-            // Convert date_birth to Y-m-d if provided
             $formattedDateBirth = null;
             if (!empty($data['date_birth'])) {
                 try {
@@ -518,31 +516,27 @@ class ProfileController extends Controller
                 }
             }
 
-            // Handle image upload
             if ($request->hasFile('photo_pic')) {
                 $file = $request->file('photo_pic');
                 $uuid = Str::uuid();
                 $folderPath = "uploads/{$userCode}/cvphoto/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
-
                 $photoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
             }
 
-            // Prepare visibility defaults (Laravel casts "false"/"0" properly)
             $contactVisibility = isset($data['contact_visibility']) ? (bool) $data['contact_visibility'] : false;
             $emailVisibility = isset($data['email_visibility']) ? (bool) $data['email_visibility'] : false;
 
             $exists = UserProfile::where('code', $userCode)->first();
 
             if ($exists) {
-                
-                  if (!$exists->photo_pic && !$photoPath) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Please select a profile photo to complete your profile.',
-                        ], 422);
-                    }
+                if (!$exists->photo_pic && !$photoPath) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Please select a profile photo to complete your profile.',
+                    ], 422);
+                }
 
                 $updateData = [
                     'contact_no' => $data['contact_no'] ?? null,
@@ -550,6 +544,7 @@ class ProfileController extends Controller
                     'email' => $email,
                     'email_visibility' => $emailVisibility,
                     'date_birth' => $formattedDateBirth,
+                    'home_state' => $data['home_state'] ?? null, // ✅ added
                     'updated_at' => $now,
                 ];
                 if ($photoPath) {
@@ -557,8 +552,8 @@ class ProfileController extends Controller
                 }
 
                 UserProfile::where('code', $userCode)->update($updateData);
-            } else {
 
+            } else {
                 if (!$photoPath) {
                     return response()->json([
                         'success' => false,
@@ -578,6 +573,7 @@ class ProfileController extends Controller
                     'email_visibility' => $emailVisibility,
                     'date_birth' => $formattedDateBirth,
                     'photo_pic' => $photoPath,
+                    'home_state' => $data['home_state'] ?? null, // ✅ added
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
@@ -590,7 +586,7 @@ class ProfileController extends Controller
             ]);
 
             DB::commit();
-            
+
             $profile = UserProfile::where('code', $userCode)->first();
             return response()->json([
                 'success' => true,
@@ -605,7 +601,6 @@ class ProfileController extends Controller
                 'message' => 'Error occurred: ' . $th->getMessage(),
             ], 500);
         }
-        
     }
 
 
