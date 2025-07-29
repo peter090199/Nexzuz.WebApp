@@ -160,6 +160,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
     Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
 
+    //enhance cv
     Route::post('saveProfile', [ProfileController::class, 'saveProfile']);
+    Route::get('getProfileData', [ProfileController::class, 'getProfileData']);
     Route::get('getProfileByCode', [ProfileController::class, 'getProfileByCode']);
 });

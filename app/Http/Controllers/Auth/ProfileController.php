@@ -407,53 +407,45 @@ class ProfileController extends Controller
         //
     }
 
-    // public function userAuth()
-    // {
-    //     if (!Auth::check()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'User is not authenticated'
-    //         ]);
-    //     }
+    public function getProfileData()
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is not authenticated'
+            ]);
+        }
 
-    //     $code = Auth::user()->code;
+        $code = Auth::user()->code;
 
-    //     $resource = Resource::where('code', $code)->first();
-    //     $profile = UserProfile::where('code', $code)->first();
+        $profile = UserProfile::where('code', $code)->first();
 
-    //     if (!$resource || !$profile) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'User or profile not found'
-    //         ]);
-    //     }
+        if (!$profile) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Profile not found'
+            ]);
+        }
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => [
-    //             // From resources table
-    //             'fullname' => $resource->fullname,
-    //             'fname' => $resource->fname,
-    //             'lname' => $resource->lname,
-    //             'email' => $resource->email,
-    //             'code' => $resource->code,
-    //             'contact_no' => $resource->contact_no,
-    //             'profession' => $resource->profession,
-    //             'industry' => $resource->industry,
-    //             'companywebsite' => $resource->companywebsite,
-
-    //             // From user_profiles table
-    //             'transNo' => $profile->transNo,
-    //             'contact_visibility' => $profile->contact_visibility,
-    //             'email_visibility' => $profile->email_visibility,
-    //             'date_birth' => $profile->date_birth,
-    //             'photo_pic' => $profile->photo_pic,
-    //             'created_at' => $profile->created_at,
-    //             'updated_at' => $profile->updated_at,
-    //         ],
-    //         'message' => 'Profile loaded successfully.'
-    //     ]);
-    // }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'code' => $profile->code,
+                'transNo' => $profile->transNo ?? null,
+                'contact_no' => $profile->contact_no ?? null,
+                'contact_visibility' => (bool) $profile->contact_visibility,
+                'email' => $profile->email ?? null,
+                'email_visibility' => (bool) $profile->email_visibility,
+                'date_birth' => $profile->date_birth,
+                'photo_pic' => $profile->photo_pic 
+                    ? asset("uploads/{$profile->code}/cvphoto/{$profile->photo_pic}") 
+                    : null,
+                'created_at' => $profile->created_at,
+                'updated_at' => $profile->updated_at,
+            ],
+            'message' => 'Profile loaded successfully.'
+        ]);
+    }
 
     public function userAuth(){
         if (Auth::check()) {
