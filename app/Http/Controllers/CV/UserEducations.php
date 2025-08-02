@@ -24,13 +24,14 @@ class UserEducations extends Controller
         $currentUserCode = Auth::user()->code;
 
         $validator = Validator::make($request->all(), [
-            'highest_education' => 'required|string|max:255',
-            'school_name'       => 'required|string|max:255',
-            'start_month'       => 'nullable|string|max:20',
-            'start_year'        => 'nullable|integer',
-            'end_month'         => 'nullable|string|max:20',
-            'end_year'          => 'nullable|integer',
-            'status'            => 'required|string|max:100',
+            'educations' => 'required|array|min:1',
+            'educations.*.highest_education' => 'required|string|max:255',
+            'educations.*.school_name'       => 'required|string|max:255',
+            'educations.*.start_month'       => 'nullable|string|max:20',
+            'educations.*.start_year'        => 'nullable|integer',
+            'educations.*.end_month'         => 'nullable|string|max:20',
+            'educations.*.end_year'          => 'nullable|integer',
+            'educations.*.status'            => 'required|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -43,37 +44,46 @@ class UserEducations extends Controller
         try {
             DB::beginTransaction();
 
-            // ✅ Correct use of variable
-            $maxTransNo = UserEducation::where('code', $currentUserCode)->max('transNo');
-            $newTransNo = $maxTransNo ? $maxTransNo + 1 : 1;
+            $educations = [];
+            $maxTransNo = UserEducation::where('code', $currentUserCode)->max('transNo') ?? 0;
 
-            $education = new UserEducation();
-            $education->code = $currentUserCode;
-            $education->transNo = $newTransNo;
-            $education->highest_education = $request->highest_education;
-            $education->school_name = $request->school_name;
-            $education->start_month = $request->start_month;
-            $education->start_year = $request->start_year;
-            $education->end_month = $request->end_month;
-            $education->end_year = $request->end_year;
-            $education->status = $request->status;
-            $education->save();
+            foreach ($request->educations as $item) {
+                $maxTransNo++;
 
-            DB::commit(); // ✅ Don't forget to commit the transaction
+                $educations[] = [
+                    'code' => $currentUserCode,
+                    'transNo' => $maxTransNo,
+                    'highest_education' => $item['highest_education'],
+                    'school_name' => $item['school_name'],
+                    'start_month' => $item['start_month'] ?? null,
+                    'start_year' => $item['start_year'] ?? null,
+                    'end_month' => $item['end_month'] ?? null,
+                    'end_year' => $item['end_year'] ?? null,
+                    'status' => $item['status'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            UserEducation::insert($educations); // Bulk insert
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Education saved successfully.',
-                'data'    => $education,
+                'message' => 'Educations saved successfully.',
+                'data' => $educations,
             ]);
         } catch (\Exception $e) {
-            DB::rollBack(); // ✅ Rollback on error
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save education.',
-                'error'   => $e->getMessage(),
+                'message' => 'Failed to save educations.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
 
 }
