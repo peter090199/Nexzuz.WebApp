@@ -26,6 +26,7 @@ use App\Http\Controllers\ChatController;
 
 use App\Http\Controllers\Follow\ClientsBAL;
 use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
+use App\Http\Controllers\CV\UserLanguage;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -162,6 +163,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
     //enhance cv
     Route::post('saveProfile', [ProfileController::class, 'saveProfile']);
+    Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
     Route::get('getProfileData', [ProfileController::class, 'getProfileData']);
     Route::get('getProfileByCode', [ProfileController::class, 'getProfileByCode']);
 });
