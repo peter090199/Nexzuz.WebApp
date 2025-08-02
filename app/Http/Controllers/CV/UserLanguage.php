@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\CV\DAL\UserLanguages;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class UserLanguage extends Controller
