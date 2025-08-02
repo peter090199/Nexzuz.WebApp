@@ -138,15 +138,11 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
    //Follow  App\Http\Controllers\Follow
    Route::resource('follow',App\Http\Controllers\Follow\FollowController::class)->names('follow');
-
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
-
-
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
     Route::get('getFollowStatus/{code}', [ClientsBAL::class, 'getFollowStatus']);
     Route::get('getPendingFollowStatus/{code}', [ClientsBAL::class, 'getPendingFollowStatus']);
-
     //List clients base on PENDING
     Route::get('getPendingFollowRequests', [ClientsBAL::class, 'getPendingFollowRequests']);
     Route::get('getfollowingPending', [ClientsBAL::class, 'getfollowingPending']);
@@ -156,14 +152,17 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     // Suggested users based on profession or industry of followed people
     Route::get('getPeopleyoumayknow', [ClientsBAL::class, 'getPeopleyoumayknow']);
     Route::get('getPeopleRecentActivity', [ClientsBAL::class, 'getPeopleRecentActivity']);
-    
     Route::delete('deleteSearchHistory', [SearchHistoryBAL::class, 'deleteSearchHistory']);
     Route::post('saveSearchHistory', [SearchHistoryBAL::class, 'saveSearchHistory']);
     Route::get('getSearchHistory', [SearchHistoryBAL::class, 'getSearchHistory']);
-
     //enhance cv
     Route::post('saveProfile', [ProfileController::class, 'saveProfile']);
-    Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
     Route::get('getProfileData', [ProfileController::class, 'getProfileData']);
     Route::get('getProfileByCode', [ProfileController::class, 'getProfileByCode']);
+    //LANGAUGE
+    Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
+    Route::get('getLanguagesByCode', [UserLanguage::class, 'getLanguagesByCode']);
+
+   
+   
 });

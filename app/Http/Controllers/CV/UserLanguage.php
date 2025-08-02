@@ -60,4 +60,24 @@ class UserLanguage extends Controller
         ]);
     }
 
+    //GET LANGUAGE BY CODE
+    public function getLanguagesByCode()
+    {
+        $currentUserCode = Auth::user()->code;
+        $languages = UserLanguages::where('code', $currentUserCode)->get();
+
+        if ($languages->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No languages found for the given code.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'languages' => $languages,
+        ]);
+    }
+
+
 }
