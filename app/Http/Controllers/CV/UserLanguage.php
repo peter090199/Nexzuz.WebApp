@@ -12,41 +12,49 @@ use Illuminate\Support\Facades\DB;
 
 class UserLanguage extends Controller
 {
-    public function saveLanguage(Request $request)
+    public function saveLanguages(Request $request)
     {
-        $validated = $request->validate([
-            'language' => 'required|string|max:255',
-        ]);
+        $data = $request->all();
+
+        if (!is_array($data)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid input format. Expected array of languages.',
+            ], 422);
+        }
 
         $currentUserCode = Auth::user()->code;
 
-        // Check if the language already exists for this user
-        $exists = UserLanguages::where('code', $currentUserCode)
-            ->whereRaw('LOWER(language) = ?', [strtolower($validated['language'])])
-            ->exists();
+        $inserted = [];
+        foreach ($data as $item) {
+            $validator = Validator::make($item, [
+                'language' => 'required|string|max:255',
+            ]);
 
-        if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Language already exists for this user.'
-            ], 409); // 409 Conflict
+            if ($validator->fails()) {
+                continue; // Skip invalid items
+            }
+
+            $exists = UserLanguages::where('code', $currentUserCode)
+                ->whereRaw('LOWER(language) = ?', [strtolower($item['language'])])
+                ->exists();
+
+            if (!$exists) {
+                $maxTrans = UserLanguages::where('code', $currentUserCode)->max('transNo');
+                $newTrans = $maxTrans ? $maxTrans + 1 : 1;
+
+                $inserted[] = UserLanguages::create([
+                    'code' => $currentUserCode,
+                    'transNo' => $newTrans,
+                    'language' => $item['language'],
+                ]);
+            }
         }
-
-        // Get latest transNo
-        $maxTrans = UserLanguages::where('code', $currentUserCode)->max('transNo');
-        $newTrans = $maxTrans ? $maxTrans + 1 : 1;
-
-        // Save
-        $record = UserLanguages::create([
-            'code' => $currentUserCode,
-            'transNo' => $newTrans,
-            'language' => $validated['language'],
-        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Language saved successfully.',
-            'data' => $record
+            'inserted' => $inserted,
+            'message' => count($inserted) . ' languages saved successfully.',
         ]);
     }
 
