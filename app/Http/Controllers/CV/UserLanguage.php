@@ -18,11 +18,6 @@ class UserLanguage extends Controller
     {
         $this->dal = $dal;
     }
-
-    // public function savelanguage(Request $request)
-    // {
-    //     return $this->languageDAL->savelanguage($request);
-    // }
     public function saveLanguage(Request $request)
     {
         $validated = $request->validate([
@@ -31,36 +26,34 @@ class UserLanguage extends Controller
 
         $currentUserCode = Auth::user()->code;
 
-        $transNo = DB::table('usercapabilities')
-            ->where('code', $currentUserCode)
-            ->max('transNo');
+        // Check if the language already exists for this user
+        $exists = UserLanguages::where('code', $currentUserCode)
+            ->whereRaw('LOWER(language) = ?', [strtolower($validated['language'])])
+            ->exists();
 
-        $newTrans = $transNo ? $transNo + 1 : 1;
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Language already exists for this user.'
+            ], 409); // 409 Conflict
+        }
 
-        $id = $this->dal->insertCapability(
-            $currentUserCode,
-            $newTrans,
-            $validated['language']
-        );
+        // Get latest transNo
+        $maxTrans = UserLanguages::where('code', $currentUserCode)->max('transNo');
+        $newTrans = $maxTrans ? $maxTrans + 1 : 1;
+
+        // Save
+        $record = UserLanguages::create([
+            'code' => $currentUserCode,
+            'transNo' => $newTrans,
+            'language' => $validated['language'],
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Language saved successfully.',
-            'id' => $id,
+            'data' => $record
         ]);
     }
 
-    // public function saveLanguage($data)
-    // {
-    //     $maxTransNo = $this->dal->getMaxTransNo();
-    //     $newTransNo = empty($maxTransNo) ? 1 : $maxTransNo + 1;
-
-    //     $id = $this->dal->insertCapability(
-    //         $data['code'],
-    //         $newTransNo,
-    //         $data['language']
-    //     );
-
-    //     return $id;
-    // } 
 }

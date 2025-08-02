@@ -13,7 +13,7 @@ class UserLanguages extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'usercapabilities'; // Optional: specify table name
+    protected $table = 'usercapabilities'; 
     public $timestamps = true;
 
     protected $fillable = [
@@ -21,26 +21,6 @@ class UserLanguages extends Model
         'transNo',
         'language',
     ];
-
-    /**
-     * Insert a new language capability for a user.
-     */
-    public function insertCapability($code, $transNo, $language)
-    {
-        $record = self::create([
-            'code' => $code,
-            'transNo' => $transNo,
-            'language' => $language,
-        ]);
-
-        return $record->id; 
-    }
-
-
-    public function getMaxTransNo()
-    {
-        return DB::table('userprofiles')->max('transNo');
-    }
-
+ 
    
 }
