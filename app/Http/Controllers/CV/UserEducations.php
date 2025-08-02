@@ -96,7 +96,6 @@ class UserEducations extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Education records processed successfully.',
-                'data' => $savedRecords,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -162,7 +161,6 @@ class UserEducations extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Education updated successfully.',
-                'data'    => $education,
             ]);
         } catch (\Exception $e) {
             return response()->json([
