@@ -122,7 +122,7 @@ class UserEducations extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Education record not found.',
-                ], 501);
+                ], 500);
             }
 
             return response()->json([
