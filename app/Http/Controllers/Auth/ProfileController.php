@@ -442,6 +442,7 @@ class ProfileController extends Controller
                 'current_state' => $profile->current_state,
                 'home_country' => $profile->home_country,
                 'current_location' => $profile->current_location,
+                'summary' => $profile->summary,
                 'created_at' => $profile->created_at,
                 'updated_at' => $profile->updated_at,
             ],
