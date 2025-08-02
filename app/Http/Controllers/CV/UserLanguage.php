@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class UserLanguage extends Controller
 {
-    public function saveLanguages(Request $request)
+    public function saveLanguage(Request $request)
     {
         $data = $request->all();
 
