@@ -91,7 +91,7 @@ class UserLanguage extends Controller
         if (!$language) {
             return response()->json([
                 'success' => false,
-                'message' => 'Language not found or unauthorized.',
+                'message' => 'Language not found!',
             ], 404);
         }
 
