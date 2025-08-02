@@ -63,13 +63,21 @@ class UserLanguage extends Controller
     //GET LANGUAGE BY CODE
     public function getLanguagesByCode()
     {
-        $currentUserCode = Auth::user()->code;
-        $languages = UserLanguages::where('code', $currentUserCode)->get();
+        $currentUser = Auth::user();
+
+        if (!$currentUser) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $languages = \App\Models\CV\DAL\UserLanguages::where('code', $currentUser->code)->get();
 
         if ($languages->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No languages found for the given code.',
+                'message' => 'No languages found for this user.',
             ], 404);
         }
 
