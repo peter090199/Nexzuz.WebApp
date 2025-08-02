@@ -161,7 +161,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getProfileByCode', [ProfileController::class, 'getProfileByCode']);
     //LANGAUGE
     Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
-    Route::get('getLanguagesByCode', [UserLanguage::class, 'getLanguagesByCode']);
+    Route::get('getLanguagesByCode', [UserLanguage::class, 'deleteLanguageById']);
+    Route::delete('deleteLanguageById', [UserLanguage::class, 'getLanguagesByCode']);
 
    
    

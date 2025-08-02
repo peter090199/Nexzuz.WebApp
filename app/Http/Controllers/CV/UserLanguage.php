@@ -79,5 +79,29 @@ class UserLanguage extends Controller
         ]);
     }
 
+    public function deleteLanguageById($id)
+    {
+        $currentUserCode = Auth::user()->code;
+
+        // Find the language entry by ID and ensure it belongs to the authenticated user
+        $language = UserLanguages::where('id', $id)
+            ->where('code', $currentUserCode)
+            ->first();
+
+        if (!$language) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Language not found or unauthorized.',
+            ], 404);
+        }
+
+        // Delete the record
+        $language->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Language deleted successfully.',
+        ]);
+    }
 
 }
