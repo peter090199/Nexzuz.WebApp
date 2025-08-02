@@ -17,6 +17,7 @@ class UserLanguages extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'id',
         'code',
         'transNo',
         'language',
