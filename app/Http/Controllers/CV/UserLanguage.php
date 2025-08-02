@@ -12,12 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class UserLanguage extends Controller
 {
-    protected $dal;
-
-    public function __construct(UserLanguages $dal)
-    {
-        $this->dal = $dal;
-    }
     public function saveLanguage(Request $request)
     {
         $validated = $request->validate([
