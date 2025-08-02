@@ -27,14 +27,15 @@ class UserLanguages extends Model
      */
     public function insertCapability($code, $transNo, $language)
     {
-        return DB::table($this->table)->insertGetId([
+        $record = self::create([
             'code' => $code,
             'transNo' => $transNo,
             'language' => $language,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
+
+        return $record->id; 
     }
+
 
     public function getMaxTransNo()
     {
