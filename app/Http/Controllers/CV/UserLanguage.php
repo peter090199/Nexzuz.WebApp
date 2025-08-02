@@ -69,8 +69,8 @@ class UserLanguage extends Controller
         if ($languages->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No languages found for the given code.',
-            ], 404);
+                'message' => 'No languages found.',
+            ], 401);
         }
 
         return response()->json([
