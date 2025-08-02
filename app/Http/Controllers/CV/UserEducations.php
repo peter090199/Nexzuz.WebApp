@@ -112,6 +112,31 @@ class UserEducations extends Controller
             ], 500);
         }
     }
+    
+    public function getEducationById($id)
+    {
+        try {
+            $education = UserEducation::find($id);
+
+            if (!$education) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Education record not found.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $education,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving education record.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     public function deleteEducation($id)
     {
