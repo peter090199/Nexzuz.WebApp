@@ -166,6 +166,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteLanguageById/{id}', [UserLanguage::class, 'deleteLanguageById']);
     //education
     Route::post('saveEducation', [UserEducations::class, 'saveEducation']);
+    Route::put('updateEducationById/{id}', [UserEducations::class, 'updateEducationById']);
     Route::get('getEducationsByCode', [UserEducations::class, 'getEducationsByCode']);
     Route::get('getEducationById/{id}', [UserEducations::class, 'getEducationById']);
     Route::delete('deleteEducation/{id}', [UserEducations::class, 'deleteEducation']);
