@@ -21,18 +21,44 @@ class UserLanguage extends Controller
     // {
     //     return $this->languageDAL->savelanguage($request);
     // }
-   
-    public function saveLanguage($data)
+    public function saveLanguage(Request $request)
     {
-        $maxTransNo = $this->dal->getMaxTransNo();
-        $newTransNo = empty($maxTransNo) ? 1 : $maxTransNo + 1;
+        $validated = $request->validate([
+            'language' => 'required|string|max:255',
+        ]);
+
+        $currentUserCode = Auth::user()->code;
+
+        $transNo = DB::table('usercapabilities')
+            ->where('code', $currentUserCode)
+            ->max('transNo');
+
+        $newTrans = $transNo ? $transNo + 1 : 1;
 
         $id = $this->dal->insertCapability(
-            $data['code'],
-            $newTransNo,
-            $data['language']
+            $currentUserCode,
+            $newTrans,
+            $validated['language']
         );
 
-        return $id;
-    } 
+        return response()->json([
+            'success' => true,
+            'message' => 'Language saved successfully.',
+            'id' => $id,
+        ]);
+    }
+
+    // public function saveLanguage($data)
+    // {
+    //     $maxTransNo = $this->dal->getMaxTransNo();
+    //     $newTransNo = empty($maxTransNo) ? 1 : $maxTransNo + 1;
+
+    //     $id = $this->dal->insertCapability(
+    //         $data['code'],
+    //         $newTransNo,
+    //         $data['language']
+    //     );
+
+    //     return $id;
+    // } 
 }
