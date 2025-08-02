@@ -25,6 +25,7 @@ class UserEducations extends Controller
 
         $validator = Validator::make($request->all(), [
             'educations' => 'required|array|min:1',
+            'educations.*.id'                => 'nullable|integer|exists:usereducations,id',
             'educations.*.highest_education' => 'required|string|max:255',
             'educations.*.school_name'       => 'required|string|max:255',
             'educations.*.start_month'       => 'nullable|string|max:20',
@@ -44,42 +45,65 @@ class UserEducations extends Controller
         try {
             DB::beginTransaction();
 
-            $educations = [];
             $maxTransNo = UserEducation::where('code', $currentUserCode)->max('transNo') ?? 0;
+            $savedRecords = [];
 
             foreach ($request->educations as $item) {
-                $maxTransNo++;
+                // If ID is provided, update existing
+                if (!empty($item['id'])) {
+                    $education = UserEducation::where('id', $item['id'])
+                        ->where('code', $currentUserCode)
+                        ->first();
 
-                $educations[] = [
-                    'code' => $currentUserCode,
-                    'transNo' => $maxTransNo,
-                    'highest_education' => $item['highest_education'],
-                    'school_name' => $item['school_name'],
-                    'start_month' => $item['start_month'] ?? null,
-                    'start_year' => $item['start_year'] ?? null,
-                    'end_month' => $item['end_month'] ?? null,
-                    'end_year' => $item['end_year'] ?? null,
-                    'status' => $item['status'],
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                    if ($education) {
+                        $education->highest_education = $item['highest_education'];
+                        $education->school_name = $item['school_name'];
+                        $education->start_month = $item['start_month'] ?? null;
+                        $education->start_year = $item['start_year'] ?? null;
+                        $education->end_month = $item['end_month'] ?? null;
+                        $education->end_year = $item['end_year'] ?? null;
+                        $education->status = $item['status'];
+                        $education->updated_at = now();
+                        $education->save();
+
+                        $savedRecords[] = $education;
+                    }
+                } else {
+                    // New entry → insert
+                    $maxTransNo++;
+
+                    $newEducation = new UserEducation([
+                        'code' => $currentUserCode,
+                        'transNo' => $maxTransNo,
+                        'highest_education' => $item['highest_education'],
+                        'school_name' => $item['school_name'],
+                        'start_month' => $item['start_month'] ?? null,
+                        'start_year' => $item['start_year'] ?? null,
+                        'end_month' => $item['end_month'] ?? null,
+                        'end_year' => $item['end_year'] ?? null,
+                        'status' => $item['status'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $newEducation->save();
+
+                    $savedRecords[] = $newEducation;
+                }
             }
-
-            UserEducation::insert($educations); // Bulk insert
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Educations saved successfully.',
-                'data' => $educations,
+                'message' => 'Education records processed successfully.',
+                'data' => $savedRecords,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save educations.',
+                'message' => 'Failed to process educations.',
                 'error' => $e->getMessage(),
             ], 500);
         }
