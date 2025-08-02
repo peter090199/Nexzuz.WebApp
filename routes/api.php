@@ -162,8 +162,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //LANGAUGE
     Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
     Route::get('getLanguagesByCode', [UserLanguage::class, 'deleteLanguageById']);
-    Route::delete('deleteLanguageById', [UserLanguage::class, 'getLanguagesByCode']);
+    Route::delete('deleteLanguageById/{id}', [UserLanguage::class, 'getLanguagesByCode']);
 
-   
    
 });
