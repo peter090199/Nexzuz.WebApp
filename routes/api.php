@@ -27,6 +27,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Follow\ClientsBAL;
 use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 use App\Http\Controllers\CV\UserLanguage;
+use App\Http\Controllers\CV\UserEducations;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -163,6 +164,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveLanguage', [UserLanguage::class, 'saveLanguage']);
     Route::get('getLanguagesByCode', [UserLanguage::class, 'getLanguagesByCode']);
     Route::delete('deleteLanguageById/{id}', [UserLanguage::class, 'deleteLanguageById']);
-
+    //education
+    Route::post('saveEducation', [UserEducations::class, 'saveEducation']);
    
 });
