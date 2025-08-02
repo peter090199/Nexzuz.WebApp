@@ -112,7 +112,7 @@ class UserEducations extends Controller
             ], 500);
         }
     }
-    
+
     public function getEducationById($id)
     {
         try {
@@ -122,7 +122,7 @@ class UserEducations extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Education record not found.',
-                ], 404);
+                ], 501);
             }
 
             return response()->json([
