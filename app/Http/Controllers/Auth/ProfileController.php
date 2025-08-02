@@ -438,6 +438,10 @@ class ProfileController extends Controller
                 'photo_pic' => $profile->photo_pic 
                     ? asset("uploads/{$profile->code}/cvphoto/{$profile->photo_pic}") 
                     : null,
+                'home_state' => $profile->home_state,
+                'current_state' => $profile->current_state,
+                'home_country' => $profile->home_country,
+                'current_country' => $profile->current_country,
                 'created_at' => $profile->created_at,
                 'updated_at' => $profile->updated_at,
             ],
