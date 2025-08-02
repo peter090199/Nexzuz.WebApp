@@ -85,5 +85,32 @@ class UserEducations extends Controller
         }
     }
 
+    public function getEducationsByCode()
+    {
+        try {
+            $currentUserCode = Auth::user()->code;
+            $educations = UserEducation::where('code', $currentUserCode)
+                ->orderBy('transNo', 'asc')
+                ->get();
+
+            if ($educations->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No education records found for this code.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $educations,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving education records.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }
