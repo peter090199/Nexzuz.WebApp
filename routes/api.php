@@ -28,7 +28,7 @@ use App\Http\Controllers\Follow\ClientsBAL;
 use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 use App\Http\Controllers\CV\UserLanguage;
 use App\Http\Controllers\CV\UserEducations;
-use App\Http\Controllers\CV\Userskill;
+use App\Http\Controllers\CV\UserSkills;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
