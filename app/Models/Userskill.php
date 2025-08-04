@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 
 
-class UserLanguages extends Model
+class Userskill extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
