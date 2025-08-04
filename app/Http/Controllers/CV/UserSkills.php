@@ -14,7 +14,7 @@ class UserSkills extends Controller
     /**
      * Save a list of user skills.
      */
-    public function save(Request $request)
+    public function saveSkills(Request $request)
     {
         $data = $request->all();
 
