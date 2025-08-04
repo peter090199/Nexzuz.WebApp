@@ -140,7 +140,7 @@ class UserEducations extends Controller
             $education = UserEducation::where('id', $id)
                 ->where('code', $currentUserCode)
                 ->first();
-
+ 
             if (!$education) {
                 return response()->json([
                     'success' => false,
