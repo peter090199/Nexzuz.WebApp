@@ -4,7 +4,7 @@ namespace App\Http\Controllers\CV;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Userskill;
+use App\Models\CV\DAL\UserSkillsDAL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -47,15 +47,15 @@ class UserSkills extends Controller
 
             $skillName = strtolower(trim($item['skills']));
 
-            $exists = Userskill::where('code', $currentUserCode)
+            $exists = UserSkillsDAL::where('code', $currentUserCode)
                 ->whereRaw('LOWER(skills) = ?', [$skillName])
                 ->exists();
 
             if (!$exists) {
-                $maxTrans = Userskill::where('code', $currentUserCode)->max('transNo');
+                $maxTrans = UserSkillsDAL::where('code', $currentUserCode)->max('transNo');
                 $newTrans = $maxTrans ? $maxTrans + 1 : 1;
 
-                $inserted[] = Userskill::create([
+                $inserted[] = UserSkillsDAL::create([
                     'code' => $currentUserCode,
                     'transNo' => $newTrans,
                     'skills' => $item['skills'],
