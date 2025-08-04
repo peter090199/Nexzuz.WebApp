@@ -28,6 +28,7 @@ use App\Http\Controllers\Follow\ClientsBAL;
 use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 use App\Http\Controllers\CV\UserLanguage;
 use App\Http\Controllers\CV\UserEducations;
+use App\Http\Controllers\CV\Userskill;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -171,8 +172,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getEducationById/{id}', [UserEducations::class, 'getEducationById']);
     Route::delete('deleteEducation/{id}', [UserEducations::class, 'deleteEducation']);
     //Skills
-    Route::post('save', [UserLanguage::class, 'save']);
-    Route::get('getSkills', [UserLanguage::class, 'getSkills']);
-    Route::delete('delete/{id}', [UserLanguage::class, 'delete']);
+    Route::post('save', [Userskill::class, 'save']);
+    Route::get('getSkills', [Userskill::class, 'getSkills']);
+    Route::delete('delete/{id}', [Userskill::class, 'delete']);
    
 });
