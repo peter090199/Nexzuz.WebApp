@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-
 class UserSkills extends Controller
 {
+    /**
+     * Save a list of user skills.
+     */
     public function save(Request $request)
     {
         $data = $request->all();
@@ -19,13 +21,21 @@ class UserSkills extends Controller
         if (!is_array($data)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid input format. Expected array of skills.',
+                'message' => 'Invalid input format. Expected an array of skills.',
             ], 422);
         }
 
         $currentUserCode = Auth::user()->code;
 
+        if (!$currentUserCode) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
         $inserted = [];
+
         foreach ($data as $item) {
             $validator = Validator::make($item, [
                 'skills' => 'required|string|max:255',
@@ -35,8 +45,10 @@ class UserSkills extends Controller
                 continue; // Skip invalid items
             }
 
+            $skillName = strtolower(trim($item['skills']));
+
             $exists = Userskill::where('code', $currentUserCode)
-                ->whereRaw('LOWER(skills) = ?', [strtolower($item['skills'])])
+                ->whereRaw('LOWER(skills) = ?', [$skillName])
                 ->exists();
 
             if (!$exists) {
@@ -53,14 +65,25 @@ class UserSkills extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($inserted) . ' Skills saved successfully.',
+            'message' => count($inserted) . ' skill(s) saved successfully.',
         ]);
     }
 
+    /**
+     * Retrieve user skills.
+     */
     public function getSkills()
     {
         try {
-            $currentUserCode = Auth::user()->code;
+            $currentUserCode = Auth::id() ? Auth::user()->code : null;
+
+            if (!$currentUserCode) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access.',
+                ], 401);
+            }
+
             $data = Userskill::where('code', $currentUserCode)
                 ->orderBy('transNo', 'asc')
                 ->get();
@@ -68,7 +91,7 @@ class UserSkills extends Controller
             if ($data->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No skills records found for this code.',
+                    'message' => 'No skills records found.',
                 ], 404);
             }
 
@@ -79,34 +102,37 @@ class UserSkills extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error retrieving skills records.',
+                'message' => 'Error retrieving skills.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
 
+    /**
+     * Delete a skill by ID.
+     */
     public function delete($id)
     {
         try {
-            $data = Userskill::find($id);
+            $skill = Userskill::find($id);
 
-            if (!$data) {
+            if (!$skill) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Skills record not found.',
+                    'message' => 'Skill record not found.',
                 ], 404);
             }
 
-            $data->delete();
+            $skill->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Skills  deleted successfully.',
+                'message' => 'Skill deleted successfully.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete Skills record.',
+                'message' => 'Failed to delete skill.',
                 'error' => $e->getMessage(),
             ], 500);
         }
