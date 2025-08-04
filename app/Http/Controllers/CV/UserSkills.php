@@ -8,12 +8,11 @@ use App\Models\CV\DAL\UserSkillsDAL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class UserSkills extends Controller
 {
-    /**
-     * Save a list of user skills.
-     */
+    
     public function saveSkills(Request $request)
     {
         $data = $request->all();
@@ -42,7 +41,8 @@ class UserSkills extends Controller
             ]);
 
             if ($validator->fails()) {
-                continue; // Skip invalid items
+                Log::warning('Skill validation failed:', $validator->errors()->toArray());
+                continue;
             }
 
             $skillName = strtolower(trim($item['skills']));
@@ -55,23 +55,24 @@ class UserSkills extends Controller
                 $maxTrans = UserSkillsDAL::where('code', $currentUserCode)->max('transNo');
                 $newTrans = $maxTrans ? $maxTrans + 1 : 1;
 
-                $inserted[] = UserSkillsDAL::create([
-                    'code' => $currentUserCode,
-                    'transNo' => $newTrans,
-                    'skills' => $item['skills'],
-                ]);
+                try {
+                    $inserted[] = UserSkillsDAL::create([
+                        'code' => $currentUserCode,
+                        'transNo' => $newTrans,
+                        'skills' => $item['skills'],
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to insert skill: ' . $e->getMessage());
+                }
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Skill(s) saved successfully.',
+            'message' => count($inserted) . ' skill(s) saved successfully.',
+            'inserted' => $inserted
         ]);
     }
-
-    /**
-     * Retrieve user skills.
-     */
     public function getSkills()
     {
         try {

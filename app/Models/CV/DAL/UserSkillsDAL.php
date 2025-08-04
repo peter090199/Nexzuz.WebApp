@@ -16,7 +16,7 @@ class UserSkillsDAL extends Model
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'userskills'; 
-
+    public $timestamps = false;
     protected $fillable = [
         'code',
         'transNo',
