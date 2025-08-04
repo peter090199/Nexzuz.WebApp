@@ -65,7 +65,7 @@ class UserSkills extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => count($inserted) . ' skill(s) saved successfully.',
+            'message' => 'Skill(s) saved successfully.',
         ]);
     }
 
