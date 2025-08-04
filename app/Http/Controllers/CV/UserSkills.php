@@ -84,7 +84,7 @@ class UserSkills extends Controller
                 ], 401);
             }
 
-            $data = Userskill::where('code', $currentUserCode)
+            $data = UserSkillsDAL::where('code', $currentUserCode)
                 ->orderBy('transNo', 'asc')
                 ->get();
 
@@ -114,7 +114,7 @@ class UserSkills extends Controller
     public function delete($id)
     {
         try {
-            $skill = Userskill::find($id);
+            $skill = UserSkillsDAL::find($id);
 
             if (!$skill) {
                 return response()->json([
