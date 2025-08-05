@@ -98,21 +98,24 @@ class UserSeminars extends Controller
     public function getSeminarByCode()
     {
         try {
+            // Check if user is authenticated
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access.',
+                ], 401);
+            }
+
             $currentUserCode = Auth::user()->code;
+
             $data = Userseminar::where('code', $currentUserCode)
                 ->orderBy('transNo', 'asc')
                 ->get();
 
-            if ($data->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No seminar records found for this code.',
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $data,
+                'message' => $data->isEmpty() ? 'No seminar records found.' : 'Seminar records retrieved successfully.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
