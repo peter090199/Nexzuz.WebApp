@@ -178,5 +178,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('delete/{id}', [UserSkills::class, 'delete']);
     //seminar
     Route::post('saveSeminar', [UserSeminars::class, 'saveSeminar']);
+    Route::get('getSeminarByCode', [UserSkills::class, 'getSeminarByCode']);
    
 });

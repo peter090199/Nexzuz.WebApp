@@ -94,4 +94,33 @@ class UserSeminars extends Controller
             ], 500);
         }
     }
+
+    public function getSeminarByCode()
+    {
+        try {
+            $currentUserCode = Auth::user()->code;
+            $data = Userseminar::where('code', $currentUserCode)
+                ->orderBy('transNo', 'asc')
+                ->get();
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No seminar records found for this code.',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving seminar records.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
