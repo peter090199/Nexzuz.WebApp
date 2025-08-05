@@ -174,6 +174,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //Skills
     Route::post('saveSkills', [UserSkills::class, 'saveSkills']);
     Route::get('getSkills', [UserSkills::class, 'getSkills']);
-    Route::delete('delete/{id}', [UserSkills::class, 'delete']);
+    Route::delete('{id}', [UserSkills::class, 'delete']);
    
 });
