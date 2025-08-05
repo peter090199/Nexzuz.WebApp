@@ -29,6 +29,7 @@ use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 use App\Http\Controllers\CV\UserLanguage;
 use App\Http\Controllers\CV\UserEducations;
 use App\Http\Controllers\CV\UserSkills;
+use App\Http\Controllers\CV\UserSeminars;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -175,5 +176,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveSkills', [UserSkills::class, 'saveSkills']);
     Route::get('getSkills', [UserSkills::class, 'getSkills']);
     Route::delete('delete/{id}', [UserSkills::class, 'delete']);
+    //seminar
+    Route::post('saveSeminar', [UserSeminars::class, 'saveSeminar']);
    
 });
