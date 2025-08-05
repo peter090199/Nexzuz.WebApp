@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UserSeminars extends Controller
 {
+
     public function saveSeminar(Request $request)
     {
         if (!Auth::check()) {
@@ -42,10 +43,12 @@ class UserSeminars extends Controller
 
             $maxTransNo = Userseminar::where('code', $currentUserCode)->max('transNo') ?? 0;
             $savedRecords = [];
+            $insertedCount = 0;
+            $updatedCount = 0;
 
             foreach ($request->seminars as $item) {
                 if (!empty($item['id'])) {
-                    // Update existing seminar
+                    // 🔁 Update existing seminar
                     $seminar = Userseminar::where('id', $item['id'])
                         ->where('code', $currentUserCode)
                         ->first();
@@ -58,12 +61,13 @@ class UserSeminars extends Controller
                         $seminar->save();
 
                         $savedRecords[] = $seminar;
+                        $updatedCount++;
                     }
                 } else {
-                    // Insert new seminar
+                    // ➕ Insert new seminar
                     $maxTransNo++;
 
-                    $newSeminar = new Userseminar([
+                    $newSeminar = Userseminar::create([
                         'code' => $currentUserCode,
                         'transNo' => $maxTransNo,
                         'seminar_title' => $item['seminar_title'],
@@ -72,9 +76,9 @@ class UserSeminars extends Controller
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
-                    $newSeminar->save();
 
                     $savedRecords[] = $newSeminar;
+                    $insertedCount++;
                 }
             }
 
@@ -82,19 +86,18 @@ class UserSeminars extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Seminar records successfully.',
+                'message' => "Seminar saved successfully. Inserted: $insertedCount, Updated: $updatedCount.",
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process seminars.',
+                'message' => 'Failed to process seminar records.',
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
-
     public function getSeminarByCode()
     {
         try {
