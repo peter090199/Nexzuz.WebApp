@@ -123,4 +123,31 @@ class UserSeminars extends Controller
         }
     }
 
+    public function delete($id)
+    {
+        try {
+            $education = Userseminar::find($id);
+
+            if (!$education) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Seminar record not found.',
+                ], 404);
+            }
+
+            $education->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Seminar  deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete seminar record.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
