@@ -94,7 +94,7 @@ class UserSkills extends Controller
                     'success' => false,
                     'message' => 'No skills records found.',
                     'data' => $data,
-                ], 404);
+                ], 500);
             }
 
             return response()->json([
