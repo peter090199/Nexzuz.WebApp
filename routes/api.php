@@ -175,7 +175,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //Skills
     Route::post('saveSkills', [UserSkills::class, 'saveSkills']);
     Route::get('getSkills', [UserSkills::class, 'getSkills']);
-    Route::delete('delete/{id}', [UserSkills::class, 'delete']);
+    Route::delete('deleteSkills/{id}', [UserSkills::class, 'delete']);
     //seminar
     Route::post('saveSeminar', [UserSeminars::class, 'saveSeminar']);
     Route::get('getSeminarByCode', [UserSeminars::class, 'getSeminarByCode']);
