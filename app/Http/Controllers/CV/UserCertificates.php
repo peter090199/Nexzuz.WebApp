@@ -94,4 +94,31 @@ class UserCertificates extends Controller
         ]);
     }
 
+        public function deleteCertificate($id)
+        {
+            try {
+                $certificate = Usercertificate::find($id);
+
+                if (!$certificate) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Certificate not found.',
+                    ], 404);
+                }
+
+                $certificate->delete();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Certificate deleted successfully.',
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error deleting certificate.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+        }
+
 }
