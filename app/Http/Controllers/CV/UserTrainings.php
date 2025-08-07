@@ -114,5 +114,32 @@ class UserTrainings extends Controller
         }
     }
 
+    public function deleteTraining($id)
+    {
+        try {
+            $training = Usertraining::find($id);
+
+            if (!$training) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training record not found.',
+                ], 404);
+            }
+
+            $training->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Training deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete training.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 }
