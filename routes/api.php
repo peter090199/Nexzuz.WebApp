@@ -31,6 +31,8 @@ use App\Http\Controllers\CV\UserEducations;
 use App\Http\Controllers\CV\UserSkills;
 use App\Http\Controllers\CV\UserSeminars;
 use App\Http\Controllers\CV\UserTrainings;
+use App\Http\Controllers\CV\Usercertificate;
+
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -185,4 +187,14 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveTrainings', [UserTrainings::class, 'saveTrainings']);
     Route::get('getTrainings', [UserTrainings::class, 'getTrainings']);
     Route::delete('deleteTraining/{id}', [UserTrainings::class, 'deleteTraining']);
+    //certificate
+    Route::post('saveCertificates', [Usercertificate::class, 'saveCertificates']);
+
+
+
+
+
+
+
+
 });
