@@ -30,6 +30,7 @@ use App\Http\Controllers\CV\UserLanguage;
 use App\Http\Controllers\CV\UserEducations;
 use App\Http\Controllers\CV\UserSkills;
 use App\Http\Controllers\CV\UserSeminars;
+use App\Http\Controllers\CV\UserTrainings;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -180,5 +181,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveSeminar', [UserSeminars::class, 'saveSeminar']);
     Route::get('getSeminarByCode', [UserSeminars::class, 'getSeminarByCode']);
     Route::delete('delete/{id}', [UserSeminars::class, 'delete']);
+    //trainings
+    Route::post('saveTrainings', [UserTrainings::class, 'saveTrainings']);
    
 });
