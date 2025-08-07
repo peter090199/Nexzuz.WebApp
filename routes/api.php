@@ -31,7 +31,7 @@ use App\Http\Controllers\CV\UserEducations;
 use App\Http\Controllers\CV\UserSkills;
 use App\Http\Controllers\CV\UserSeminars;
 use App\Http\Controllers\CV\UserTrainings;
-use App\Http\Controllers\CV\Usercertificate;
+use App\Http\Controllers\CV\UserCertificates;
 
 
 use App\Events\MessageSent; 
