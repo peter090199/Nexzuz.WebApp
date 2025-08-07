@@ -67,4 +67,31 @@ class UserCertificates extends Controller
             'message' => count($inserted) . ' certificate(s) saved successfully.',
         ]);
     }
+
+    public function getCertificates()
+    {
+        $code = Auth::check() ? Auth::user()->code : null;
+
+        if (!$code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $certificates = Usercertificate::where('code', $code)->orderBy('transNo')->get();
+
+        if ($certificates->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No certificate records found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $certificates,
+        ]);
+    }
+
 }

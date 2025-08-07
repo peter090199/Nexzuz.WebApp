@@ -189,7 +189,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteTraining/{id}', [UserTrainings::class, 'deleteTraining']);
     //certificate
     Route::post('saveCertificates', [UserCertificates::class, 'saveCertificates']);
-
+    Route::get('getCertificates', [UserCertificates::class, 'getCertificates']);
 
 
 
