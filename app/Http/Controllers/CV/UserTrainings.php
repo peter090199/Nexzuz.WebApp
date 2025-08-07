@@ -77,4 +77,42 @@ class UserTrainings extends Controller
         ]);
     }
 
+    public function getTrainings()
+    {
+        try {
+           $currentUserCode = Auth::user()->code;
+
+            if (!$currentUserCode) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access.',
+                ], 401);
+            }
+
+            $data = Usertraining::where('code', $currentUserCode)
+                ->orderBy('transNo', 'asc')
+                ->get();
+
+            if ($data->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No training records found.',
+                    'data' => [],
+                ], 200); // No error, just empty
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving trainings.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }
