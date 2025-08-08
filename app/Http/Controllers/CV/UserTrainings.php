@@ -16,10 +16,15 @@ class UserTrainings extends Controller
     {
         $data = $request->all();
 
+        // ✅ If a single object is sent, wrap it into an array
+        if (isset($data['training_title'])) {
+            $data = [$data];
+        }
+
         if (!is_array($data)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid input format. Expected an array of trainings.',
+                'message' => 'Invalid input format. Expected a training object or an array of trainings.',
             ], 422);
         }
 
