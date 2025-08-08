@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Log;
 
 class UserWorkExperiences extends Controller
 {
-     public function saveEmployment(Request $request)
+    public function saveEmployment(Request $request)
     {
         $data = $request->all();
 
-        // ✅ If a single object is sent, wrap into array
+        // ✅ If a single object is sent, wrap it into an array
         if (isset($data['company_name'])) {
             $data = [$data];
         }
@@ -27,7 +27,7 @@ class UserWorkExperiences extends Controller
             ], 422);
         }
 
-        $currentUserCode = Auth::user()->code;
+        $currentUserCode = Auth::user()->code ?? null;
 
         if (!$currentUserCode) {
             return response()->json([
@@ -48,10 +48,10 @@ class UserWorkExperiences extends Controller
 
             if ($validator->fails()) {
                 Log::warning('Employment validation failed:', $validator->errors()->toArray());
-                continue;
+                continue; // Skip invalid entries
             }
 
-            $company = strtolower(trim($item['company_name']));
+            $company  = strtolower(trim($item['company_name']));
             $position = strtolower(trim($item['position']));
 
             // Prevent duplicate for same company, position & date
