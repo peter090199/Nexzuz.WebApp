@@ -16,10 +16,11 @@ use App\Models\Usertraining;
 use App\Models\Userskill;
 use App\Models\Useremploymentrecord;
 use App\Models\Usercertificate;
-use DB;
 use Illuminate\Support\Facades\File; 
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 
 class ProfileController extends Controller
 {
@@ -661,6 +662,88 @@ class ProfileController extends Controller
                 'message' => 'Error occurred: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+
+
+    public function getProfileCV()
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'User is not authenticated']);
+        }
+
+        $code = Auth::user()->code;
+
+        // ✅ Get all user profiles for the logged-in user
+        $userProfiles = DB::table('userprofiles')->where('code', $code)->get();
+
+        // ✅ Get common resource info once
+        $resource = DB::table('resources')
+            ->select('fname', 'lname', 'email', 'profession')
+            ->where('code', $code)
+            ->first();
+
+        $result = [];
+
+        foreach ($userProfiles as $profile) {
+            $result[] = [
+                "code" => $code,
+                "email" => $resource->email ?? null,
+                "fname" => $resource->fname ?? null,
+                "lname" => $resource->lname ?? null,
+                "photo_pic" => $profile->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                "contact_no" => $profile->contact_no,
+                "contact_visibility" => $profile->contact_visibility,
+                "email_visibility" => $profile->email_visibility,
+                "summary" => $profile->summary,
+                "date_birth" => $profile->date_birth,
+                "home_country" => $profile->home_country,
+                "current_location" => $profile->current_location,
+                "home_state" => $profile->home_state,
+                "current_state" => $profile->current_state,
+                "profession" => $resource->profession ?? null,
+                "lines" => [
+                    "education" => DB::table('usereducations')
+                        ->select('highest_education', 'school_name', 'start_month', 'start_year', 'end_month', 'end_year', 'status')
+                        ->where('code', $code)
+                        ->get(),
+                    "language" => DB::table('usercapabilities')
+                        ->select('language')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get(),
+                    "training" => DB::table('usertrainings')
+                        ->select('training_title', 'training_provider', 'date_completed')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get(),
+                    "seminar" => DB::table('userseminars')
+                        ->select('seminar_title', 'seminar_provider', 'date_completed')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get(),
+                    "skills" => DB::table('userskills')
+                        ->select('skills')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get(),
+                    "employment" => DB::table('useremploymentrecords')
+                        ->select('company_name', 'position', 'job_description', 'date_completed')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get(),
+                    "certificate" => DB::table('usercertificates')
+                        ->where('code', $code)
+                        ->where('transNo', $profile->transNo)
+                        ->get()
+                ]
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $result
+        ]);
     }
 
 
