@@ -52,22 +52,23 @@ class LoginController extends Controller
     
                 $userprofileexist = Userprofile::where('code', Auth::user()->code)->count();
                 // if(Auth::user()->role_code === 'DEF-CLIENT' || Auth::user()->role_code === 'DEF-MASTERADMIN'  || $userprofileexist > 0){
-                  if($userprofileexist > 0 && Auth::user()->role_code === 'DEF-CLIENT' || $userprofileexist > 0 && Auth::user()->role_code === 'DEF-MASTERADMIN'){
+                if ($userprofileexist > 0 && Auth::user()->role_code === 'DEF-CLIENT') {
                     // DEF-CLIENT DIRECT TO HOME 0
                     return response()->json([
-                        'success' => true,
-                        'token' => $token,
-                        'message' => 0,
+                        'success'   => true,
+                        'token'     => $token,
+                        'message'   => 0,
                         'is_online' => true
                     ]);
-                }else{
+                } else {
                     return response()->json([
-                        'success' => true,
-                        'token' => $token,
-                        'message' => 1,
+                        'success'   => true,
+                        'token'     => $token,
+                        'message'   => 1,
                         'is_online' => true
                     ]);
                 }
+
             }
         return response()->json(['success' => false, 'message' => 'The email or password is incorrect. Please check your credentials.']);
     }
