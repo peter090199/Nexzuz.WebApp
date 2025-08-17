@@ -33,7 +33,7 @@ use App\Http\Controllers\CV\UserSeminars;
 use App\Http\Controllers\CV\UserTrainings;
 use App\Http\Controllers\CV\UserCertificates;
 use App\Http\Controllers\CV\UserWorkExperiences;
-
+use App\Http\Controllers\Follow\FollowController;
 
 use App\Events\MessageSent; 
 use App\Events\Message;
@@ -145,7 +145,9 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    //Reactions  
    Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
    //Follow  App\Http\Controllers\Follow
-   Route::resource('follow',App\Http\Controllers\Follow\FollowController::class)->names('follow');
+   Route::resource('follow',FollowController::class)->names('follow');
+   Route::get('getPost', [FollowController::class, 'getPost']);
+   
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
