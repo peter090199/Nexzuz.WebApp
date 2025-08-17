@@ -125,6 +125,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
    Route::put('messagesIsread', [ChatController::class, 'markAsReadMessage']);
 
+   Route::post('savePost', [PostController::class, 'savePost']);
    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
    Route::get('getDataPost', [PostController::class, 'getDataPost']);
 

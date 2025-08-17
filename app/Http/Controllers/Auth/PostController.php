@@ -97,6 +97,101 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+    public function savePost(Request $request)
+    {
+         $data = $request->all();
+        $validator = Validator::make($data, [
+            'posts.*' => 'file|mimes:jpeg,png,jpg,gif|max:3000', // only images here
+            'caption' => 'nullable|string',
+            'status' => 'required|integer',
+            'video' => 'nullable|mimetypes:video/mp4|max:50000' // separate video
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+            
+        try {
+            DB::beginTransaction(); // Start transaction
+
+            $transNo = Post::max('transNo');
+            $newtrans = empty($transNo) ? 1 : $transNo + 1;
+
+            $folderuuid = Str::uuid();
+            $codeuser = Auth::user()->code;
+
+            // Insert main post
+            Post::insert([
+                [
+                    'code' =>$codeuser,
+                    'posts_uuid' =>$folderuuid,
+                    'transNo' => $newtrans,
+                    'caption' =>  $data['caption'],
+                    'status' => $data['status'],
+                    'created_by' => Auth::user()->fullname,
+                    'updated_by' => '',
+                    'created_at'=> now()
+                ]
+            ]); 
+
+            // Save image files
+            if ($request->hasFile('posts')) {
+                foreach ($request->file('posts') as $file) {
+                    $uuid = Str::uuid();
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+                    $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+                
+                    DB::table('attachmentposts')->insert([
+                        'code' => $codeuser,
+                        'transNo' => $newtrans,
+                        'posts_uuid' => $folderuuid,
+                        'posts_uuind' => $uuid,
+                        'status' => $data['status'],
+                        'path_url' => asset("storage/{$filePath}"),
+                        'posts_type' => 'image',
+                        'created_by' => Auth::user()->fullname,
+                    ]);
+                }
+            }
+
+            // Save video file
+            if ($request->hasFile('video')) {
+                $video = $request->file('video');
+                $uuid = Str::uuid();
+                $filename = time() . '_' . $video->getClientOriginalName();
+                $videoPath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+                $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+
+                DB::table('attachmentposts')->insert([
+                    'code' => $codeuser,
+                    'transNo' => $newtrans,
+                    'posts_uuid' => $folderuuid,
+                    'posts_uuind' => $uuid,
+                    'status' => $data['status'],
+                    'path_url' => asset("storage/{$videoPath}"),
+                    'posts_type' => 'video',
+                    'created_by' => Auth::user()->fullname,
+                ]);
+            }
+
+            DB::commit(); // Commit transaction
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully uploaded.',
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack(); // Rollback the transaction on error
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $th->getMessage(),
+            ]);
+        }
+    }
+
+
     public function store(Request $request)
     {
         $data = $request->all();
@@ -104,6 +199,7 @@ class PostController extends Controller
             'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
             'caption' => 'nullable|string',
             'status' => 'required|integer',
+            
         ]);
         
         if ($validator->fails()) {
