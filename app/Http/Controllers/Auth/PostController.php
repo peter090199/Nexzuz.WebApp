@@ -100,96 +100,193 @@ class PostController extends Controller
 
     public function savePost(Request $request)
     {
-         $data = $request->all();
+        $data = $request->all();
+
         $validator = Validator::make($data, [
             'posts.*' => 'file|mimes:jpeg,png,jpg,gif|max:3000', // only images here
             'caption' => 'nullable|string',
-            'status' => 'required|integer',
-            'video' => 'nullable|mimetypes:video/mp4|max:50000' // separate video
+            'status'  => 'required|integer',
+            'video'   => 'nullable|mimetypes:video/mp4|max:50000' // separate video
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-            
+
         try {
             DB::beginTransaction(); // Start transaction
 
-            $transNo = Post::max('transNo');
-            $newtrans = empty($transNo) ? 1 : $transNo + 1;
-
+            $transNo   = Post::max('transNo');
+            $newtrans  = empty($transNo) ? 1 : $transNo + 1;
             $folderuuid = Str::uuid();
-            $codeuser = Auth::user()->code;
+            $codeuser   = Auth::user()->code;
 
             // Insert main post
-            Post::insert([
-                [
-                    'code' =>$codeuser,
-                    'posts_uuid' =>$folderuuid,
-                    'transNo' => $newtrans,
-                    'caption' =>  $data['caption'],
-                    'status' => $data['status'],
-                    'created_by' => Auth::user()->fullname,
-                    'updated_by' => '',
-                    'created_at'=> now()
-                ]
-            ]); 
+            Post::create([
+                'code'       => $codeuser,
+                'posts_uuid' => $folderuuid,
+                'transNo'    => $newtrans,
+                'caption'    => $data['caption'] ?? null,
+                'status'     => $data['status'],
+                'created_by' => Auth::user()->fullname,
+                'updated_by' => '',
+                'created_at' => now()
+            ]);
 
             // Save image files
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
-                    $uuid = Str::uuid();
+                    $uuid     = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
                     $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+
+                    // Store file
                     $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-                
+
                     DB::table('attachmentposts')->insert([
-                        'code' => $codeuser,
-                        'transNo' => $newtrans,
-                        'posts_uuid' => $folderuuid,
+                        'code'        => $codeuser,
+                        'transNo'     => $newtrans,
+                        'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
-                        'status' => $data['status'],
-                        'path_url' => asset("storage/{$filePath}"),
-                        'posts_type' => 'image',
-                        'created_by' => Auth::user()->fullname,
+                        'status'      => $data['status'],
+                        'path_url'    => asset("storage/{$filePath}"), // consistent URL
+                        'posts_type'  => 'image',
+                        'created_by'  => Auth::user()->fullname,
                     ]);
                 }
             }
 
             // Save video file
             if ($request->hasFile('video')) {
-                $video = $request->file('video');
-                $uuid = Str::uuid();
+                $video    = $request->file('video');
+                $uuid     = Str::uuid();
                 $filename = time() . '_' . $video->getClientOriginalName();
                 $videoPath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+
+                // Store video
                 $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
                 DB::table('attachmentposts')->insert([
-                    'code' => $codeuser,
-                    'transNo' => $newtrans,
-                    'posts_uuid' => $folderuuid,
+                    'code'        => $codeuser,
+                    'transNo'     => $newtrans,
+                    'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
-                    'status' => $data['status'],
-                    'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/uploads/posts/'. Auth::user()->code . '/' . $folderuuid . '/' . $filename,
-                    'posts_type' => 'video',
-                    'created_by' => Auth::user()->fullname,
+                    'status'      => $data['status'],
+                    'path_url'    => asset("storage/{$videoPath}"), // use asset() (no hardcoded domain)
+                    'posts_type'  => 'video',
+                    'created_by'  => Auth::user()->fullname,
                 ]);
             }
 
             DB::commit(); // Commit transaction
+
             return response()->json([
                 'success' => true,
-                'message' => 'Successfully uploaded.',
+                'message' => 'Successfully uploaded.'
             ]);
 
         } catch (\Throwable $th) {
-            DB::rollBack(); // Rollback the transaction on error
+            DB::rollBack(); // Rollback transaction on error
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $th->getMessage(),
+                'message' => 'An error occurred: ' . $th->getMessage()
             ]);
         }
     }
+
+    // public function savePost(Request $request)
+    // {
+    //      $data = $request->all();
+    //     $validator = Validator::make($data, [
+    //         'posts.*' => 'file|mimes:jpeg,png,jpg,gif|max:3000', // only images here
+    //         'caption' => 'nullable|string',
+    //         'status' => 'required|integer',
+    //         'video' => 'nullable|mimetypes:video/mp4|max:50000' // separate video
+    //     ]);
+        
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+            
+    //     try {
+    //         DB::beginTransaction(); // Start transaction
+
+    //         $transNo = Post::max('transNo');
+    //         $newtrans = empty($transNo) ? 1 : $transNo + 1;
+
+    //         $folderuuid = Str::uuid();
+    //         $codeuser = Auth::user()->code;
+
+    //         // Insert main post
+    //         Post::insert([
+    //             [
+    //                 'code' =>$codeuser,
+    //                 'posts_uuid' =>$folderuuid,
+    //                 'transNo' => $newtrans,
+    //                 'caption' =>  $data['caption'],
+    //                 'status' => $data['status'],
+    //                 'created_by' => Auth::user()->fullname,
+    //                 'updated_by' => '',
+    //                 'created_at'=> now()
+    //             ]
+    //         ]); 
+
+    //         // Save image files
+    //         if ($request->hasFile('posts')) {
+    //             foreach ($request->file('posts') as $file) {
+    //                 $uuid = Str::uuid();
+    //                 $filename = time() . '_' . $file->getClientOriginalName();
+    //                 $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+    //                 $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+                
+    //                 DB::table('attachmentposts')->insert([
+    //                     'code' => $codeuser,
+    //                     'transNo' => $newtrans,
+    //                     'posts_uuid' => $folderuuid,
+    //                     'posts_uuind' => $uuid,
+    //                     'status' => $data['status'],
+    //                     'path_url' => asset("storage/{$filePath}"),
+    //                     'posts_type' => 'image',
+    //                     'created_by' => Auth::user()->fullname,
+    //                 ]);
+    //             }
+    //         }
+
+    //         // Save video file
+    //         if ($request->hasFile('video')) {
+    //             $video = $request->file('video');
+    //             $uuid = Str::uuid();
+    //             $filename = time() . '_' . $video->getClientOriginalName();
+    //             $videoPath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+    //             $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+
+    //             DB::table('attachmentposts')->insert([
+    //                 'code' => $codeuser,
+    //                 'transNo' => $newtrans,
+    //                 'posts_uuid' => $folderuuid,
+    //                 'posts_uuind' => $uuid,
+    //                 'status' => $data['status'],
+    //                 'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/uploads/posts/'. Auth::user()->code . '/' . $folderuuid . '/' . $filename,
+    //                 'posts_type' => 'video',
+    //                 'created_by' => Auth::user()->fullname,
+    //             ]);
+    //         }
+
+    //         DB::commit(); // Commit transaction
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Successfully uploaded.',
+    //         ]);
+
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack(); // Rollback the transaction on error
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'An error occurred: ' . $th->getMessage(),
+    //         ]);
+    //     }
+    // }
 
 
     public function store(Request $request)
