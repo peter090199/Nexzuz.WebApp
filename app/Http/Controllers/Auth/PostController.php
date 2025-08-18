@@ -160,7 +160,7 @@ class PostController extends Controller
                 $video    = $request->file('video');
                 $uuid     = Str::uuid();
                 $filename = time() . '_' . $video->getClientOriginalName();
-                $videoPath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+                $videoPath = "app/public/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
 
                 // Store video
                 $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
@@ -171,7 +171,7 @@ class PostController extends Controller
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $data['status'],
-                    'path_url'    => asset("storage/{$videoPath}"), // use asset() (no hardcoded domain)
+                    'path_url'    => asset("storage/{$videoPath}"), 
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
                 ]);
