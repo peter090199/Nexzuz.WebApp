@@ -155,7 +155,6 @@ class PostController extends Controller
                     ]);
                 }
             }
-
             // Save video file
             if ($request->hasFile('video')) {
                 $video    = $request->file('video');
