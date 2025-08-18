@@ -138,7 +138,7 @@ class PostController extends Controller
                 foreach ($request->file('posts') as $file) {
                     $uuid     = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
-                    $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+                    $filePath = "app/public/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
 
                     // Store file
                     $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
@@ -621,8 +621,6 @@ class PostController extends Controller
 
     // DELETE INDIVIDUAL ATTACHMENT 
     public function deleteIndividualPost(string $id) {
-        // return 'testing purposes';
-        // return $id;
         if(Auth::check()){
             DB::beginTransaction();
 
