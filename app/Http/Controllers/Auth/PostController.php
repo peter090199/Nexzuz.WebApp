@@ -194,99 +194,6 @@ class PostController extends Controller
         }
     }
 
-    // public function savePost(Request $request)
-    // {
-    //      $data = $request->all();
-    //     $validator = Validator::make($data, [
-    //         'posts.*' => 'file|mimes:jpeg,png,jpg,gif|max:3000', // only images here
-    //         'caption' => 'nullable|string',
-    //         'status' => 'required|integer',
-    //         'video' => 'nullable|mimetypes:video/mp4|max:50000' // separate video
-    //     ]);
-        
-    //     if ($validator->fails()) {
-    //         return response()->json(['errors' => $validator->errors()], 422);
-    //     }
-            
-    //     try {
-    //         DB::beginTransaction(); // Start transaction
-
-    //         $transNo = Post::max('transNo');
-    //         $newtrans = empty($transNo) ? 1 : $transNo + 1;
-
-    //         $folderuuid = Str::uuid();
-    //         $codeuser = Auth::user()->code;
-
-    //         // Insert main post
-    //         Post::insert([
-    //             [
-    //                 'code' =>$codeuser,
-    //                 'posts_uuid' =>$folderuuid,
-    //                 'transNo' => $newtrans,
-    //                 'caption' =>  $data['caption'],
-    //                 'status' => $data['status'],
-    //                 'created_by' => Auth::user()->fullname,
-    //                 'updated_by' => '',
-    //                 'created_at'=> now()
-    //             ]
-    //         ]); 
-
-    //         // Save image files
-    //         if ($request->hasFile('posts')) {
-    //             foreach ($request->file('posts') as $file) {
-    //                 $uuid = Str::uuid();
-    //                 $filename = time() . '_' . $file->getClientOriginalName();
-    //                 $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-    //                 $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-                
-    //                 DB::table('attachmentposts')->insert([
-    //                     'code' => $codeuser,
-    //                     'transNo' => $newtrans,
-    //                     'posts_uuid' => $folderuuid,
-    //                     'posts_uuind' => $uuid,
-    //                     'status' => $data['status'],
-    //                     'path_url' => asset("storage/{$filePath}"),
-    //                     'posts_type' => 'image',
-    //                     'created_by' => Auth::user()->fullname,
-    //                 ]);
-    //             }
-    //         }
-
-    //         // Save video file
-    //         if ($request->hasFile('video')) {
-    //             $video = $request->file('video');
-    //             $uuid = Str::uuid();
-    //             $filename = time() . '_' . $video->getClientOriginalName();
-    //             $videoPath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-    //             $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-    //             DB::table('attachmentposts')->insert([
-    //                 'code' => $codeuser,
-    //                 'transNo' => $newtrans,
-    //                 'posts_uuid' => $folderuuid,
-    //                 'posts_uuind' => $uuid,
-    //                 'status' => $data['status'],
-    //                 'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/uploads/posts/'. Auth::user()->code . '/' . $folderuuid . '/' . $filename,
-    //                 'posts_type' => 'video',
-    //                 'created_by' => Auth::user()->fullname,
-    //             ]);
-    //         }
-
-    //         DB::commit(); // Commit transaction
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Successfully uploaded.',
-    //         ]);
-
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack(); // Rollback the transaction on error
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'An error occurred: ' . $th->getMessage(),
-    //         ]);
-    //     }
-    // }
-
 
     public function store(Request $request)
     {
@@ -390,7 +297,105 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request, $id = null)
+    {
+        $currentUserCode = Auth::user()->code;
+        $requestedCode = $request->code ?? null;
+
+        try {
+            $result = [];
+
+            if ($id) {
+                // ✅ Fetching a single post
+                if ($requestedCode && $requestedCode === $currentUserCode) {
+                    // Show all posts (including private) if it's own profile
+                    $posts = Post::where('code', $currentUserCode)
+                                ->where('posts_uuid', $id)
+                                ->get();
+                } else {
+                    // Show only public posts if it's someone else
+                    $posts = Post::where('status', 1)
+                                ->where('code', $requestedCode)
+                                ->where('posts_uuid', $id)
+                                ->get();
+                }
+            } else {
+                // ✅ Fetching all posts (feed)
+                $posts = DB::select('
+                    SELECT 
+                        (SELECT getUserprofilepic(p.code)) AS profile_pic,
+                        (SELECT getFullname(p.code)) AS fullname,
+                        p.posts_uuid,
+                        p.caption,
+                        p.status,
+                        p.created_at,
+                        p.updated_at,
+                        p.code AS post_owner
+                    FROM posts AS p
+                    LEFT JOIN follows AS f1 
+                        ON f1.following_code = p.code 
+                        AND f1.follower_code = ? 
+                        AND f1.follow_status = "accepted"
+                    LEFT JOIN follows AS f2 
+                        ON f2.follower_code = p.code 
+                        AND f2.following_code = ? 
+                        AND f2.follow_status = "accepted"
+                    WHERE p.status = 1
+                    AND (
+                        f1.follower_code IS NOT NULL
+                        OR f2.following_code IS NOT NULL
+                        OR p.code = ?
+                    )
+                    ORDER BY p.created_at DESC
+                ', [$currentUserCode, $currentUserCode, $currentUserCode]);
+            }
+
+            foreach ($posts as $post) {
+                // Handle profile pic and fullname for both cases
+                $profilePic = $post->profile_pic ?? Userprofile::select('photo_pic')->where('code', $post->code ?? $requestedCode)->first()->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png';
+                $fullname   = $post->fullname ?? $post->created_by ?? 'Unknown User';
+
+                // Fetch attachments (respect privacy)
+                if (($requestedCode && $requestedCode === $currentUserCode) || ($post->code ?? null) === $currentUserCode) {
+                    // Owner → show all attachments
+                    $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)->get();
+                } else {
+                    // Non-owner → only public attachments
+                    $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)
+                                                ->where('status', 1)
+                                                ->get();
+                }
+
+                // Group attachments by type
+                $images = $attachments->where('posts_type', 'image')->values();
+                $videos = $attachments->where('posts_type', 'video')->values();
+
+                $result[] = [
+                    "fullname"    => $fullname,
+                    "profile_pic" => $profilePic,
+                    "posts_uuid"  => $post->posts_uuid,
+                    "caption"     => $post->caption,
+                    "status"      => $post->status,
+                    "created_at"  => $post->created_at,
+                    "updated_at"  => $post->updated_at,
+                    "images"      => $images,
+                    "videos"      => $videos
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => array_values($result)
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $th->getMessage(),
+            ]);
+        }
+    }
+
+    public function showX(Request $request, string $id)
     {
         //
         // return 'test';
