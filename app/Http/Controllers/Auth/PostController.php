@@ -29,6 +29,79 @@ class PostController extends Controller
                 $authCode = Auth::user()->code;
                 
                 $result = [];
+
+                if ($requestedCode) {
+                    // Scenario 1: Viewing a specific code profile
+                    if ($authCode == $requestedCode) {
+                        // Show all posts (including private)
+                        $posts = Post::where('code', $authCode)->get();
+                    } else {
+                        // Show only public posts
+                        $posts = Post::where('status', 1)
+                                    ->where('code', $requestedCode)
+                                    ->get();
+                    }
+
+                    $commentController = new CommentController();
+
+                    foreach ($posts as $post) {
+                        // Fetch attachments
+                        $attachmentQuery = Attachmentpost::where('posts_uuid', $post->posts_uuid);
+
+                        if ($authCode != $requestedCode) {
+                            // If viewing someone else's posts, only show public attachments
+                            $attachmentQuery->where('status', 1);
+                        }
+
+                        $attachments = $attachmentQuery->get();
+
+                        // Group attachments
+                        $images = $attachments->where('posts_type', 'image')->values();
+                        $videos = $attachments->where('posts_type', 'video')->values();
+
+                        // Call Postcomments@index with a fake request
+                        $fakeRequest = new Request(['post_uuidOrUind' => $post->posts_uuid]);
+                        $commentResponse = $commentController->index($fakeRequest);
+                        $commentData = json_decode($commentResponse->getContent());
+
+                        $result[] = [
+                            "profile_pic" => $post->profile_pic,
+                            "fullname" => $post->fullname,
+                            "posts_uuid" => $post->posts_uuid,
+                            "caption" => $post->caption,
+                            "status" => $post->status,
+                            "created_at" => $post->created_at,
+                            "updated_at" => $post->updated_at,
+                            "images" => $images,
+                            "videos" => $videos,
+                            "comments" => $commentData
+                        ];
+                    }
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'data' => array_values($result)
+                ]);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $th->getMessage(),
+                ]);
+            }
+        }
+
+        // return view('testuploads');
+    }
+
+    public function index22(Request $request)
+    {
+        if (Auth::check()) {
+            try {
+                $requestedCode = $request->code;
+                $authCode = Auth::user()->code;
+                
+                $result = [];
                 
                 if ($requestedCode) {
                     // Scenario 1: Viewing a specific code profile
@@ -297,105 +370,7 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, $id = null)
-    {
-        $currentUserCode = Auth::user()->code;
-        $requestedCode = $request->code ?? null;
-
-        try {
-            $result = [];
-
-            if ($id) {
-                // ✅ Fetching a single post
-                if ($requestedCode && $requestedCode === $currentUserCode) {
-                    // Show all posts (including private) if it's own profile
-                    $posts = Post::where('code', $currentUserCode)
-                                ->where('posts_uuid', $id)
-                                ->get();
-                } else {
-                    // Show only public posts if it's someone else
-                    $posts = Post::where('status', 1)
-                                ->where('code', $requestedCode)
-                                ->where('posts_uuid', $id)
-                                ->get();
-                }
-            } else {
-                // ✅ Fetching all posts (feed)
-                $posts = DB::select('
-                    SELECT 
-                        (SELECT getUserprofilepic(p.code)) AS profile_pic,
-                        (SELECT getFullname(p.code)) AS fullname,
-                        p.posts_uuid,
-                        p.caption,
-                        p.status,
-                        p.created_at,
-                        p.updated_at,
-                        p.code AS post_owner
-                    FROM posts AS p
-                    LEFT JOIN follows AS f1 
-                        ON f1.following_code = p.code 
-                        AND f1.follower_code = ? 
-                        AND f1.follow_status = "accepted"
-                    LEFT JOIN follows AS f2 
-                        ON f2.follower_code = p.code 
-                        AND f2.following_code = ? 
-                        AND f2.follow_status = "accepted"
-                    WHERE p.status = 1
-                    AND (
-                        f1.follower_code IS NOT NULL
-                        OR f2.following_code IS NOT NULL
-                        OR p.code = ?
-                    )
-                    ORDER BY p.created_at DESC
-                ', [$currentUserCode, $currentUserCode, $currentUserCode]);
-            }
-
-            foreach ($posts as $post) {
-                // Handle profile pic and fullname for both cases
-                $profilePic = $post->profile_pic ?? Userprofile::select('photo_pic')->where('code', $post->code ?? $requestedCode)->first()->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png';
-                $fullname   = $post->fullname ?? $post->created_by ?? 'Unknown User';
-
-                // Fetch attachments (respect privacy)
-                if (($requestedCode && $requestedCode === $currentUserCode) || ($post->code ?? null) === $currentUserCode) {
-                    // Owner → show all attachments
-                    $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)->get();
-                } else {
-                    // Non-owner → only public attachments
-                    $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)
-                                                ->where('status', 1)
-                                                ->get();
-                }
-
-                // Group attachments by type
-                $images = $attachments->where('posts_type', 'image')->values();
-                $videos = $attachments->where('posts_type', 'video')->values();
-
-                $result[] = [
-                    "fullname"    => $fullname,
-                    "profile_pic" => $profilePic,
-                    "posts_uuid"  => $post->posts_uuid,
-                    "caption"     => $post->caption,
-                    "status"      => $post->status,
-                    "created_at"  => $post->created_at,
-                    "updated_at"  => $post->updated_at,
-                    "images"      => $images,
-                    "videos"      => $videos
-                ];
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => array_values($result)
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred: ' . $th->getMessage(),
-            ]);
-        }
-    }
-
-    public function showX(Request $request, string $id)
+    public function show(Request $request, string $id)
     {
         //
         // return 'test';
