@@ -41,7 +41,7 @@ class FollowController extends Controller
                 OR f2.following_code IS NOT NULL
                 OR p.code = ?
             )
-            ORDER BY p.created_at ASC
+            ORDER BY p.created_at DESC
         ', [$currentUserCode, $currentUserCode, $currentUserCode]);
 
         $result = [];
