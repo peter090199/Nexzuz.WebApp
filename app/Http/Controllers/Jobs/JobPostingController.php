@@ -27,14 +27,21 @@ class JobPostingController extends Controller
             'comp_description' => 'required|string',
             'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-
+        
         if ($request->hasFile('job_image')) {
             $file = $request->file('job_image');
             $uuid = Str::uuid();
             $folderPath = "uploads/{$userCode}/JobPosting/{$uuid}";
             $fileName = time() . '.' . $file->getClientOriginalExtension();
+
+            // Store file in storage/app/public/uploads/...
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+            // Save relative path (cleaner)
             $validated['job_image'] = "storage/" . $filePath;
+
+            // If you want full URL:
+            // $validated['job_image'] = asset("storage/" . $filePath);
         }
 
         $job = JobPosting::create($validated);
