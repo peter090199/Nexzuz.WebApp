@@ -37,7 +37,7 @@ class JobPostingController extends Controller
             // Store in storage/app/public/...
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
             // Save with full "storage/app/public/..." path
-            $validated['job_image'] = "storage/app/public/" . $filePath;
+            $validated['job_image'] = "/storage/app/public/" . $filePath;
         }
 
         $job = JobPosting::create($validated);
