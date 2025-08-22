@@ -1,11 +1,8 @@
 <?php
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
-
 use  App\Http\Controllers\Lookup\LookupController;
-
 use  App\Http\Controllers\Auth\LoginController;
 use  App\Http\Controllers\Auth\RegisterController;
 use  App\Http\Controllers\Auth\ForgetpasswordController;
@@ -13,17 +10,13 @@ use  App\Http\Controllers\Auth\ProfileController;
 use  App\Http\Controllers\Auth\ProfilepictureController;
 use  App\Http\Controllers\Auth\PostController;
 use  App\Http\Controllers\Postcomments\CommentController;
-
 use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
-
 use App\Http\Controllers\System\Menus\MenuController;
 use App\Http\Controllers\System\Securityroles\SecurityroleController;
-
 use App\Http\Controllers\System\Roles\RoleController;
 use App\Http\Controllers\SearchAccount\UserController;
 use App\Http\Controllers\Select2\SelectController;
 use App\Http\Controllers\ChatController;
-
 use App\Http\Controllers\Follow\ClientsBAL;
 use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
 use App\Http\Controllers\CV\UserLanguage;
@@ -34,7 +27,7 @@ use App\Http\Controllers\CV\UserTrainings;
 use App\Http\Controllers\CV\UserCertificates;
 use App\Http\Controllers\CV\UserWorkExperiences;
 use App\Http\Controllers\Follow\FollowController;
-
+use App\Http\Controllers\Jobs\JobPostingController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
@@ -199,11 +192,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveEmployment', [UserWorkExperiences::class, 'saveEmployment']);
     Route::get('getEmployment', [UserWorkExperiences::class, 'getEmployment']);
     Route::delete('deleteEmployment/{id}', [UserWorkExperiences::class, 'deleteEmployment']);
-
     //GET CV DATA ALL
     Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
-
-
+    //Jobs
+    Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
 
 
 
