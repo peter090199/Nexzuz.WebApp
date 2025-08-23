@@ -14,6 +14,7 @@ class JobListController extends Controller
             ->select(
                 'id',
                 'job_name',
+                'job_image',
                 'job_position',
                 'comp_name',
                 'work_type',
@@ -32,5 +33,5 @@ class JobListController extends Controller
     }
 
 
-    
+
 }
