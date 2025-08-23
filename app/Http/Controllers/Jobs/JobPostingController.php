@@ -79,6 +79,7 @@ class JobPostingController extends Controller
         }
     }
 
+
     public function saveJobPostingXX(Request $request)
     {
         try{
