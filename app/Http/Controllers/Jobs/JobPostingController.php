@@ -13,7 +13,73 @@ use Illuminate\Support\Facades\Validator;
 
 class JobPostingController extends Controller
 {
-    public function saveJobPosting(Request $request)
+    public function saveOrUpdateJobPosting(Request $request, $id = null)
+    {
+        try {
+            $role_code = Auth::user()->role_code;
+            $code = Auth::user()->code;
+
+            $validated = $request->validate([
+                'job_name' => 'required|string|max:255',
+                'job_position' => 'required|string|max:255',
+                'job_description' => 'required|string',
+                'job_about' => 'required|string',
+                'qualification' => 'required|string',
+                'work_type' => 'required|string',
+                'comp_name' => 'required|string|max:255',
+                'comp_description' => 'required|string',
+                'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ]);
+
+            // Handle file upload
+            if ($request->hasFile('job_image')) {
+                $file = $request->file('job_image');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$code}/JobPosting/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                $validated['job_image'] = "/storage/app/public/" . $filePath;
+            }
+
+            $validated['code'] = $code;
+            $validated['role_code'] = $role_code;
+
+            if ($id) {
+                // ✅ UPDATE
+                $job = JobPosting::findOrFail($id);
+                $job->update($validated);
+
+                return response()->json([
+                    'message' => 'Job updated successfully!',
+                    'success' => true,
+                ], 200);
+            } else {
+                // ✅ CREATE
+                JobPosting::create($validated);
+
+                return response()->json([
+                    'message' => 'Job saved successfully!',
+                    'success' => true,
+                ], 201);
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong.',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function saveJobPostingXX(Request $request)
     {
         try{
         $role_code = Auth::user()->role_code;
