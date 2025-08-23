@@ -68,7 +68,7 @@ Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
 
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     
-    Route::get('/user', function (Request $request) {
+    Route::get('user', function (Request $request) {
         return $request->user(); 
     });
     
@@ -196,7 +196,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
     //Jobs
     Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
-
+    Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
 
 
 });

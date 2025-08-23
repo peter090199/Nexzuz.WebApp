@@ -63,6 +63,28 @@ class JobPostingController extends Controller
         }
     }
 
+    public function getJobPostingsByCode()
+    {
+        try {
+            $code = Auth::user()->code; // ✅ only get jobs of logged-in user
+
+            $jobs = JobPosting::where('code', $code)
+            ->orderBy('job_name', 'asc')
+            ->get();
+
+            return response()->json([
+                'success' => true,
+                'jobs' => $jobs
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while fetching job postings.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 
