@@ -63,7 +63,7 @@ class JobPostingController extends Controller
         }
     }
 
-    public function updateJobPosting(Request $request, $id)
+    public function updateJobPostingX(Request $request, $id)
     {
         try {
             $role_code = Auth::user()->role_code;
@@ -120,6 +120,92 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
+
+    public function updateJobPosting(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $currentUserCode = Auth::user()->code;
+        $role_code = Auth::user()->role_code;
+
+        // ✅ Validation
+        $validator = Validator::make($request->all(), [
+            'job_name'        => 'required|string|max:255',
+            'job_position'    => 'required|string|max:255',
+            'job_description' => 'required|string',
+            'job_about'       => 'required|string',
+            'qualification'   => 'required|string',
+            'work_type'       => 'required|string',
+            'comp_name'       => 'required|string|max:255',
+            'comp_description'=> 'required|string',
+            'job_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            // ✅ Find only if belongs to current user
+            $job = JobPosting::where('id', $id)
+                ->where('code', $currentUserCode)
+                ->first();
+
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job posting not found.',
+                ], 404);
+            }
+
+            // ✅ Handle image upload
+            if ($request->hasFile('job_image')) {
+                $file = $request->file('job_image');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$currentUserCode}/JobPosting/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                $job->job_image = "/storage/" . $filePath;
+            }
+
+            // ✅ Update fields
+            $job->job_name        = $request->job_name;
+            $job->job_position    = $request->job_position;
+            $job->job_description = $request->job_description;
+            $job->job_about       = $request->job_about;
+            $job->qualification   = $request->qualification;
+            $job->work_type       = $request->work_type;
+            $job->comp_name       = $request->comp_name;
+            $job->comp_description= $request->comp_description;
+            $job->code            = $currentUserCode;
+            $job->role_code       = $role_code;
+            $job->updated_at      = now();
+
+            $job->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job posting updated successfully.',
+                'job'     => $job,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update job posting.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
     public function getJobPostingsByCode()
     {
