@@ -25,7 +25,6 @@ class JobListController extends Controller
             )
             ->where('recordstatus', 'active')
             ->orderBy('created_at', 'desc')
-            ->limit(10)
             ->get();
 
         return response()->json([
