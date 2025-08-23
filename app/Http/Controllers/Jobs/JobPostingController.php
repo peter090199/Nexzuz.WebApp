@@ -42,7 +42,6 @@ class JobPostingController extends Controller
             return response()->json([
                 'message' => 'Job saved successfully!',
                 'success'   => true,
-                'data' => $job
             ], 201);
             } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
