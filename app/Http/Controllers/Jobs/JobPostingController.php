@@ -93,18 +93,17 @@ class JobPostingController extends Controller
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
                 $validated['job_image'] = "/storage/app/public/" . $filePath;
             }
+                $validated['code'] = $code;
+                $validated['role_code'] = $role_code;
 
-            // ✅ always keep owner info
-            $validated['code'] = $code;
-            $validated['role_code'] = $role_code;
+                // ✅ Update and reload
+                $job->update($validated);
+                $job->refresh();
 
-            $job->update($validated);
-
-            return response()->json([
-                'message' => 'Job updated successfully!',
-                'success' => true,
-                'job' => $job
-            ], 200);
+                return response()->json([
+                    'message' => 'Job updated successfully!',
+                    'success' => true,
+                ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
