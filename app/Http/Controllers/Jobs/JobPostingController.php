@@ -61,7 +61,7 @@ class JobPostingController extends Controller
                 }
             } else {
                 // ✅ DELETE previous job(s) for this user/code before creating new
-                JobPosting::where('code', $code)->delete();
+                JobPosting::where('id', $id)->delete();
 
                 // ✅ CREATE new job
                 JobPosting::create($validated);
