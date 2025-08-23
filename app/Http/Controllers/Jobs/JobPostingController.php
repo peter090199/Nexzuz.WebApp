@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class JobPostingController extends Controller
 {
-    public function saveOrUpdateJobPosting(Request $request, $id = null)
+    public function saveOrUpdateJobPosting(Request $request, $id)
     {
         try {
             $role_code = Auth::user()->role_code;
