@@ -16,8 +16,8 @@ class JobPostingController extends Controller
     public function saveJobPosting(Request $request)
     {
         try{
-        $userCode = Auth::user()->code;
-
+        $role_code = Auth::user()->role_code;
+        $code = Auth::user()->code;
         $validated = $request->validate([
             'job_name' => 'required|string|max:255',
             'job_position' => 'required|string|max:255',
@@ -38,7 +38,11 @@ class JobPostingController extends Controller
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
             $validated['job_image'] = "/storage/app/public/" . $filePath;
         }
-           $job = JobPosting::create($validated);
+            $validated['code'] = $code;
+            $validated['role_code'] = $role_code;
+
+            $job = JobPosting::create($validated);
+
             return response()->json([
                 'message' => 'Job saved successfully!',
                 'success'   => true,

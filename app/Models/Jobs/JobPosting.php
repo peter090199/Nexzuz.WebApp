@@ -13,6 +13,7 @@ class JobPosting extends Model
     public $timestamps = true;
 
     protected $fillable = [
+        'client_code',
         'job_name',
         'job_position',
         'job_description',
