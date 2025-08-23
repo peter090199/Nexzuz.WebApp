@@ -33,7 +33,7 @@ class JobPostingController extends Controller
         if ($request->hasFile('job_image')) {
             $file = $request->file('job_image');
             $uuid = Str::uuid();
-            $folderPath = "uploads/{$userCode}/JobPosting/{$uuid}";
+            $folderPath = "uploads/{$code}/JobPosting/{$uuid}";
             $fileName = time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs($folderPath, $fileName, 'public');
             $validated['job_image'] = "/storage/app/public/" . $filePath;

@@ -9,7 +9,7 @@ class JobPosting extends Model
 {
      use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'JobPosting'; 
+    protected $table = 'jobPosting'; 
     public $timestamps = true;
 
     protected $fillable = [
