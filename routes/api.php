@@ -28,6 +28,7 @@ use App\Http\Controllers\CV\UserCertificates;
 use App\Http\Controllers\CV\UserWorkExperiences;
 use App\Http\Controllers\Follow\FollowController;
 use App\Http\Controllers\Jobs\JobPostingController;
+use App\Http\Controllers\Jobs\JobListController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
@@ -194,10 +195,11 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteEmployment/{id}', [UserWorkExperiences::class, 'deleteEmployment']);
     //GET CV DATA ALL
     Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
-    //Jobs
+    //JobPosting
     Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
     Route::put('saveOrUpdateJobPosting/{id}', [JobPostingController::class, 'saveOrUpdateJobPosting']); 
     Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
     Route::delete('deleteJobPosting/{id}', [JobPostingController::class, 'deleteJobPosting']);
-
+    //JobList
+    Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
 });
