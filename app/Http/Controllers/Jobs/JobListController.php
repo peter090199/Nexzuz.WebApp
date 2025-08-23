@@ -13,6 +13,8 @@ class JobListController extends Controller
         $jobs = DB::table('jobPosting')
             ->select(
                 'id',
+                'code',
+                'role_code',
                 'job_name',
                 'job_image',
                 'job_position',
