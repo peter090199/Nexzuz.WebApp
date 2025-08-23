@@ -46,9 +46,9 @@ class JobPostingController extends Controller
 
             if ($id) {
                 // ✅ UPDATE
-                $job = JobPosting::findOrFail($id);
+                $job = JobPosting::find($id);
                 $job->update($validated);
-
+                
                 return response()->json([
                     'message' => 'Job updated successfully!',
                     'success' => true,
