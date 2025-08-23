@@ -195,7 +195,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //GET CV DATA ALL
     Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
     //Jobs
-    Route::post('saveOrUpdateJobPosting', [JobPostingController::class, 'saveOrUpdateJobPosting']);
+    Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
     Route::put('saveOrUpdateJobPosting/{id}', [JobPostingController::class, 'saveOrUpdateJobPosting']); 
     Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
     Route::delete('deleteJobPosting/{id}', [JobPostingController::class, 'deleteJobPosting']);
