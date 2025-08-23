@@ -63,6 +63,65 @@ class JobPostingController extends Controller
         }
     }
 
+    public function updateJobPosting(Request $request, $id)
+    {
+        try {
+            $role_code = Auth::user()->role_code;
+            $code = Auth::user()->code;
+
+            $job = JobPosting::where('id', $id)
+                ->where('code', $code) // ✅ only allow updating own jobs
+                ->firstOrFail();
+
+            $validated = $request->validate([
+                'job_name' => 'sometimes|required|string|max:255',
+                'job_position' => 'sometimes|required|string|max:255',
+                'job_description' => 'sometimes|required|string',
+                'job_about' => 'sometimes|required|string',
+                'qualification' => 'sometimes|required|string',
+                'work_type' => 'sometimes|required|string',
+                'comp_name' => 'sometimes|required|string|max:255',
+                'comp_description' => 'sometimes|required|string',
+                'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ]);
+
+            if ($request->hasFile('job_image')) {
+                $file = $request->file('job_image');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$code}/JobPosting/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                $validated['job_image'] = "/storage/app/public/" . $filePath;
+            }
+
+            // ✅ always keep owner info
+            $validated['code'] = $code;
+            $validated['role_code'] = $role_code;
+
+            $job->update($validated);
+
+            return response()->json([
+                'message' => 'Job updated successfully!',
+                'success' => true,
+                'job' => $job
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed.',
+                'success' => false,
+                'errors' => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong while updating the job.',
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getJobPostingsByCode()
     {
         try {
@@ -82,6 +141,31 @@ class JobPostingController extends Controller
                 'success' => false,
                 'message' => 'Something went wrong while fetching job postings.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteJobPosting($id)
+    {
+        try {
+            $code = Auth::user()->code;
+
+            $job = JobPosting::where('id', $id)
+                ->where('code', $code) // ✅ only delete own jobs
+                ->firstOrFail();
+
+            $job->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job deleted successfully!',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while deleting the job.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
