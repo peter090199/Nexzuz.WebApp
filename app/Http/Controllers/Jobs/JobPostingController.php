@@ -173,7 +173,7 @@ class JobPostingController extends Controller
                 $folderPath = "uploads/{$currentUserCode}/JobPosting/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                $job->job_image = "/storage/" . $filePath;
+                $job->job_image = "/storage/app/public/" . $filePath;
             }
 
             // ✅ Update fields
