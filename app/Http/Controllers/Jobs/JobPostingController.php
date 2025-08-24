@@ -86,6 +86,9 @@ class JobPostingController extends Controller
         try{
         $role_code = Auth::user()->role_code;
         $code = Auth::user()->code;
+        $fname = Auth::user()->fname;
+        $is_online = Auth::user()->is_online;
+
         $validated = $request->validate([
             'job_name' => 'required|string|max:255',
             'job_position' => 'required|string|max:255',
@@ -108,6 +111,8 @@ class JobPostingController extends Controller
         }
             $validated['code'] = $code;
             $validated['role_code'] = $role_code;
+            $validated['fname'] = $fname;
+            $validated['is_online'] = $is_online;
 
             $job = JobPosting::create($validated);
 
