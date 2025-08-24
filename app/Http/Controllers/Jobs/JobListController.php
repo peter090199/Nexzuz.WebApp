@@ -10,19 +10,7 @@ class JobListController extends Controller
 {
     public function getActiveJobs()
     {
-        $jobs = DB::table('jobPosting')
-            ->select(
-                'id',
-                'code',
-                'role_code',
-                'job_name',
-                'job_image',
-                'job_position',
-                'comp_name',
-                'work_type',
-                'recordstatus',
-                'created_at'
-            )
+            $jobs = DB::table('jobPosting')
             ->where('recordstatus', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
