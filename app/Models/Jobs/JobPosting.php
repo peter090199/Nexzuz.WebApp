@@ -25,7 +25,7 @@ class JobPosting extends Model
         'comp_name',
         'comp_description',
         'job_image',
-        'fullname',
+        'fname',
         'is_online'
     ];
 }
