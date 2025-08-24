@@ -200,7 +200,8 @@ class JobPostingController extends Controller
 
         $currentUserCode = Auth::user()->code;
         $role_code = Auth::user()->role_code;
-
+        $fullname = Auth::user()->fullname;
+        $is_online = Auth::user()->is_online;
         // ✅ Validation
         $validator = Validator::make($request->all(), [
             'job_name'        => 'required|string|max:255',
@@ -255,6 +256,8 @@ class JobPostingController extends Controller
             $job->comp_description= $request->comp_description;
             $job->code            = $currentUserCode;
             $job->role_code       = $role_code;
+            $job->fullname       = $fullname;
+            $job->is_online       = $is_online;
             $job->updated_at      = now();
 
             $job->save();
