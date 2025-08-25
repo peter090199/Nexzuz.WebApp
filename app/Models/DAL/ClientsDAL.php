@@ -290,6 +290,7 @@ class ClientsDAL extends Model
         ]);
     }
 
+
     //accepted follow 
     public function acceptFollowRequest(string $followerCode)
     {
@@ -442,6 +443,7 @@ class ClientsDAL extends Model
                 r.fullname,
                 r.profession,
                 r.company,
+                r.role_code,
                 r.industry,
                 u.code,
                 u.is_online,
