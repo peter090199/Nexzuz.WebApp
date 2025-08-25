@@ -100,6 +100,8 @@ class JobPostingController extends Controller
             'comp_name' => 'required|string|max:255',
             'comp_description' => 'required|string',
             'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'location' => 'required|string|max:255',
+            'benefits' => 'required|string|max:255'
         ]);
 
         if ($request->hasFile('job_image')) {

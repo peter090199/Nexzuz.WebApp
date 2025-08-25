@@ -450,12 +450,10 @@ class ProfileController extends Controller
             'message' => 'Profile loaded successfully.'
         ]);
     }
-    
+
     public function userAuth() {
         if (Auth::check()) {
-            // Get the authenticated user's record
             $user = Resource::where('code', Auth::user()->code)->first();
-
             if ($user) {
                 return response()->json([
                     'success' => true,

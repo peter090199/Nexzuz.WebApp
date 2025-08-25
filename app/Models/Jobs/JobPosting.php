@@ -27,6 +27,8 @@ class JobPosting extends Model
         'job_image',
         'fullname',
         'is_online',
-        'company'
+        'company',
+        'location',
+        'benefits'
     ];
 }
