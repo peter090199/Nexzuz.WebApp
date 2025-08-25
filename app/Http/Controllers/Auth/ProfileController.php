@@ -467,6 +467,7 @@ class ProfileController extends Controller
                     "industry" => $user[$i]->industry,
                     "companywebsite" =>  $user[$i]->companywebsite,
                     "role_code"=>$user[$i]->role_code,
+                    "company"=>$user[$i]->company,
                 ];
             }         
             return response()->json(['success' => true,'message' => $result]);
