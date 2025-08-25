@@ -454,23 +454,23 @@ class ProfileController extends Controller
     public function userAuth(){
         if (Auth::check()) {
             $user = Resource::where('code',Auth::user()->code)->get();
-            $result = [];
-            for($i = 0 ; $i < count($user); $i++){
-                $result [] = [
-                    "fullname" => $user[$i]->fullname,
-                    "email" =>  $user[$i]->email,
-                    "fname" => $user[$i]->fname,
-                    "lname" => $user[$i]->lname,
-                    "code" => $user[$i]->code,
-                    "contact_no" => $user[$i]->contact_no,
-                    "profession" => $user[$i]->profession,
-                    "industry" => $user[$i]->industry,
-                    "companywebsite" =>  $user[$i]->companywebsite,
-                    "role_code"=>$user[$i]->role_code,
-                    "company"=>$user[$i]->company,
-                ];
-            }         
-            return response()->json(['success' => true,'message' => $result]);
+            // $result = [];
+            // for($i = 0 ; $i < count($user); $i++){
+            //     $result [] = [
+            //         "fullname" => $user[$i]->fullname,
+            //         "email" =>  $user[$i]->email,
+            //         "fname" => $user[$i]->fname,
+            //         "lname" => $user[$i]->lname,
+            //         "code" => $user[$i]->code,
+            //         "contact_no" => $user[$i]->contact_no,
+            //         "profession" => $user[$i]->profession,
+            //         "industry" => $user[$i]->industry,
+            //         "companywebsite" =>  $user[$i]->companywebsite,
+            //         "role_code"=>$user[$i]->role_code,
+            //         "company"=>$user[$i]->company,
+            //     ];
+            // }         
+            return response()->json(['success' => true,'message' => $user]);
         } 
         else {
             return response()->json(['success'=>false,'message' => 'User is not authenticated']);
