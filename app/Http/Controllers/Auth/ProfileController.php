@@ -450,8 +450,33 @@ class ProfileController extends Controller
             'message' => 'Profile loaded successfully.'
         ]);
     }
+    
+    public function userAuth() {
+        if (Auth::check()) {
+            // Get the authenticated user's record
+            $user = Resource::where('code', Auth::user()->code)->first();
 
-    public function userAuth(){
+            if ($user) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $user
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is not authenticated'
+            ]);
+        }
+    }
+
+
+    public function userAuthXX(){
         if (Auth::check()) {
             $user = Resource::where('code',Auth::user()->code)->get();
             // $result = [];
