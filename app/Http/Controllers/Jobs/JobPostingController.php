@@ -87,6 +87,7 @@ class JobPostingController extends Controller
         $role_code = Auth::user()->role_code;
         $code = Auth::user()->code;
         $fullname = Auth::user()->fullname;
+        $company = Auth::user()->company;
         $is_online = Auth::user()->is_online;
 
         $validated = $request->validate([
@@ -113,7 +114,7 @@ class JobPostingController extends Controller
             $validated['role_code'] = $role_code;
             $validated['fullname'] = $fullname;
             $validated['is_online'] = $is_online;
-
+            $validated['company'] = $company;
             $job = JobPosting::create($validated);
 
             return response()->json([
