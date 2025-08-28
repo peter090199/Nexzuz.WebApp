@@ -81,7 +81,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
     Route::resource('profile_pic',ProfilepictureController::class)->names('profile_pic');
-    Route::get('user/profile/{code}',[ProfileController::class,'userAuthByCode'])->name('user/profile'); 
+    Route::get('company/profile',[ProfileController::class,'userAuthByCode'])->name('user/profile'); 
     // Accessrolemenu
     // User access to the menu depends on their role. GET 
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
