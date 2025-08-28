@@ -136,24 +136,29 @@ class LoginController extends Controller
         }
         return response()->json(['success' => false, 'message' => 'The email or password is incorrect. Please check your credentials.']);
     }
-       
+        
     public function logout(Request $request)
     {
-        // Get the authenticated user
         $user = $request->user();
-    
-        if ($user) {
-            // Set the user as offline
+
+        if ($user && $request->user()->currentAccessToken()) {
             $user->is_online = false;
             $user->save();
-    
-            // Revoke the token that was used to authenticate the request
-            $user->currentAccessToken()->delete();
+            // ✅ Delete only the current token
+            $request->user()->currentAccessToken()->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'You have been logged out successfully.'
+            ]);
         }
-    
-        return response()->json(['success' => true, 'message' => 'You have been logged out successfully.']);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User not authenticated or token missing.'
+        ], 401);
     }
-   
+
     public function getIsOnline()
     {
         $users = DB::table('users')->select('code', 'is_online')->get();
