@@ -201,7 +201,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteJobPosting/{id}', [JobPostingController::class, 'deleteJobPosting']);
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
-
     //company profile
     Route::get('company/profile', [ProfileController::class, 'userAuthByCode']);
 });
