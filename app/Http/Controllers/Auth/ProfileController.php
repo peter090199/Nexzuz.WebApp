@@ -473,26 +473,14 @@ class ProfileController extends Controller
         }
     }
 
-    
-    public function userAuthByCode(Request $request)
+    public function userAuthByCode(Request $request, $code)
     {
         $authUser = $request->user(); // must be logged in
-
         if (!$authUser) {
             return response()->json([
                 'success' => false,
                 'message' => 'User is not authenticated'
             ], 401);
-        }
-
-        // ✅ get ?code=701 from query
-        $code = $request->query('code');
-
-        if (!$code) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Code parameter is required'
-            ], 400);
         }
 
         $user = Resource::where('code', $code)->first();
@@ -508,30 +496,6 @@ class ProfileController extends Controller
             'message' => 'User not found'
         ], 404);
     }
-
-    // public function userAuthByCode(Request $request, $code)
-    // {
-    //     $authUser = $request->user(); // must be logged in
-    //     if (!$authUser) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'User is not authenticated'
-    //         ], 401);
-    //     }
-
-    //     $user = Resource::where('code', $code)->first();
-    //     if ($user) {
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => $user
-    //         ]);
-    //     }
-
-    //     return response()->json([
-    //         'success' => false,
-    //         'message' => 'User not found'
-    //     ], 404);
-    // }
 
     // public function userAuthByCode($code) {
     //     if (Auth::check()) {

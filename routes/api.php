@@ -202,5 +202,5 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
     //company profile
-    Route::get('company/profile', [ProfileController::class, 'userAuthByCode']);
+    Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
 });
