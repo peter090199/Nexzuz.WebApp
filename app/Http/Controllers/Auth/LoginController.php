@@ -140,11 +140,9 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         $user = $request->user();
-
         if ($user && $request->user()->currentAccessToken()) {
             $user->is_online = false;
             $user->save();
-            // ✅ Delete only the current token
             $request->user()->currentAccessToken()->delete();
 
             return response()->json([
