@@ -473,6 +473,30 @@ class ProfileController extends Controller
         }
     }
 
+    
+    public function userAuthByCode($code) {
+        if (Auth::check()) {
+            $user = Resource::where('code', $code)->first();
+            if ($user) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $user
+                ]);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User is not authenticated'
+        ]);
+    }
+
+
+
 
     public function userAuthXX(){
         if (Auth::check()) {
