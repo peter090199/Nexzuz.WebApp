@@ -213,6 +213,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
             'names'  => json_decode($names, true),
         ]);
     });
-    Route::post('validate_phone', [PhoneValidationController::class, 'store']);
+    Route::post('validate_phone', [PhoneValidationController::class, 'validate_phone']);
 
 });
