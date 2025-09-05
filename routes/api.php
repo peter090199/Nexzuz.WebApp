@@ -203,4 +203,14 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
     //company profile
     Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
+    Route::get('country_codes', function () {
+        $phones = file_get_contents("http://country.io/phone.json");
+        $names = file_get_contents("http://country.io/names.json");
+
+        return response()->json([
+            'phones' => json_decode($phones, true),
+            'names'  => json_decode($names, true),
+        ]);
+    });
+
 });
