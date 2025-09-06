@@ -30,6 +30,7 @@ use App\Http\Controllers\Follow\FollowController;
 use App\Http\Controllers\Jobs\JobPostingController;
 use App\Http\Controllers\Jobs\JobListController;
 use App\Http\Controllers\PhoneValidationController;
+use App\Http\Controllers\Jobs\QuestionController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
@@ -214,5 +215,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
         ]);
     });
     Route::post('validate_phone', [PhoneValidationController::class, 'validate_phone']);
-
+    //AppliedQuestions
+    Route::post('addQuestions', [QuestionController::class, 'addQuestions']);
 });

@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Http\Controllers\Jobs;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
+class QuestionController extends Controller
+{
+    public function addQuestions(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Validate the incoming request
+            $validated = $request->validate([
+                'question_text' => 'required|string|max:255',
+                'job_name' => 'required|string',
+            ]);
+
+       
+            // Save question to database
+            $question = Question::create([
+                'question_text' => $validated['question_text'],
+                'job_id' =>  $validated['job_id'],
+                'job_name' => $validated['job_name'],
+                'role_code' => $user->role_code,
+                'code' => $user->code,
+                'fullname' => $user->fullname,
+                'company' => $user->company,
+                
+            ]);
+
+            // Return JSON response
+            return response()->json([
+                'success' => true,
+                'question' => $question,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}
