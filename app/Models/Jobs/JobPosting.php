@@ -22,12 +22,11 @@ class JobPosting extends Model
         'job_about',
         'qualification',
         'work_type',
-        'comp_name',
+        'company',
         'comp_description',
         'job_image',
         'fullname',
         'is_online',
-        'company',
         'location',
         'benefits'
     ];
