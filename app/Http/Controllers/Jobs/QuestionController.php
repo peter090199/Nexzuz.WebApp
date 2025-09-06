@@ -48,13 +48,21 @@ class QuestionController extends Controller
         }
     }
 
-    public function getQuestionsById($jobId)
+    public function getQuestionById($id)
     {
         try {
-            $questions = Question::where('question_id', $jobId)->get();
+            $question = Question::find($id);
+
+            if (!$question) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Question not found'
+                ], 404);
+            }
+
             return response()->json([
                 'success' => true,
-                'questions' => $questions
+                'question' => $question
             ], 200);
 
         } catch (\Exception $e) {
@@ -64,6 +72,7 @@ class QuestionController extends Controller
             ], 500);
         }
     }
+
 
 
 }
