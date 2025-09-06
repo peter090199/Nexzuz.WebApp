@@ -20,7 +20,6 @@ class QuestionController extends Controller
                 'question_text' => 'required|string|max:255',
                 'job_name' => 'required|string',
             ]);
-
        
             // Save question to database
             $question = Question::create([
@@ -48,4 +47,23 @@ class QuestionController extends Controller
             ], 500);
         }
     }
+
+    public function getQuestionsById($jobId)
+    {
+        try {
+            $questions = Question::where('question_id', $jobId)->get();
+            return response()->json([
+                'success' => true,
+                'questions' => $questions
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 }
