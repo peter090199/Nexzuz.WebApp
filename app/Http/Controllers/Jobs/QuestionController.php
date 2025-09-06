@@ -35,10 +35,11 @@ class QuestionController extends Controller
             ]);
 
             // Return JSON response
-            return response()->json([
+               return response()->json([
                 'success' => true,
-                'question' => $question,
-            ]);
+                'message' => 'Question added successfully',
+            ], 201);
+
 
         } catch (\Exception $e) {
             return response()->json([
