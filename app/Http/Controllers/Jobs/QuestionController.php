@@ -48,7 +48,7 @@ class QuestionController extends Controller
         }
     }
 
-    public function getQuestionsById($jobId)
+    public function getQuestionById($jobId)
     {
         try {
             $questions = Question::where('job_id', $jobId)->get();
