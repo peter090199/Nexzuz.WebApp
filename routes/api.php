@@ -218,6 +218,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //AppliedQuestions
     Route::post('addQuestions', [QuestionController::class, 'addQuestions']);
     Route::get('getQuestions/{jobId}', [QuestionController::class, 'getQuestionById']);
-
+    Route::delete('deleteQuestionById/{question_id}', [QuestionController::class, 'deleteQuestionById']);
 
 });

@@ -65,5 +65,33 @@ class QuestionController extends Controller
         }
     }
 
+   public function deleteQuestionsByJobId($question_id)
+    {
+        try {
+            $questions = Question::where('question_id', $question_id);
+
+            if ($questions->count() === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No questions found for this question_id'
+                ], 404);
+            }
+
+            $questions->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Questions deleted successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
 }
