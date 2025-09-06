@@ -217,7 +217,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('validate_phone', [PhoneValidationController::class, 'validate_phone']);
     //AppliedQuestions
     Route::post('addQuestions', [QuestionController::class, 'addQuestions']);
-    Route::get('getQuestionsById/{jobId}', [QuestionController::class, 'getQuestionsById']);
+    Route::get('questions/id/{id}', [QuestionController::class, 'getQuestionById']);
 
 
 });
