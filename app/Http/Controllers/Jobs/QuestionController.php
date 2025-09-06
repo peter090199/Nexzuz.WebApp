@@ -65,7 +65,7 @@ class QuestionController extends Controller
         }
     }
 
-   public function deleteQuestionsByJobId($question_id)
+   public function deleteQuestionById($question_id)
     {
         try {
             $questions = Question::where('question_id', $question_id);
