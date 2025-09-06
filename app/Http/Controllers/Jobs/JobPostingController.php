@@ -97,8 +97,6 @@ class JobPostingController extends Controller
             'job_about' => 'required|string',
             'qualification' => 'required|string',
             'work_type' => 'required|string',
-           // 'comp_name' => 'required|string|max:255',
-            'comp_description' => 'required|string',
             'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'location' => 'required|string|max:255',
             'benefits' => 'required|string|max:255'
