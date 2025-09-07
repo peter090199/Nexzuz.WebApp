@@ -29,4 +29,7 @@ class JobPosting extends Model
         'location',
         'benefits'
     ];
+
+
+
 }

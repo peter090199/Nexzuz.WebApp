@@ -27,5 +27,8 @@ class Question extends Model
         'create_at',
         'status'
     ];
+
+   
+
 } 
 

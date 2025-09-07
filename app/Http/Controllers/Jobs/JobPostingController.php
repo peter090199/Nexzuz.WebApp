@@ -227,6 +227,41 @@ class JobPostingController extends Controller
         }
     }
 
+    public function getJobPostingByTransNo($transNo)
+    {
+        try {
+            // ✅ Fetch job posting by transNo
+            $job = DB::table('jobPosting')
+                ->where('transNo', $transNo)
+                ->first();
+
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job posting not found.',
+                ], 404);
+            }
+
+            // ✅ Fetch related questions (same transNo)
+            $questions = DB::table('applied_questions')
+                ->where('transNo', $transNo)
+                ->get();
+
+            return response()->json([
+                'success'   => true,
+                'job'       => $job,
+                'questions' => $questions,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function deleteJobPosting($id)
     {
         try {
