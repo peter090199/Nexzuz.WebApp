@@ -10,86 +10,28 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Jobs\QuestionController;
 
 class JobPostingController extends Controller
 {
-  
-    // public function saveOrUpdateJobPosting(Request $request, $id = null)
-    // {
-    //     try {
-    //         $role_code = Auth::user()->role_code;
-    //         $code = Auth::user()->code;
+    protected $questionController;
 
-    //         $validated = $request->validate([
-    //             'job_name' => 'required|string|max:255',
-    //             'job_position' => 'required|string|max:255',
-    //             'job_description' => 'required|string',
-    //             'job_about' => 'required|string',
-    //             'qualification' => 'required|string',
-    //             'work_type' => 'required|string',
-    //             'comp_name' => 'required|string|max:255',
-    //             'comp_description' => 'required|string',
-    //             'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    //         ]);
-
-    //         // Handle file upload
-    //         if ($request->hasFile('job_image')) {
-    //             $file = $request->file('job_image');
-    //             $uuid = Str::uuid();
-    //             $folderPath = "uploads/{$code}/JobPosting/{$uuid}";
-    //             $fileName = time() . '.' . $file->getClientOriginalExtension();
-    //             $filePath = $file->storeAs($folderPath, $fileName, 'public');
-    //             $validated['job_image'] = "/storage/app/public/" . $filePath;
-    //         }
-
-    //         $validated['code'] = $code;
-    //         $validated['role_code'] = $role_code;
-
-    //         if ($id) {
-    //             // ✅ UPDATE
-    //             $job = JobPosting::find($id);
-    //             $job->update($validated);
-
-    //             return response()->json([
-    //                 'message' => 'Job updated successfully!',
-    //                 'success' => true,
-    //             ], 200);
-    //         } else {
-    //             // ✅ CREATE
-    //             JobPosting::create($validated);
-
-    //             return response()->json([
-    //                 'message' => 'Job saved successfully!',
-    //                 'success' => true,
-    //             ], 201);
-    //         }
-
-    //     } catch (\Illuminate\Validation\ValidationException $e) {
-    //         return response()->json([
-    //             'message' => 'Validation failed.',
-    //             'success' => false,
-    //             'errors' => $e->errors(),
-    //         ], 422);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Something went wrong.',
-    //             'success' => false,
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
+    public function __construct(QuestionController $questionController)
+    {
+        $this->questionController = $questionController;
+    }
 
     public function saveJobPosting(Request $request)
     {
+        
         try{
         $role_code = Auth::user()->role_code;
         $code = Auth::user()->code;
         $fullname = Auth::user()->fullname;
         $company = Auth::user()->company;
         $is_online = Auth::user()->is_online;
-
+        $transNo = 'TR-' . strtoupper(uniqid());
+       
         $validated = $request->validate([
             'job_name' => 'required|string|max:255',
             'job_position' => 'required|string|max:255',
@@ -99,7 +41,8 @@ class JobPostingController extends Controller
             'work_type' => 'required|string',
             'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'location' => 'required|string|max:255',
-            'benefits' => 'required|string|max:255'
+            'benefits' => 'required|string|max:255',
+            'question_text'   => 'required|string|max:255', // merged validation
         ]);
 
         if ($request->hasFile('job_image')) {
@@ -115,12 +58,30 @@ class JobPostingController extends Controller
             $validated['fullname'] = $fullname;
             $validated['is_online'] = $is_online;
             $validated['company'] = $company;
+            $validated['trans_no']  = $transNo;
+
             $job = JobPosting::create($validated);
 
-            return response()->json([
-                'message' => 'Job saved successfully!',
-                'success'   => true,
+           // $job = $this->questionController->addQuestions($request);
+            $question = Question::create([
+                        'question_text' => $validatedJob['question_text'],
+                        'job_id'        => $job->id,
+                        'job_name'      => $validatedJob['job_name'],
+                        'role_code'     => $user->role_code,
+                        'code'          => $user->code,
+                        'fullname'      => $user->fullname,
+                        'company'       => $user->company,
+                        'trans_no'      => $transNo, // attach transNo to question also
+                    ]);
+
+                    
+           return response()->json([
+                'success'  => true,
+                'message'  => 'Job and Question saved successfully',
+                'trans_no' => $transNo,   // 🔑 return transaction number
             ], 201);
+
+
             } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed.',
