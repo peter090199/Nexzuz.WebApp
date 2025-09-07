@@ -21,7 +21,7 @@ class JobPostingController extends Controller
         $this->questionController = $questionController;
     }
 
-    public function saveJobPosting(Request $request)
+    public function saveJobPostingxx(Request $request)
     {
         try {
             $user = Auth::user();
@@ -109,7 +109,7 @@ class JobPostingController extends Controller
         }
     }
 
-    public function saveJobPostingxx(Request $request)
+    public function saveJobPosting(Request $request)
     {
         
         try{
@@ -158,14 +158,14 @@ class JobPostingController extends Controller
                         'code'          => $user->code,
                         'fullname'      => $user->fullname,
                         'company'       => $user->company,
-                        'trans_no'      => $transNo, // attach transNo to question also
+                        'transNo'      => $transNo, // attach transNo to question also
                     ]);
 
                     
            return response()->json([
                 'success'  => true,
                 'message'  => 'Job and Question saved successfully',
-                'trans_no' => $transNo,   // 🔑 return transaction number
+                'transNo' => $transNo,   // 🔑 return transaction number
             ], 201);
 
 
