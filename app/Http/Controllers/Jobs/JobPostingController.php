@@ -110,64 +110,6 @@ class JobPostingController extends Controller
     }
 
 
-    public function updateJobPostingX(Request $request, $id)
-    {
-        try {
-            $role_code = Auth::user()->role_code;
-            $code = Auth::user()->code;
-
-            $job = JobPosting::where('id', $id)
-                ->where('code', $code) // ✅ only allow updating own jobs
-                ->firstOrFail();
-
-            $validated = $request->validate([
-                'job_name' => 'sometimes|required|string|max:255',
-                'job_position' => 'sometimes|required|string|max:255',
-                'job_description' => 'sometimes|required|string',
-                'job_about' => 'sometimes|required|string',
-                'qualification' => 'sometimes|required|string',
-                'work_type' => 'sometimes|required|string',
-                'comp_name' => 'sometimes|required|string|max:255',
-                'comp_description' => 'sometimes|required|string',
-                'job_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            ]);
-
-            if ($request->hasFile('job_image')) {
-                $file = $request->file('job_image');
-                $uuid = Str::uuid();
-                $folderPath = "uploads/{$code}/JobPosting/{$uuid}";
-                $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                $validated['job_image'] = "/storage/app/public/" . $filePath;
-            }
-                $validated['code'] = $code;
-                $validated['role_code'] = $role_code;
-
-                // ✅ Update and reload
-                $job->update($validated);
-                $job->refresh();
-
-                return response()->json([
-                    'message' => 'Job updated successfully!',
-                    'success' => true,
-                ], 200);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed.',
-                'success' => false,
-                'errors' => $e->errors(),
-            ], 422);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Something went wrong while updating the job.',
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function updateJobPosting(Request $request, $id)
     {
         if (!Auth::check()) {
