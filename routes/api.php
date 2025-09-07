@@ -199,8 +199,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //JobPosting
     Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
     Route::put('saveOrUpdateJobPosting/{id}', [JobPostingController::class, 'saveOrUpdateJobPosting']); 
-   // Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
-    Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostings']);
+    Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
+    Route::get('getJobPostingByTransNo/{transNo}', [JobPostingController::class, 'getJobPostingByTransNo']);
     Route::delete('deleteJobPosting/{id}', [JobPostingController::class, 'deleteJobPosting']);
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
