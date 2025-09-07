@@ -23,6 +23,94 @@ class JobPostingController extends Controller
 
     public function saveJobPosting(Request $request)
     {
+        try {
+            $user = Auth::user();
+            $transNo = 'TR-' . strtoupper(uniqid());
+
+            // ✅ Validate request
+            $validated = $request->validate([
+                'job_name'        => 'required|string|max:255',
+                'job_position'    => 'required|string|max:255',
+                'job_description' => 'required|string',
+                'job_about'       => 'required|string',
+                'qualification'   => 'required|string',
+                'work_type'       => 'required|string',
+                'job_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'location'        => 'required|string|max:255',
+                'benefits'        => 'required|string|max:255',
+                'question_text'   => 'required|string|max:255',
+            ]);
+
+            // ✅ Handle file upload
+            if ($request->hasFile('job_image')) {
+                $file = $request->file('job_image');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$user->code}/JobPosting/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                $validated['job_image'] = "/storage/app/public/" . $filePath;
+            }
+
+            DB::beginTransaction();
+
+            // ✅ Save Job Posting
+            $job = JobPosting::create([
+                'job_name'        => $validated['job_name'],
+                'job_position'    => $validated['job_position'],
+                'job_description' => $validated['job_description'],
+                'job_about'       => $validated['job_about'],
+                'qualification'   => $validated['qualification'],
+                'work_type'       => $validated['work_type'],
+                'job_image'       => $validated['job_image'] ?? null,
+                'location'        => $validated['location'],
+                'benefits'        => $validated['benefits'],
+                'code'            => $user->code,
+                'role_code'       => $user->role_code,
+                'fullname'        => $user->fullname,
+                'is_online'       => $user->is_online,
+                'company'         => $user->company,
+                'trans_no'        => $transNo,
+            ]);
+
+            // ✅ Save Question tied to the Job
+            Question::create([
+                'question_text' => $validated['question_text'],
+                'job_name'      => $validated['job_name'],
+                'role_code'     => $user->role_code,
+                'code'          => $user->code,
+                'fullname'      => $user->fullname,
+                'company'       => $user->company,
+                'transNo'      => $transNo,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Job and Question saved successfully!',
+                'transNo' => $transNo,
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Validation failed.',
+                'success' => false,
+                'errors'  => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Something went wrong while saving.',
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function saveJobPostingxx(Request $request)
+    {
         
         try{
         $role_code = Auth::user()->role_code;
@@ -65,7 +153,6 @@ class JobPostingController extends Controller
            // $job = $this->questionController->addQuestions($request);
             $question = Question::create([
                         'question_text' => $validatedJob['question_text'],
-                        'job_id'        => $job->id,
                         'job_name'      => $validatedJob['job_name'],
                         'role_code'     => $user->role_code,
                         'code'          => $user->code,

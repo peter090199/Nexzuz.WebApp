@@ -20,7 +20,7 @@ class Question extends Model
         'question_text',
         'code',
         'role_code',
-        'job_id',
+        'transNo',
         'job_name',
         'company',
         'updated_at',
