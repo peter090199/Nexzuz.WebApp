@@ -221,4 +221,3 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteQuestionById/{question_id}', [QuestionController::class, 'deleteQuestionById']);
 
 });
-saveJobPosting
