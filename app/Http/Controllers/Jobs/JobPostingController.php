@@ -14,13 +14,6 @@ use App\Http\Controllers\Jobs\QuestionController;
 
 class JobPostingController extends Controller
 {
-    protected $questionController;
-
-    public function __construct(QuestionController $questionController)
-    {
-        $this->questionController = $questionController;
-    }
-
     public function saveJobPostingxx(Request $request)
     {
         try {
