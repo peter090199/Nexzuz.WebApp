@@ -25,7 +25,7 @@ class JobPostingController extends Controller
             $lastNumber = $lastTrans ? intval(substr($lastTrans->transNo, -6)) : 0;
             $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
-            $transNo = "TR-$newNumber";
+            $transNo = "TransNo-$newNumber";
 
 
             // ✅ Validate request
