@@ -20,7 +20,13 @@ class JobPostingController extends Controller
     {
         try {
             $user = Auth::user();
-            $transNo = 'TR-' . strtoupper(uniqid());
+        
+            $lastTrans = JobPosting::orderByDesc('id')->first();
+            $lastNumber = $lastTrans ? intval(substr($lastTrans->transNo, -6)) : 0;
+            $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+
+            $transNo = "TR-$newNumber";
+
 
             // ✅ Validate request
             $validated = $request->validate([
