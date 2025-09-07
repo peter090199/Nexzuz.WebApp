@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Jobs\QuestionController;
 use App\Models\Jobs\Question;
+use Illuminate\Support\Facades\DB; 
 
 class JobPostingController extends Controller
 {
