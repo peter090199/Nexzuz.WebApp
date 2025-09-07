@@ -13,6 +13,7 @@ class JobPosting extends Model
 
     protected $fillable = [
         'job_id',
+        'transNo',
         'code',
         'role_code',
         'job_name',
