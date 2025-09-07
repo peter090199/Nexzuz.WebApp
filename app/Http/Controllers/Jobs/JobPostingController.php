@@ -237,13 +237,13 @@ class JobPostingController extends Controller
             foreach ($validated['question_text'] as $questionText) {
                 Question::create([
                     'question_text' => $questionText,
-                    'job_id'        => $job->id,
+                   // 'job_id'        => $job->id,
                     'job_name'      => $validated['job_name'],
                     'role_code'     => $user->role_code,
                     'code'          => $user->code,
                     'fullname'      => $user->fullname,
                     'company'       => $user->company,
-                    'trans_no'      => $transNo,
+                    'transNo'      => $transNo,
                 ]);
             }
 
@@ -252,7 +252,7 @@ class JobPostingController extends Controller
             return response()->json([
                 'success'  => true,
                 'message'  => 'Job and Questions saved successfully',
-                'trans_no' => $transNo,
+                'transNo' => $transNo,
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -274,7 +274,7 @@ class JobPostingController extends Controller
 
     }
 
-    
+
     public function updateJobPostingX(Request $request, $id)
     {
         try {
