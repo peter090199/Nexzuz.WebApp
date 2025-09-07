@@ -21,7 +21,7 @@ class JobPostingController extends Controller
         try {
             $user = Auth::user();
         
-            $lastTrans = JobPosting::orderByDesc('id')->first();
+            $lastTrans = JobPosting::orderByDesc('job_id')->first();
             $lastNumber = $lastTrans ? intval(substr($lastTrans->transNo, -6)) : 0;
             $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
