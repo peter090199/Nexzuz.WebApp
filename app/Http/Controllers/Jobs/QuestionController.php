@@ -6,25 +6,40 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Jobs\Question;
+use App\Http\Controllers\Jobs\JobPostingController;
 
 class QuestionController extends Controller
 {
+      protected $jobPosting;
+
+    public function __construct(JobPostingController $jobPosting)
+    {
+        $this->jobPosting = $jobPosting;
+    }
+
     public function addQuestions(Request $request)
     {
         try {
             $user = Auth::user();
+            
+             if (!$request->has('job_id')) {
+                $job = $this->jobPosting->saveJobPosting($request); //get request from JobPostingController
+                $job_id = $job->job_id;
+            } else {
+                $job_id = $request->input('job_id');
+            }
+
 
             // Validate the incoming request
-            $validated = $request->validate([
-                'job_id' => 'required|integer',
+             $validated = $request->validate([
                 'question_text' => 'required|string|max:255',
-                'job_name' => 'required|string',
+                'job_name'      => 'required|string',
             ]);
        
             // Save question to database
             $question = Question::create([
                 'question_text' => $validated['question_text'],
-                'job_id' => $validated['job_id'],
+                'job_id' => $job_id,
                 'job_name' => $validated['job_name'],
                 'role_code' => $user->role_code,
                 'code' => $user->code,
