@@ -334,7 +334,7 @@ class JobPostingController extends Controller
     public function getJobPostingsByCode()
     {
         try {
-            $code = Auth::user()->code; // ✅ only get jobs of logged-in user
+            $code = Auth::user()->code; 
 
             $jobs = JobPosting::where('code', $code)
             ->orderBy('job_name', 'asc')

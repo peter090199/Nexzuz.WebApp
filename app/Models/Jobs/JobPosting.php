@@ -10,7 +10,6 @@ class JobPosting extends Model
      use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'jobPosting'; 
-    public $timestamps = true;
 
     protected $fillable = [
         'job_id',
