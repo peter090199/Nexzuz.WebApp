@@ -20,9 +20,10 @@ class AppliedJobs extends Model
         'email',
         'country_code',
         'phone_number',
+        'fullname'
     ];
 
-    
+
 
 }
 
