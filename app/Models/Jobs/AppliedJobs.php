@@ -9,7 +9,7 @@ class AppliedJobs extends Model
 {
      use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'applied_job'; 
+    protected $table = 'applied_jobs'; 
 
     protected $fillable = [
         'applied_id',
