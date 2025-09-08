@@ -19,6 +19,7 @@ class AppliedResumes extends Model
         'code',
         'fullname',
         'company',
+        'fullname'
     ];
 
     /**
