@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB; 
 use App\Models\Jobs\AppliedJobs;
+use App\Models\Jobs\AppliedResumes;
 
 class AppliedJobController extends Controller
 {
