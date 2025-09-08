@@ -22,7 +22,7 @@ class AppliedJobs extends Model
         'phone_number',
     ];
 
-
+    
 
 }
 

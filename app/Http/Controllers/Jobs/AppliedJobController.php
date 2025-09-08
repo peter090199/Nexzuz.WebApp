@@ -55,7 +55,7 @@ class AppliedJobController extends Controller
             ]);
 
             // ✅ Save related Resume record
-            AppliedResume::create([
+            AppliedResumes::create([
                 'transNo'       => $validated['transNo'],
                 'resume_pdf'    => $resumePath,
                 'job_name'      => $validated['job_name'],
