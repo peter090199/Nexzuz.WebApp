@@ -31,6 +31,7 @@ use App\Http\Controllers\Jobs\JobPostingController;
 use App\Http\Controllers\Jobs\JobListController;
 use App\Http\Controllers\PhoneValidationController;
 use App\Http\Controllers\Jobs\QuestionController;
+use App\Http\Controllers\Jobs\AppliedJobController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
@@ -220,5 +221,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('addQuestions', [QuestionController::class, 'addQuestions']);
     Route::get('getQuestions/{jobId}', [QuestionController::class, 'getQuestionById']);
     Route::delete('deleteQuestionById/{question_id}', [QuestionController::class, 'deleteQuestionById']);
-
+    //AppliedJobs
+    Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
 });
