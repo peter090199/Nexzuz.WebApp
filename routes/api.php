@@ -223,4 +223,5 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteQuestionById/{question_id}', [QuestionController::class, 'deleteQuestionById']);
     //AppliedJobs
     Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
+    Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
 });
