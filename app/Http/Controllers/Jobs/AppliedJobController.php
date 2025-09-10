@@ -126,14 +126,23 @@ class AppliedJobController extends Controller
                 'aj.phone_number',
                 'aj.applied_status'
             )
-            ->where('jp.code', $user->code) 
+            ->where('jp.code', $user->code) // or use email if your table doesn't have user_id
             ->get();
+
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No applied jobs found for this user.',
+                'data' => []
+            ]);
+        }
 
         return response()->json([
             'success' => true,
             'data' => $results
         ]);
     }
+
 
 
 }
