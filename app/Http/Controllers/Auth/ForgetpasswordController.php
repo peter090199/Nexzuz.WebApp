@@ -17,54 +17,106 @@ use Illuminate\Support\Facades\DB;
 class ForgetpasswordController extends Controller
 {
 
+    // public function forgetpassword(Request $request)
+    // {
+      
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required|email|exists:users,email'
+    //     ]);
+        
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //              'errors' => $validator->errors(), // Original error object
+    //             'message' => $validator->errors()->all(), // Flat array of errors
+    //         ]);
+    //     }
+        
+
+    //     $user = User::where('email', $request->email)->firstOrFail();
+    //     $token = Str::random(60);
+        
+    
+    //     DB::table('password_reset_tokens')->updateOrInsert(
+    //         ['email' => $user->email],
+    //         [
+    //             'email' =>  $request->email,
+    //             'token' => $token,
+    //             'created_at' => Carbon::now()
+    //         ]
+    //     );
+        
+
+    //     $data = [
+    //         'fname' => $user->fname,
+    //         'fullname' => $user->fullname,
+    //         'email' =>  $request->email,
+    //         'token' => $token,
+    //         'expiration' => 5 
+    //     ];
+       
+    //     try {
+    //         Mail::to($user->email)->queue(new Forgetpassword($data));
+    //         return response()->json(['success' => true, 'message' => 'Password reset email sent.']);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to send password reset email. Please try again later.'
+    //         ], 500);
+    //     }
+    // }
+
     public function forgetpassword(Request $request)
     {
-      
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email'
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                 'errors' => $validator->errors(), // Original error object
-                'message' => $validator->errors()->all(), // Flat array of errors
-            ]);
+                'errors' => $validator->errors(),
+                'message' => $validator->errors()->all(),
+            ], 422);
         }
-        
 
-        $user = User::where('email', $request->email)->firstOrFail();
-        $token = Str::random(60);
-        
-    
+        $user = User::where('email', $request->email)->first();
+        $token = Str::random(64); // longer and safer
+
+        // Save / update token
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'email' =>  $request->email,
                 'token' => $token,
                 'created_at' => Carbon::now()
             ]
         );
-        
 
         $data = [
-            'fname' => $user->fname,
-            'fullname' => $user->fullname,
-            'email' =>  $request->email,
-            'token' => $token,
-            'expiration' => 5 
+            'fname'      => $user->fname,
+            'fullname'   => $user->fullname ?? ($user->fname . ' ' . ($user->lname ?? '')),
+            'email'      => $user->email,
+            'token'      => $token,
+            'expiration' => Carbon::now()->addMinutes(5)->toDateTimeString() // store actual timestamp
         ];
-       
+
         try {
-            Mail::to($user->email)->queue(new Forgetpassword($data));
-            return response()->json(['success' => true, 'message' => 'Password reset email sent.']);
+            // Use send() if queue is not configured
+            Mail::to($user->email)->send(new Forgetpassword($data));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset email sent.'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to send password reset email. Please try again later.'
+                'message' => 'Failed to send password reset email. Please try again later.',
+                'error'   => $e->getMessage() // optional: log/debug
             ], 500);
         }
     }
+
 
     public function resetpassword(Request $request){
         try {
