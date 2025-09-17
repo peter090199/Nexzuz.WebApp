@@ -139,7 +139,6 @@ class UserSkills extends Controller
             ], 500);
         }
     }
-
     public function updateSkill(Request $request)
     {
         $request->validate([
@@ -147,9 +146,9 @@ class UserSkills extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $currentUserCode = Auth::id() ? Auth::user()->code : null;
+        $currentUserCode = Auth::check() ? Auth::user()->code : null;
 
-        // 🔹 Find the skill that belongs to the current user
+        // 🔹 Find the skill record from user_skills that belongs to the current user
         $skill = UserSkillsDAL::where('id', $request->id)
                     ->where('code', $currentUserCode)
                     ->first();
@@ -157,14 +156,13 @@ class UserSkills extends Controller
         if (!$skill) {
             return response()->json([
                 'success' => false,
-                'message' => 'Skill not found or not yours.'
+                'message' => 'Skill not found or does not belong to you.'
             ], 404);
         }
 
-        // 🔹 Update the skill name
-        $skill->update([
-            'name' => $request->name,
-        ]);
+        // 🔹 Update only the skill name
+        $skill->name = $request->name;
+        $skill->save();
 
         return response()->json([
             'success' => true,
@@ -172,5 +170,6 @@ class UserSkills extends Controller
             'data'    => $skill
         ], 200);
     }
+
 
 }
