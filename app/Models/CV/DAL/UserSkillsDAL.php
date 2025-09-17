@@ -17,6 +17,7 @@ class UserSkillsDAL extends Model
 
     protected $table = 'userskills'; 
     protected $fillable = [
+        'id',
         'code',
         'transNo',
         'skills'
