@@ -139,36 +139,37 @@ class UserSkills extends Controller
             ], 500);
         }
     }
-public function updateSkill(Request $request)
-{
-    $request->validate([
-        'id'   => 'required|integer',
-        'skills' => 'required|string|max:255',
-    ]);
 
-    $currentUserCode = Auth::check() ? Auth::user()->code : null;
+    public function updateSkill(Request $request, $id)
+    {
+        $request->validate([
+            'skills' => 'required|string|max:255',
+        ]);
 
-    $skill = UserSkillsDAL::where('id', $request->id)
-                ->where('code', $currentUserCode)
-                ->first();
+        $currentUserCode = Auth::check() ? Auth::user()->code : null;
 
-    if (!$skill) {
+        // 🔹 Find skill by id + user code
+        $skill = UserSkillsDAL::where('id', $id)
+                    ->where('code', $currentUserCode)
+                    ->first();
+
+        if (!$skill) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skill not found or not yours.'
+            ], 404);
+        }
+
+        // 🔹 Update real column (assuming column is `skills`)
+        $skill->skills = $request->skills;
+        $skill->save();
+
         return response()->json([
-            'success' => false,
-            'message' => 'Skill not found or not yours.'
-        ], 404);
+            'success' => true,
+            'message' => 'Skill updated successfully.',
+            'data'    => $skill
+        ], 200);
     }
-
-    // 🔹 Use the real column name
-    $skill->skill = $request->skill; 
-    $skill->save();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Skill updated successfully.',
-        'data'    => $skill
-    ], 200);
-}
 
 
 
