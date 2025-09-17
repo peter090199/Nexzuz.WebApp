@@ -143,7 +143,7 @@ public function updateSkill(Request $request)
 {
     $request->validate([
         'id'   => 'required|integer',
-        'skill' => 'required|string|max:255',
+        'skills' => 'required|string|max:255',
     ]);
 
     $currentUserCode = Auth::check() ? Auth::user()->code : null;
