@@ -146,12 +146,10 @@ class UserSkills extends Controller
             'id'   => 'required|integer|exists:skills,id',
             'name' => 'required|string|max:255',
         ]);
-
-        $user = Auth::user();
-
+        $currentUserCode = Auth::id() ? Auth::user()->code : null;
         // 🔹 Find the skill that belongs to the current user
         $skill = UserSkillsDAL::where('id', $request->id)
-                      ->where('code', $user->code)
+                      ->where('code', $currentUserCode)
                       ->first();
 
         if (!$skill) {
