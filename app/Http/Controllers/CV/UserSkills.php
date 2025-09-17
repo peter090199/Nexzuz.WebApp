@@ -143,14 +143,16 @@ class UserSkills extends Controller
     public function updateSkill(Request $request)
     {
         $request->validate([
-            'id'   => 'required|integer|exists:skills,id',
+            'id'   => 'required|integer',
             'name' => 'required|string|max:255',
         ]);
+
         $currentUserCode = Auth::id() ? Auth::user()->code : null;
+
         // 🔹 Find the skill that belongs to the current user
         $skill = UserSkillsDAL::where('id', $request->id)
-                      ->where('code', $currentUserCode)
-                      ->first();
+                    ->where('code', $currentUserCode)
+                    ->first();
 
         if (!$skill) {
             return response()->json([
@@ -170,4 +172,5 @@ class UserSkills extends Controller
             'data'    => $skill
         ], 200);
     }
+
 }
