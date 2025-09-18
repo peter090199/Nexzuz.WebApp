@@ -98,6 +98,73 @@ class UserSeminars extends Controller
             ], 500);
         }
     }
+
+    public function updateSeminar(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $currentUserCode = Auth::user()->code;
+
+        $validator = Validator::make($request->all(), [
+            'seminar_title'    => 'required|string|max:255',
+            'seminar_provider' => 'required|string|max:255',
+            'date_completed'   => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            // Check if record exists for this user
+            $seminar = DB::table('userseminars')
+                ->where('id', $id)
+                ->where('code', $currentUserCode)
+                ->first();
+
+            if (!$seminar) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Seminar not found or unauthorized.',
+                ], 404);
+            }
+
+            // Update the record
+            DB::table('userseminars')
+                ->where('id', $id)
+                ->where('code', $currentUserCode)
+                ->update([
+                    'seminar_title'    => $request->seminar_title,
+                    'seminar_provider' => $request->seminar_provider,
+                    'date_completed'   => $request->date_completed,
+                    'updated_at'       => now(), // if timestamps exist
+                ]);
+
+            // Get the updated record
+            $updatedSeminar = DB::table('userseminars')->where('id', $id)->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Seminar updated successfully.',
+                'data'    => $updatedSeminar
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update seminar.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
     public function getSeminarByCode()
     {
         try {

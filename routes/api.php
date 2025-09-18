@@ -182,6 +182,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::delete('deleteSkills/{id}', [UserSkills::class, 'delete']);
     //seminar
     Route::post('saveSeminar', [UserSeminars::class, 'saveSeminar']);
+    Route::put('seminar/{id}', [UserSeminars::class, 'updateSeminar']);
     Route::get('getSeminarByCode', [UserSeminars::class, 'getSeminarByCode']);
     Route::delete('delete/{id}', [UserSeminars::class, 'delete']);
     //trainings
