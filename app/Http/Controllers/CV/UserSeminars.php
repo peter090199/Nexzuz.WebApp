@@ -101,6 +101,7 @@ class UserSeminars extends Controller
 
     public function updateSeminar(Request $request, $id)
     {
+        // ✅ Check authentication
         if (!Auth::check()) {
             return response()->json([
                 'success' => false,
@@ -110,6 +111,7 @@ class UserSeminars extends Controller
 
         $currentUserCode = Auth::user()->code;
 
+        // ✅ Validate request
         $validator = Validator::make($request->all(), [
             'seminar_title'    => 'required|string|max:255',
             'seminar_provider' => 'required|string|max:255',
@@ -124,9 +126,8 @@ class UserSeminars extends Controller
         }
 
         try {
-            // Check if record exists for this user
-            $seminar = DB::table('userseminars')
-                ->where('id', $id)
+            // ✅ Find seminar that belongs to this user
+            $seminar = Userseminar::where('id', $id)
                 ->where('code', $currentUserCode)
                 ->first();
 
@@ -137,24 +138,18 @@ class UserSeminars extends Controller
                 ], 404);
             }
 
-            // Update the record
-            DB::table('userseminars')
-                ->where('id', $id)
-                ->where('code', $currentUserCode)
-                ->update([
-                    'seminar_title'    => $request->seminar_title,
-                    'seminar_provider' => $request->seminar_provider,
-                    'date_completed'   => $request->date_completed,
-                    'updated_at'       => now(), // if timestamps exist
-                ]);
+            // ✅ Update seminar
+            $seminar->update([
+                'seminar_title'    => $request->seminar_title,
+                'seminar_provider' => $request->seminar_provider,
+                'date_completed'   => $request->date_completed,
+            ]);
 
-            // Get the updated record
-            $updatedSeminar = DB::table('userseminars')->where('id', $id)->first();
-
+            // ✅ Return fresh updated record
             return response()->json([
                 'success' => true,
                 'message' => 'Seminar updated successfully.',
-                'data'    => $updatedSeminar
+                'data'    => $seminar->fresh()
             ]);
 
         } catch (\Throwable $e) {
