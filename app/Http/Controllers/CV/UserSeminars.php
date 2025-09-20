@@ -97,7 +97,7 @@ class UserSeminars extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Seminar saved successfully. Inserted: $insertedCount, Updated: $updatedCount.",
+                'message' => "Seminar saved successfully.",
             ]);
         } catch (\Exception $e) {
             DB::rollBack();

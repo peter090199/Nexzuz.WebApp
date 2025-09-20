@@ -9,13 +9,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\CV\ValidationController;
+
 
 class UserTrainings extends Controller
 {
     public function saveTrainings(Request $request)
     {
         $data = $request->all();
-
+        $futureCheck = ValidationController::futureDateCheck($request->seminars, 'date_completed');
+        
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
         // ✅ If a single object is sent, wrap it into an array
         if (isset($data['training_title'])) {
             $data = [$data];
@@ -29,7 +35,7 @@ class UserTrainings extends Controller
         }
 
         $currentUserCode = Auth::user()->code;
-
+        
         if (!$currentUserCode) {
             return response()->json([
                 'success' => false,
@@ -51,14 +57,22 @@ class UserTrainings extends Controller
                 continue;
             }
 
-            $title = strtolower(trim($item['training_title']));
+           foreach ($request->seminars as $item) {
+            if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
+              return response()->json([
+                    'success' => false,
+                    'message' => 'The completion date cannot be in the future.',
+                ], 422);
 
+            }
+           }
+            $title = strtolower(trim($item['training_title']));
             $exists = Usertraining::where('code', $currentUserCode)
                 ->whereRaw('LOWER(training_title) = ?', [$title])
                 ->where('date_completed', $item['date_completed'])
                 ->exists();
 
-            if (!$exists) {
+                if (!$exists) {
                 $maxTrans = Usertraining::where('code', $currentUserCode)->max('transNo');
                 $newTrans = $maxTrans ? $maxTrans + 1 : 1;
 
