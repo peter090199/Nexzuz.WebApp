@@ -16,8 +16,10 @@ class ValidationController extends Controller
      * @return JsonResponse|bool
      */
 
-    public static function futureDateCheck(array $items, string $fieldName = 'date_completed')
+    public static function futureDateCheck($items = [], string $fieldName = 'date_completed')
     {
+        $items = $items ?? []; // ensure it's always an array
+
         foreach ($items as $item) {
             if (!empty($item[$fieldName]) && strtotime($item[$fieldName]) > strtotime(date('Y-m-d'))) {
                 return response()->json([
