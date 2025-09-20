@@ -27,7 +27,7 @@ class UserCertificates extends Controller
         if ($futureCheck !== true) {
             return $futureCheck; // returns JSON response if invalid
         }
-        
+
         $code = Auth::user()->code;
 
         if (!$code) {
@@ -150,6 +150,11 @@ class UserCertificates extends Controller
                 'success' => false,
                 'errors'  => $validator->errors(),
             ], 422);
+        }
+
+        $futureCheck = ValidationController::futureDateCheck([$request->all()], 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
         }
 
         try {
