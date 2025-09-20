@@ -150,4 +150,66 @@ class UserWorkExperiences extends Controller
         }
     }
 
+    public function updateWorkExperience(Request $request, $id)
+    {
+        // ✅ Ensure the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+        $currentUserCode = Auth::user()->code;
+
+        // ✅ Validate incoming request
+        $validator = Validator::make($request->all(), [
+            'company_name'   => 'required|string|max:255',
+            'position'       => 'required|string|max:255',
+            'job_description'=> 'nullable|string',
+            'date_completed'    => 'required|date_format:Y-m-d', // Enforce ISO format
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            // ✅ Find training record owned by current user
+         $data = Useremploymentrecord::where('id', $id)
+            ->where('code', $currentUserCode)
+            ->first();
+
+
+            if (!$data) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Work Experiences not found or unauthorized.',
+                ], 404);
+            }
+            $data->update([
+                'company_name'    => $request->input('company_name'),
+                'position' => $request->input('position'),
+                'job_description' => $request->input('job_description'),
+                'date_completed'    => $request->input('date_completed'),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Work Experience updated successfully.',
+                'data'    => $data->fresh()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update Work Experiences.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }
