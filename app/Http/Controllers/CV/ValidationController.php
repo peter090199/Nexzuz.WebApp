@@ -30,4 +30,18 @@ class ValidationController
 
         return true; // all dates are valid
     }
+
+    public static function futureDateCheckArray(array $items, string $field)
+    {
+        foreach ($items as $item) {
+            if (isset($item[$field]) && strtotime($item[$field]) > time()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "$field cannot be a future date."
+                ], 422);
+            }
+        }
+        return true;
+    }
+
 }
