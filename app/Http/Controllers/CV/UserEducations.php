@@ -119,56 +119,23 @@ class UserEducations extends Controller
 
         $currentUserCode = Auth::user()->code;
 
-        // Step 1: Validate basic fields
+        // Allowed month names
+        $validMonths = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
         $validator = Validator::make($request->all(), [
             'educations' => 'required|array|min:1',
             'educations.*.id'                => 'nullable|integer|exists:usereducations,id',
             'educations.*.highest_education' => 'required|string|max:255',
             'educations.*.school_name'       => 'required|string|max:255',
-            'educations.*.start_month'       => 'nullable|string|max:20',
-            'educations.*.start_year'        => 'nullable|integer|min:1900|max:' . date('Y'),
-            'educations.*.end_month'         => 'nullable|string|max:20',
-            'educations.*.end_year'          => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
+            'educations.*.start_month'       => ['nullable', 'string', Rule::in($validMonths)],
+            'educations.*.start_year'        => 'nullable|integer|min:1900|max:'.date('Y'),
+            'educations.*.end_month'         => ['nullable', 'string', Rule::in($validMonths)],
+            'educations.*.end_year'          => 'nullable|integer|min:1900|max:'.(date('Y')+10),
             'educations.*.status'            => 'required|string|max:100',
         ]);
-
-        // Step 2: Custom rule for start <= end (with readable messages)
-        $validator->after(function ($validator) use ($request) {
-            $months = [
-                '01' => 'January', '02' => 'February', '03' => 'March',
-                '04' => 'April',   '05' => 'May',      '06' => 'June',
-                '07' => 'July',    '08' => 'August',   '09' => 'September',
-                '10' => 'October', '11' => 'November', '12' => 'December',
-            ];
-
-            foreach ($request->educations as $index => $edu) {
-                if (!empty($edu['start_year']) && !empty($edu['end_year'])) {
-                    $startMonth = $edu['start_month'] ?? '01';
-                    $endMonth   = $edu['end_month'] ?? '01';
-
-                    $start = strtotime(($edu['start_year'] ?? 0) . '-' . $startMonth . '-01');
-                    $end   = strtotime(($edu['end_year'] ?? 0) . '-' . $endMonth . '-01');
-
-                    if ($end < $start) {
-                        // Convert month numbers to names if possible
-                        $startText = ($months[$startMonth] ?? $startMonth) . ' ' . ($edu['start_year'] ?? '');
-                        $endText   = ($months[$endMonth]   ?? $endMonth)   . ' ' . ($edu['end_year'] ?? '');
-
-                        $school = $edu['school_name'] ?? 'N/A';
-                        $status = $edu['status'] ?? 'N/A';
-
-                        $message = "Validation Error:\n"
-                            . "School Name: {$school}\n"
-                            . "Start: {$startText}\n"
-                            . "End: {$endText}\n"
-                            . "Status: {$status}\n"
-                            . "❌ End date must not be earlier than start date.";
-
-                        $validator->errors()->add("educations.$index.end_year", $message);
-                    }
-                }
-            }
-        });
 
         if ($validator->fails()) {
             return response()->json([
@@ -177,7 +144,6 @@ class UserEducations extends Controller
             ], 422);
         }
 
-        // Step 3: Save or update records
         try {
             DB::beginTransaction();
 
@@ -185,41 +151,56 @@ class UserEducations extends Controller
             $savedRecords = [];
 
             foreach ($request->educations as $item) {
+                // Validate start < end date
+                if (!empty($item['start_month']) && !empty($item['start_year']) &&
+                    !empty($item['end_month']) && !empty($item['end_year'])) {
+
+                    $startDate = \Carbon\Carbon::parse("1 {$item['start_month']} {$item['start_year']}");
+                    $endDate   = \Carbon\Carbon::parse("1 {$item['end_month']} {$item['end_year']}");
+
+                    if ($endDate->lt($startDate)) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "End date must be later than or equal to Start date for school: {$item['school_name']}.",
+                        ], 422);
+                    }
+                }
+
+                // If ID is provided, update existing
                 if (!empty($item['id'])) {
-                    // Update existing record
                     $education = UserEducation::where('id', $item['id'])
                         ->where('code', $currentUserCode)
                         ->first();
 
                     if ($education) {
                         $education->highest_education = $item['highest_education'];
-                        $education->school_name       = $item['school_name'];
-                        $education->start_month       = $item['start_month'] ?? null;
-                        $education->start_year        = $item['start_year'] ?? null;
-                        $education->end_month         = $item['end_month'] ?? null;
-                        $education->end_year          = $item['end_year'] ?? null;
-                        $education->status            = $item['status'];
-                        $education->updated_at        = now();
+                        $education->school_name = $item['school_name'];
+                        $education->start_month = $item['start_month'] ?? null;
+                        $education->start_year = $item['start_year'] ?? null;
+                        $education->end_month = $item['end_month'] ?? null;
+                        $education->end_year = $item['end_year'] ?? null;
+                        $education->status = $item['status'];
+                        $education->updated_at = now();
                         $education->save();
 
                         $savedRecords[] = $education;
                     }
                 } else {
-                    // Insert new record
+                    // New entry → insert
                     $maxTransNo++;
 
                     $newEducation = new UserEducation([
-                        'code'              => $currentUserCode,
-                        'transNo'           => $maxTransNo,
+                        'code' => $currentUserCode,
+                        'transNo' => $maxTransNo,
                         'highest_education' => $item['highest_education'],
-                        'school_name'       => $item['school_name'],
-                        'start_month'       => $item['start_month'] ?? null,
-                        'start_year'        => $item['start_year'] ?? null,
-                        'end_month'         => $item['end_month'] ?? null,
-                        'end_year'          => $item['end_year'] ?? null,
-                        'status'            => $item['status'],
-                        'created_at'        => now(),
-                        'updated_at'        => now(),
+                        'school_name' => $item['school_name'],
+                        'start_month' => $item['start_month'] ?? null,
+                        'start_year' => $item['start_year'] ?? null,
+                        'end_month' => $item['end_month'] ?? null,
+                        'end_year' => $item['end_year'] ?? null,
+                        'status' => $item['status'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                     $newEducation->save();
 
@@ -232,7 +213,6 @@ class UserEducations extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Education records processed successfully.',
-                'data'    => $savedRecords
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -240,7 +220,7 @@ class UserEducations extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to process educations.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
