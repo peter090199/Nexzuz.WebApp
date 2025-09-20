@@ -22,7 +22,12 @@ class UserCertificates extends Controller
                 'message' => 'Invalid input format. Expected an array of certificates.',
             ], 422);
         }
-
+       // ✅ Future date validation using reusable function
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
+        
         $code = Auth::user()->code;
 
         if (!$code) {
