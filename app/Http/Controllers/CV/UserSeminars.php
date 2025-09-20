@@ -20,7 +20,7 @@ class UserSeminars extends Controller
                 'message' => 'Unauthorized access.',
             ], 401);
         }
-
+        $data = $request->all();
         $currentUserCode = Auth::user()->code;
 
         // Validate basic fields first
@@ -40,13 +40,10 @@ class UserSeminars extends Controller
         }
 
         // Custom check for future dates
-          $futureCheck = ValidationController::futureDateCheck([['date_completed' => $request->input('date_completed')]], 
-            'date_completed'
-        );
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
         if ($futureCheck !== true) {
             return $futureCheck; // returns JSON response if invalid
         }
-
         // foreach ($request->seminars as $item) {
         //     if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
         //       return response()->json([
