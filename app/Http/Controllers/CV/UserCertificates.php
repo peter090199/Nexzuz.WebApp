@@ -125,71 +125,73 @@ class UserCertificates extends Controller
                 ], 500);
             }
         }
-
-   public function updateCertificates(Request $request, $id)
-    {
-        // ✅ Ensure the user is authenticated
-        if (!Auth::check()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access.',
-            ], 401);
-        }
-
-        $currentUserCode = Auth::user()->code;
-
-        // ✅ Validate incoming request
-        $validator = Validator::make($request->all(), [
-            'certificate_title'    => 'required|string|max:255',
-            'certificate_provider' => 'required|string|max:255',
-            'date_completed'    => 'required|date_format:Y-m-d', // Enforce ISO format
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors'  => $validator->errors(),
-            ], 422);
-        }
-
-        // ✅ Future date check using reusable function
-       $futureCheck = ValidationController::futureDateCheckArray([$request->all()], 'date_completed');
-        if ($futureCheck !== true) {
-            return $futureCheck;
-        }
-
-        try {
-            // ✅ Find training record owned by current user
-         $data = Usercertificate::where('id', $id)
-            ->where('code', $currentUserCode)
-            ->first();
-
-
-            if (!$data) {
+        
+        public function updateCertificates(Request $request, $id)
+        {
+            if (!Auth::check()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cerificate not found or unauthorized.',
-                ], 404);
+                    'message' => 'Unauthorized access.',
+                ], 401);
             }
-            $data->update([
-                'certificate_title'    => $request->input('certificate_title'),
-                'certificate_provider' => $request->input('certificate_provider'),
-                'date_completed'    => $request->input('date_completed'),
+
+            $currentUserCode = Auth::user()->code;
+
+            $validator = Validator::make($request->all(), [
+                'certificate_title'    => 'required|string|max:255',
+                'certificate_provider' => 'required|string|max:255',
+                'date_completed'       => 'required|date|date_format:Y-m-d',
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Certificate updated successfully.',
-                'data'    => $data->fresh()
-            ], 200);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors'  => $validator->errors(),
+                ], 422);
+            }
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update Certificate.',
-                'error'   => $e->getMessage(),
-            ], 500);
+            // Future date check
+            $futureCheck = ValidationController::futureDateCheck([
+                ['date_completed' => $request->input('date_completed')]
+            ], 'date_completed');
+
+            if ($futureCheck !== true) {
+                return $futureCheck;
+            }
+
+            try {
+                $certificate = Usercertificate::where('id', $id)
+                    ->where('code', $currentUserCode)
+                    ->first();
+
+                if (!$certificate) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Certificate not found or unauthorized.',
+                    ], 404);
+                }
+
+                $certificate->update($request->only([
+                    'certificate_title',
+                    'certificate_provider',
+                    'date_completed'
+                ]));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Certificate updated successfully.',
+                    'data'    => $certificate->fresh()
+                ], 200);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update Certificate.',
+                    'error'   => $e->getMessage(),
+                ], 500);
+            }
         }
-    }
 
+
+        
 }
