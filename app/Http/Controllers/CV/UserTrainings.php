@@ -82,6 +82,68 @@ class UserTrainings extends Controller
         ]);
     }
 
+    public function updateTrainings(Request $request, $id)
+    {
+        // ✅ Ensure the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $currentUserCode = Auth::user()->code;
+
+        // ✅ Validate incoming request
+        $validator = Validator::make($request->all(), [
+            'training_title'    => 'required|string|max:255',
+            'training_provider' => 'required|string|max:255',
+            'date_completed'    => 'required|date_format:Y-m-d', // Enforce ISO format
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            // ✅ Find training record owned by current user
+         $training = Usertraining::where('id', $id)
+            ->where('code', $currentUserCode)
+            ->first();
+
+
+            if (!$training) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Training not found or unauthorized.',
+                ], 404);
+            }
+
+            // ✅ Update training details
+            $training->update([
+                'training_title'    => $request->input('training_title'),
+                'training_provider' => $request->input('training_provider'),
+                'date_completed'    => $request->input('date_completed'),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Training updated successfully.',
+                'data'    => $training->fresh()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update training.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function getTrainings()
     {
         try {
