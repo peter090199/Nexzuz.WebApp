@@ -18,11 +18,11 @@ class UserTrainings extends Controller
     {
         $data = $request->all();
         
-        $trainings = $request->trainings ?? []; // default to empty array
-        $futureCheck = ValidationController::futureDateCheck($trainings, 'date_completed');
+       $trainings = $request->trainings ?? []; // default empty array
+        $check = ValidationController::futureDateCheck($trainings, 'date_completed');
 
-        if ($futureCheck !== true) {
-            return $futureCheck;
+        if ($check !== true) {
+            return $check; // returns the JSON error response
         }
 
 
