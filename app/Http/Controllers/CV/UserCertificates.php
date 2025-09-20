@@ -154,7 +154,7 @@ class UserCertificates extends Controller
             ->first();
 
 
-            if (!$training) {
+            if (!$data) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Cerificate not found or unauthorized.',
