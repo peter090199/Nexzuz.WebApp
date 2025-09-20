@@ -175,6 +175,14 @@ class UserWorkExperiences extends Controller
                 'errors'  => $validator->errors(),
             ], 422);
         }
+         // Future date check
+            $futureCheck = ValidationController::futureDateCheck([
+                ['date_completed' => $request->input('date_completed')]
+            ], 'date_completed');
+
+            if ($futureCheck !== true) {
+                return $futureCheck;
+            }
 
         try {
             // ✅ Find training record owned by current user
