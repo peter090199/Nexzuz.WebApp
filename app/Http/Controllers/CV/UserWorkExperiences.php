@@ -37,7 +37,12 @@ class UserWorkExperiences extends Controller
         }
 
         $inserted = [];
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
 
+        
         foreach ($data as $item) {
             $validator = Validator::make($item, [
                 'company_name'   => 'required|string|max:255',
@@ -175,14 +180,14 @@ class UserWorkExperiences extends Controller
                 'errors'  => $validator->errors(),
             ], 422);
         }
-         // Future date check
-            $futureCheck = ValidationController::futureDateCheck([
-                ['date_completed' => $request->input('date_completed')]
-            ], 'date_completed');
+        // Future date check
+        $futureCheck = ValidationController::futureDateCheck([
+            ['date_completed' => $request->input('date_completed')]
+        ], 'date_completed');
 
-            if ($futureCheck !== true) {
-                return $futureCheck;
-            }
+        if ($futureCheck !== true) {
+            return $futureCheck;
+        }
 
         try {
             // ✅ Find training record owned by current user
