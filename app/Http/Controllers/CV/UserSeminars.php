@@ -40,10 +40,13 @@ class UserSeminars extends Controller
         }
 
         // Custom check for future dates
-        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+          $futureCheck = ValidationController::futureDateCheck([['date_completed' => $request->input('date_completed')]], 
+            'date_completed'
+        );
         if ($futureCheck !== true) {
             return $futureCheck; // returns JSON response if invalid
         }
+
         // foreach ($request->seminars as $item) {
         //     if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
         //       return response()->json([
