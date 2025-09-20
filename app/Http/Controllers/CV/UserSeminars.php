@@ -11,8 +11,105 @@ use Illuminate\Support\Facades\Validator;
 
 class UserSeminars extends Controller
 {
-
     public function saveSeminar(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $currentUserCode = Auth::user()->code;
+
+        // Validate basic fields first
+        $validator = Validator::make($request->all(), [
+            'seminars' => 'required|array|min:1',
+            'seminars.*.id' => 'nullable|integer|exists:userseminars,id',
+            'seminars.*.seminar_title' => 'required|string|max:255',
+            'seminars.*.seminar_provider' => 'required|string|max:255',
+            'seminars.*.date_completed' => 'required|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Custom check for future dates
+        foreach ($request->seminars as $item) {
+            if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The completion date cannot be in the future.',
+                ], 422);
+            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $maxTransNo = Userseminar::where('code', $currentUserCode)->max('transNo') ?? 0;
+            $savedRecords = [];
+            $insertedCount = 0;
+            $updatedCount = 0;
+
+            foreach ($request->seminars as $item) {
+                if (!empty($item['id'])) {
+                    // Update existing seminar
+                    $seminar = Userseminar::where('id', $item['id'])
+                        ->where('code', $currentUserCode)
+                        ->first();
+
+                    if ($seminar) {
+                        $seminar->seminar_title = $item['seminar_title'];
+                        $seminar->seminar_provider = $item['seminar_provider'];
+                        $seminar->date_completed = $item['date_completed'];
+                        $seminar->updated_at = now();
+                        $seminar->save();
+
+                        $savedRecords[] = $seminar;
+                        $updatedCount++;
+                    }
+                } else {
+                    // Insert new seminar
+                    $maxTransNo++;
+
+                    $newSeminar = Userseminar::create([
+                        'code' => $currentUserCode,
+                        'transNo' => $maxTransNo,
+                        'seminar_title' => $item['seminar_title'],
+                        'seminar_provider' => $item['seminar_provider'],
+                        'date_completed' => $item['date_completed'],
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $savedRecords[] = $newSeminar;
+                    $insertedCount++;
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Seminar saved successfully. Inserted: $insertedCount, Updated: $updatedCount.",
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process seminar records.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function saveSeminarxx(Request $request)
     {
         if (!Auth::check()) {
             return response()->json([
