@@ -17,16 +17,13 @@ class UserTrainings extends Controller
     public function saveTrainings(Request $request)
     {
         $data = $request->all();
+        $futureCheck = ValidationController::futureDateCheck($request->seminars, 'date_completed');
         
-       $trainings = $request->trainings ?? []; // default empty array
-        $check = ValidationController::futureDateCheck($trainings, 'date_completed');
-
-        if ($check !== true) {
-            return $check; // returns the JSON error response
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
         }
 
-
-
+        
         // ✅ If a single object is sent, wrap it into an array
         if (isset($data['training_title'])) {
             $data = [$data];
