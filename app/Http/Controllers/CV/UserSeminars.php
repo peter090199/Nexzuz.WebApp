@@ -22,7 +22,11 @@ class UserSeminars extends Controller
         }
         $data = $request->all();
         $currentUserCode = Auth::user()->code;
-
+      
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
         // Validate basic fields first
         $validator = Validator::make($request->all(), [
             'seminars' => 'required|array|min:1',
@@ -40,15 +44,15 @@ class UserSeminars extends Controller
         }
 
         // Custom check for future dates
-         foreach ($request->seminars as $item) {
-            if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
-              return response()->json([
-                    'success' => false,
-                    'message' => 'The completion date cannot be in the future.',
-                ], 422);
+        //  foreach ($request->seminars as $item) {
+        //     if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
+        //       return response()->json([
+        //             'success' => false,
+        //             'message' => 'The completion date cannot be in the future.',
+        //         ], 422);
 
-            }
-        }
+        //     }
+        // }
 
         try {
             DB::beginTransaction();
