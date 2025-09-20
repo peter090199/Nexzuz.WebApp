@@ -8,6 +8,7 @@ use App\Models\Userseminar;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\CV\ValidationController;
 
 class UserSeminars extends Controller
 {
@@ -39,15 +40,19 @@ class UserSeminars extends Controller
         }
 
         // Custom check for future dates
-        foreach ($request->seminars as $item) {
-            if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
-              return response()->json([
-                    'success' => false,
-                    'message' => 'The completion date cannot be in the future.',
-                ], 422);
-
-            }
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
         }
+        // foreach ($request->seminars as $item) {
+        //     if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
+        //       return response()->json([
+        //             'success' => false,
+        //             'message' => 'The completion date cannot be in the future.',
+        //         ], 422);
+
+        //     }
+        // }
 
         try {
             DB::beginTransaction();
@@ -221,6 +226,12 @@ class UserSeminars extends Controller
                 'success' => false,
                 'errors'  => $validator->errors(),
             ], 422);
+        }
+    
+        // ✅ Future date check using reusable function
+        $futureCheck = ValidationController::futureDateCheck([$request->all()], 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
         }
 
         try {
