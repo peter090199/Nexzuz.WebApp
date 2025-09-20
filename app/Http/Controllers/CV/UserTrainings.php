@@ -14,17 +14,95 @@ use App\Http\Controllers\CV\ValidationController;
 
 class UserTrainings extends Controller
 {
+    // public function saveTrainings(Request $request)
+    // {
+    //     $data = $request->all();
+    //     $futureCheck = ValidationController::futureDateCheck($request->seminars, 'date_completed');
+        
+    //     if ($futureCheck !== true) {
+    //         return $futureCheck; // returns JSON response if invalid
+    //     }
+
+        
+    //     // ✅ If a single object is sent, wrap it into an array
+    //     if (isset($data['training_title'])) {
+    //         $data = [$data];
+    //     }
+
+    //     if (!is_array($data)) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Invalid input format. Expected a training object or an array of trainings.',
+    //         ], 422);
+    //     }
+
+    //     $currentUserCode = Auth::user()->code;
+        
+    //     if (!$currentUserCode) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Unauthorized access.',
+    //         ], 401);
+    //     }
+
+    //     $inserted = [];
+
+    //     foreach ($data as $item) {
+    //         $validator = Validator::make($item, [
+    //             'training_title' => 'required|string|max:255',
+    //             'training_provider' => 'nullable|string|max:255',
+    //             'date_completed' => 'required|date',
+    //         ]);
+
+    //         if ($validator->fails()) {
+    //             Log::warning('Training validation failed:', $validator->errors()->toArray());
+    //             continue;
+    //         }
+
+    //        foreach ($request->seminars as $item) {
+    //         if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
+    //           return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'The completion date cannot be in the future.',
+    //             ], 422);
+
+    //         }
+    //        }
+    //         $title = strtolower(trim($item['training_title']));
+    //         $exists = Usertraining::where('code', $currentUserCode)
+    //             ->whereRaw('LOWER(training_title) = ?', [$title])
+    //             ->where('date_completed', $item['date_completed'])
+    //             ->exists();
+
+    //             if (!$exists) {
+    //             $maxTrans = Usertraining::where('code', $currentUserCode)->max('transNo');
+    //             $newTrans = $maxTrans ? $maxTrans + 1 : 1;
+
+    //             try {
+    //                 $inserted[] = Usertraining::create([
+    //                     'code' => $currentUserCode,
+    //                     'transNo' => $newTrans,
+    //                     'training_title' => $item['training_title'],
+    //                     'training_provider' => $item['training_provider'] ?? null,
+    //                     'date_completed' => $item['date_completed'],
+    //                 ]);
+    //             } catch (\Exception $e) {
+    //                 Log::error('Failed to insert training: ' . $e->getMessage());
+    //             }
+    //         }
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => count($inserted) . ' training(s) saved successfully.',
+    //     ]);
+    // }
+
     public function saveTrainings(Request $request)
     {
         $data = $request->all();
-        $futureCheck = ValidationController::futureDateCheck($request->seminars, 'date_completed');
-        
-        if ($futureCheck !== true) {
-            return $futureCheck; // returns JSON response if invalid
-        }
 
-        
-        // ✅ If a single object is sent, wrap it into an array
+        // Ensure $data is an array
         if (isset($data['training_title'])) {
             $data = [$data];
         }
@@ -36,8 +114,13 @@ class UserTrainings extends Controller
             ], 422);
         }
 
+        // Future date check using reusable function
+        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
+
         $currentUserCode = Auth::user()->code;
-        
         if (!$currentUserCode) {
             return response()->json([
                 'success' => false,
@@ -56,25 +139,16 @@ class UserTrainings extends Controller
 
             if ($validator->fails()) {
                 Log::warning('Training validation failed:', $validator->errors()->toArray());
-                continue;
+                continue; // skip invalid item
             }
 
-           foreach ($request->seminars as $item) {
-            if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
-              return response()->json([
-                    'success' => false,
-                    'message' => 'The completion date cannot be in the future.',
-                ], 422);
-
-            }
-           }
             $title = strtolower(trim($item['training_title']));
             $exists = Usertraining::where('code', $currentUserCode)
                 ->whereRaw('LOWER(training_title) = ?', [$title])
                 ->where('date_completed', $item['date_completed'])
                 ->exists();
 
-                if (!$exists) {
+            if (!$exists) {
                 $maxTrans = Usertraining::where('code', $currentUserCode)->max('transNo');
                 $newTrans = $maxTrans ? $maxTrans + 1 : 1;
 
