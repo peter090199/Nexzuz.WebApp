@@ -20,13 +20,10 @@ class UserSeminars extends Controller
                 'message' => 'Unauthorized access.',
             ], 401);
         }
-        $data = $request->all();
+      
         $currentUserCode = Auth::user()->code;
       
-        $futureCheck = ValidationController::futureDateCheck($data, 'date_completed');
-        if ($futureCheck !== true) {
-            return $futureCheck; // returns JSON response if invalid
-        }
+ 
         // Validate basic fields first
         $validator = Validator::make($request->all(), [
             'seminars' => 'required|array|min:1',
@@ -43,6 +40,12 @@ class UserSeminars extends Controller
             ], 422);
         }
 
+         // ✅ Future date validation using reusable function
+        $futureCheck = ValidationController::futureDateCheck($request->seminars, 'date_completed');
+        if ($futureCheck !== true) {
+            return $futureCheck; // returns JSON response if invalid
+        }
+        
         // Custom check for future dates
         //  foreach ($request->seminars as $item) {
         //     if (strtotime($item['date_completed']) > strtotime(date('Y-m-d'))) {
