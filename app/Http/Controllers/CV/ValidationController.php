@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers\CV;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class ValidationController extends Controller
+class ValidationController
 {
-     /**
-     * Check if any date in the array is in the future.
+    /**
+     * Check for future dates in an array of items.
      *
-     * @param array $items
+     * @param array|null $items
      * @param string $fieldName
-     * @return JsonResponse|bool
+     * @return true|JsonResponse
      */
-
-    public static function futureDateCheck($items = [], string $fieldName = 'date_completed')
+    public static function futureDateCheck(?array $items, string $fieldName = 'date_completed')
     {
-        $items = $items ?? []; // ensure it's always an array
+        if (empty($items) || !is_array($items)) {
+            return true; // nothing to check
+        }
 
         foreach ($items as $item) {
             if (!empty($item[$fieldName]) && strtotime($item[$fieldName]) > strtotime(date('Y-m-d'))) {
@@ -28,9 +27,7 @@ class ValidationController extends Controller
                 ], 422);
             }
         }
+
         return true;
     }
-
-
-
 }
