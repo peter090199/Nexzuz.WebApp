@@ -194,6 +194,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveCertificates', [UserCertificates::class, 'saveCertificates']);
     Route::get('getCertificates', [UserCertificates::class, 'getCertificates']);
     Route::delete('deleteCertificate/{id}', [UserCertificates::class, 'deleteCertificate']);
+    Route::put('updateCertificates/{id}', [UserCertificates::class, 'updateCertificates']);
     //work experience
     Route::post('saveEmployment', [UserWorkExperiences::class, 'saveEmployment']);
     Route::get('getEmployment', [UserWorkExperiences::class, 'getEmployment']);
