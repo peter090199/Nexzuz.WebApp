@@ -198,11 +198,13 @@ class UserTrainings extends Controller
             ], 422);
         }
 
-         // Future date check using reusable function
-        $futureCheck = ValidationController::futureDateCheck($validator, 'date_completed');
+        // ✅ Future date check using reusable function
+        $futureCheck = ValidationController::futureDateCheck([$request->all()], 'date_completed');
         if ($futureCheck !== true) {
             return $futureCheck; // returns JSON response if invalid
         }
+
+
 
         try {
             // ✅ Find training record owned by current user
