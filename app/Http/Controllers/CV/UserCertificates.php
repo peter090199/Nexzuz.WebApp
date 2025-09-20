@@ -153,9 +153,9 @@ class UserCertificates extends Controller
         }
 
         // ✅ Future date check using reusable function
-        $futureCheck = ValidationController::futureDateCheck([$request->all()], 'date_completed');
+       $futureCheck = ValidationController::futureDateCheck($request->input('date_completed'));
         if ($futureCheck !== true) {
-            return $futureCheck; // returns JSON response if invalid
+            return $futureCheck;
         }
 
         try {
