@@ -21,7 +21,8 @@ class ReactionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+            $request->validate([
+            'post_id' => 'required|integer', // changed to integer
             'post_uuidOrUind' => 'required|string|max:100',
             'code' => 'required|string|in:like,heart,haha,wow,sad,angry',
             'reaction' => 'nullable|string|max:255',

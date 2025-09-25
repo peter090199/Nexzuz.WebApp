@@ -12,7 +12,7 @@ class Reaction extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'id',
+        'post_id',
         'code',
         'post_uuidOrUind',
         'reaction',
