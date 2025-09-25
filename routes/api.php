@@ -32,6 +32,7 @@ use App\Http\Controllers\Jobs\JobListController;
 use App\Http\Controllers\PhoneValidationController;
 use App\Http\Controllers\Jobs\QuestionController;
 use App\Http\Controllers\Jobs\AppliedJobController;
+use App\Http\Controllers\ReactionController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
@@ -229,4 +230,9 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //AppliedJobs
     Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
+    //Post Reactions
+    Route::post('react', [ReactionController::class, 'store']);
+    Route::get('react/{postId}', [ReactionController::class, 'getReactions']);
+
+
 });
