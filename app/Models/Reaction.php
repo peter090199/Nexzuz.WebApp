@@ -13,7 +13,6 @@ class Reaction extends Model
 
     protected $fillable = [
         'post_id',
-        'code',
         'post_uuidOrUind',
         'reaction',
         'updated_at',
