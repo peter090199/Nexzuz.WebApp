@@ -15,6 +15,7 @@ class Reaction extends Model
         'post_id',
         'post_uuidOrUind',
         'reaction',
+        'code'
         // 'updated_at',
         // 'create_at',
     ];

@@ -24,6 +24,7 @@ class ReactionController extends Controller
             $request->validate([
             'post_id' => 'required|integer', // changed to integer
             'post_uuidOrUind' => 'required|string|max:100',
+            'code' => 'required|string',
             'reaction' => 'nullable|string|max:255',
         ]);
 
