@@ -60,24 +60,38 @@ class MenuController extends Controller
                     "submenu" => $sub
                 ];
             }
-            return response()->json($result);
+            return response()->json([
+                'success' => true,
+                'data'    => $result
+            ], 200);
+
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error: ' . $e->getMessage()
+             ], 500);
+
+          
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+   
+     public function getAllModules()
+     {
+         try {
+             $modules = Menu::all();
+ 
+             return response()->json([
+                 'success' => true,
+                 'data'    => $modules
+             ], 200);
+         } catch (\Exception $e) {
+             return response()->json([
+                 'success' => false,
+                 'message' => 'Error: ' . $e->getMessage()
+             ], 500);
+         }
+     }
 
-
-
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+   
     public function store(Request $request)
     {
         // 

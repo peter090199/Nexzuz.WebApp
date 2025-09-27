@@ -1,0 +1,66 @@
+
+
+###
+post http://127.0.0.1:8000/api/login
+
+###
+post http://127.0.0.1:8000/api/SaveEditItems
+
+###
+get http://127.0.0.1:8000/api/DeleteItem/122
+
+//customers
+
+###
+get http://127.0.0.1:8000/api/GetCustomers
+
+###
+post http://127.0.0.1:8000/api/SaveEditCustomers
+
+###
+delete http://127.0.0.1:8000/api/DeleteCustomer/676
+
+###
+post http://127.0.0.1:8000/api/Calculation
+
+
+###
+get http://127.0.0.1:8000/api/DoWhileLoop
+
+
+###
+get http://127.0.0.1:8000/api/DoWhileLoops
+
+
+###
+get http://127.0.0.1:8000/api/GetModules/
+
+###
+get http://127.0.0.1:8000/api/GetSubModules/
+
+
+//Supplier
+###
+get http://127.0.0.1:8000/api/GetSuppliers/
+
+###
+post http://127.0.0.1:8000/api/SaveEditSuppliers/
+
+###
+delete http://127.0.0.1:8000/api/DeleteSupplier/1212
+
+###
+get http://127.0.0.1:8000/api/GetTransSaleNo
+
+###
+get http://127.0.0.1:8000/api/GetSaleHeaderByTransNo/TR0019
+
+###
+get http://127.0.0.1:8000/api/GetSaleDetailsByTransNo/
+
+###
+get http://127.0.0.1:8000/api/GetCBOCustomers
+
+###
+get http://127.0.0.1:8000/api/GetItemsToSale
+

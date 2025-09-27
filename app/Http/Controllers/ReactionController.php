@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Reaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\DB;
 
 class ReactionController extends Controller
 {
@@ -16,19 +18,74 @@ class ReactionController extends Controller
         return response()->json(Reaction::all());
     }
 
-    /**
-     * Store a new reaction
-     */
-    public function store(Request $request)
+    public function saveReaction(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $validated = $request->validate([
+              'post_id' => 'required|integer', 
+              'post_uuidOrUind' => 'required|string|max:100',
+              'reaction' => 'nullable|string|max:255',
+            ]);
+
+            DB::beginTransaction();
+
+            $data = Reaction::create([
+                'post_id'       => $validated['post_id'],
+                'post_uuidOrUind'=> $validated['post_uuidOrUind'],
+                'reaction'         => $validated['reaction'],
+                'code'          => "702"
+                // 'role_code'     => $user->role_code,
+                // 'fullname'      => $user->fullname,
+            ]);
+         
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reaction saved successfully',
+                'data' => $data,
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Validation failed.',
+                'success' => false,
+                'errors'  => $e->errors(),
+            ], 422);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Something went wrong while saving.',
+                'success' => false,
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function storexx(Request $request)
     {
             $request->validate([
             'post_id' => 'required|integer', // changed to integer
             'post_uuidOrUind' => 'required|string|max:100',
-            'code' => 'required|string',
             'reaction' => 'nullable|string|max:255',
         ]);
-
+        $currentUserCode = Auth::user()->code;
         $reaction = Reaction::create($request->all());
+
+        try {
+            $reaction = Reaction::create([
+                'code' => $currentUserCode,
+                'data' => $reaction,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to insert reaction: ' . $e->getMessage());
+        }
+
 
         return response()->json([
             'success' => true,

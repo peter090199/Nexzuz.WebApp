@@ -71,6 +71,7 @@ Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
     return Broadcast::auth(request());
 });
 
+
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     
     Route::get('user', function (Request $request) {
@@ -90,28 +91,18 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
 
     // Menus
-    // menu GET , STORE 
     Route::Resource('menu',MenuController::class)->names('menu');
-
+    Route::get('getAllModules', [MenuController::class, 'getAllModules']);
     // Security roles
-    // security GET , STORE 
     Route::Resource('security',SecurityroleController::class)->names('security');
-
     //Role
-    // role GET,STORE,UPDATE,SHOW
     Route::Resource('role',RoleController::class)->names('role');
-
     // SELECT2 ALL REQUEST
     Route::post('rolecode',[SelectController::class,'rolecode'])->name('rolecode');
-    
-    
     // lookup information
     Route::get('userlists',[LookupController::class,'userlists'])->name('userlists');
-
-  
     //search fullname
     Route::get('searchUsers', [UserController::class, 'searchUsers']);
-
    //get Onlineusers
    Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
  
@@ -231,8 +222,10 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
     //Post Reactions
-    Route::post('react', [ReactionController::class, 'store']);
+    // Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
     Route::get('react/{postId}', [ReactionController::class, 'getReactions']);
 
 
 });
+
+   Route::post('saveReaction', [ReactionController::class, 'saveReaction']);

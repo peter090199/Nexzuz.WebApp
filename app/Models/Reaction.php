@@ -9,11 +9,7 @@ class Reaction extends Model
 {
     use HasFactory;
 
-    protected $table = 'reactionPost'; 
-
-    // Disable default timestamps since table doesn't have created_at / updated_at
-    public $timestamps = false;  
-
+    protected $table = 'reactions'; 
     protected $fillable = [
         'post_id',
         'post_uuidOrUind',
