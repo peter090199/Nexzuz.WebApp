@@ -9,7 +9,7 @@ class Reaction extends Model
     use HasFactory;
 
     protected $table = 'reactionPost'; 
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
         'post_id',
