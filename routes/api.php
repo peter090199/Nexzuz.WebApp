@@ -92,6 +92,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
     // Menus
     Route::Resource('menu',MenuController::class)->names('menu');
+    Route::post('saveMenu', [MenuController::class, 'saveMenu']);
     Route::get('getAllModules', [MenuController::class, 'getAllModules']);
     //submenu
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);

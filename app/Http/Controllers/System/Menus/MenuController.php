@@ -90,6 +90,81 @@ class MenuController extends Controller
              ], 500);
          }
      }
+     
+    public function saveMenu(Request $request)
+    {
+        // 
+        $request->merge(['description' => $this->description]);
+        $accessResponse = $this->accessmenu($request);
+
+        if ($accessResponse !== 1) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        try {
+            DB::beginTransaction();
+            $data = $request->all();
+
+            // Validate menu
+            $header = Validator::make($data, [
+                'desc_code' => 'required|string',
+                'description' => 'required|string',
+                'icon' => 'required|string',
+                'class' => 'required|string',
+                'routes' => 'required|string',
+                'sort' => 'required|integer',
+                'status' => 'nullable|string'
+            ]);
+
+            if ($header->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $header->errors()
+                ]);
+            }
+
+            // Check if menu already exists
+            $menuexists = Menu::where('description', $data['description'])->exists();
+            if ($menuexists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu description already exists. Please avoid duplicates.'
+                ]);
+            }
+
+            // Generate transaction number
+            $trans = Menu::max('transNo');
+            $transNo = empty($trans) ? 1 : $trans + 1;
+
+            // Insert Menu only
+            Menu::insert([
+                "transNo" => $transNo,
+                'desc_code' => $data['desc_code'],
+                "description" => $data['description'],
+                'icon' => $data['icon'],
+                'class' => $data['class'],
+                'routes' => $data['routes'],
+                'sort' => $data['sort'],
+                'status' => $data['status'] ? $data['status'] : 'I',
+                'created_by' => Auth::user()->fullname,
+                'updated_by' => Auth::user()->fullname
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu created successfully'
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
 
    
     public function store(Request $request)
