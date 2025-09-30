@@ -1,66 +1,29 @@
 
+@token = 1604|89pmTsNsXuyP2c9SllvzIos6d2RkWd6c21rw64Iseea6af80
 
-###
-post http://127.0.0.1:8000/api/login
+### Login
+POST http://127.0.0.1:8000/api/login
+Content-Type: application/json
 
-###
-post http://127.0.0.1:8000/api/SaveEditItems
+{
+  "email": "pedroyorpo17@gmail.com",
+  "password": "Madmin123@"
+}
 
-###
-get http://127.0.0.1:8000/api/DeleteItem/122
+### getAllModules
+GET http://127.0.0.1:8000/api/getAllModules
+Authorization: Bearer {{token}}
+Accept: application/json
 
-//customers
+### getAllModules
+GET http://127.0.0.1:8000/api/menu
+Authorization: Bearer {{token}}
+Accept: application/json
 
-###
-get http://127.0.0.1:8000/api/GetCustomers
-
-###
-post http://127.0.0.1:8000/api/SaveEditCustomers
-
-###
-delete http://127.0.0.1:8000/api/DeleteCustomer/676
-
-###
-post http://127.0.0.1:8000/api/Calculation
-
-
-###
-get http://127.0.0.1:8000/api/DoWhileLoop
+### get
+GET http://127.0.0.1:8000/api/getSubmenuByTransNo/2
+Authorization: Bearer {{token}}
+Accept: application/json
 
 
-###
-get http://127.0.0.1:8000/api/DoWhileLoops
-
-
-###
-get http://127.0.0.1:8000/api/GetModules/
-
-###
-get http://127.0.0.1:8000/api/GetSubModules/
-
-
-//Supplier
-###
-get http://127.0.0.1:8000/api/GetSuppliers/
-
-###
-post http://127.0.0.1:8000/api/SaveEditSuppliers/
-
-###
-delete http://127.0.0.1:8000/api/DeleteSupplier/1212
-
-###
-get http://127.0.0.1:8000/api/GetTransSaleNo
-
-###
-get http://127.0.0.1:8000/api/GetSaleHeaderByTransNo/TR0019
-
-###
-get http://127.0.0.1:8000/api/GetSaleDetailsByTransNo/
-
-###
-get http://127.0.0.1:8000/api/GetCBOCustomers
-
-###
-get http://127.0.0.1:8000/api/GetItemsToSale
 

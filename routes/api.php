@@ -36,6 +36,7 @@ use App\Http\Controllers\ReactionController;
 use App\Events\MessageSent; 
 use App\Events\Message;
 use App\Events\NotificationCountUpdated;
+use App\Http\Controllers\System\Submenu\Submenus;
 
 /*
 |--------------------------------------------------------------------------
@@ -89,10 +90,12 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     // Accessrolemenu
     // User access to the menu depends on their role. GET 
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
-
     // Menus
     Route::Resource('menu',MenuController::class)->names('menu');
     Route::get('getAllModules', [MenuController::class, 'getAllModules']);
+    //submenu
+    Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
+    Route::post('saveSubmenus', [Submenus::class, 'saveSubmenus']);
     // Security roles
     Route::Resource('security',SecurityroleController::class)->names('security');
     //Role
