@@ -93,77 +93,63 @@ class MenuController extends Controller
 
     public function saveMenu(Request $request)
     {
+        // Check access
         $request->merge(['description' => $this->description]);
-        $accessResponse = $this->accessmenu($request);
-
-        if ($accessResponse !== 1) {
+        if ($this->accessmenu($request) !== 1) {
             return response()->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'desc_code'   => 'required|string',
+            'description' => 'required|string',
+            'icon'        => 'required|string',
+            'class'       => 'required|string',
+            'routes'      => 'required|string',
+            'sort'        => 'required|integer',
+            'status'      => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()]);
         }
 
         try {
             DB::beginTransaction();
-            $data = $request->all();
 
-            // Validate menu
-            $header = Validator::make($data, [
-                'desc_code' => 'required|string',
-                'description' => 'required|string',
-                'icon' => 'required|string',
-                'class' => 'required|string',
-                'routes' => 'required|string',
-                'sort' => 'required|integer',
-                'status' => 'nullable|string'
-            ]);
-
-            if ($header->fails()) {
+            // Check duplicate
+            if (Menu::where('description', $request->description)->exists()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $header->errors()
+                    'message' => 'Menu description already exists. Cannot save duplicate.'
                 ]);
             }
 
-            $count = Menu::where('description', $data['description'])->count();
-            if ($count > 0) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => "Menu description already exists ($count duplicates found)."
-                ]);
-            }
-
-            
-                // Generate transaction number
-            // $trans = Menu::max('transNo');
-            // $transNo = empty($trans) ? 1 : $trans + 1;
+            // Generate next transNo safely
             $lastTrans = Menu::lockForUpdate()->max('transNo');
             $transNo = $lastTrans ? $lastTrans + 1 : 1;
-            // Insert Menu
-            Menu::insert([
-                "transNo" => $transNo,
-                'desc_code' => $data['desc_code'],
-                "description" => $data['description'],
-                'icon' => $data['icon'],
-                'class' => $data['class'],
-                'routes' => $data['routes'],
-                'sort' => $data['sort'],
-                'status' => $data['status'] ? $data['status'] : 'I',
-                'created_by' => Auth::user()->fullname,
-                'updated_by' => Auth::user()->fullname
+
+            // Save menu
+            Menu::create([
+                "transNo"    => $transNo,
+                "desc_code"  => $request->desc_code,
+                "description"=> $request->description,
+                "icon"       => $request->icon,
+                "class"      => $request->class,
+                "routes"     => $request->routes,
+                "sort"       => $request->sort,
+                "status"     => $request->status ?? 'I',
+                "created_by" => Auth::user()->fullname,
+                "updated_by" => Auth::user()->fullname,
             ]);
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Menu created successfully'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Menu created successfully']);
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $th->getMessage()
-            ]);
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
     }
 
