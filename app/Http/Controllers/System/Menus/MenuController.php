@@ -122,10 +122,21 @@ class MenuController extends Controller
                 ]);
             }
 
-            // Generate transaction number
-            $trans = Menu::max('transNo');
-            $transNo = empty($trans) ? 1 : $trans + 1;
-
+                // ✅ Check if description already exists
+            $menuexists = Menu::where('description', $data['description'])->exists();
+            if ($menuexists) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu description already exists. Cannot save duplicate.'
+                ]);
+            }
+            
+                // Generate transaction number
+            // $trans = Menu::max('transNo');
+            // $transNo = empty($trans) ? 1 : $trans + 1;
+            $lastTrans = Menu::lockForUpdate()->max('transNo');
+            $transNo = $lastTrans ? $lastTrans + 1 : 1;
             // Insert Menu
             Menu::insert([
                 "transNo" => $transNo,
