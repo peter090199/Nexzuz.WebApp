@@ -122,15 +122,15 @@ class MenuController extends Controller
                 ]);
             }
 
-                // ✅ Check if description already exists
-            $menuexists = Menu::where('description', $data['description'])->exists();
-            if ($menuexists) {
+            $count = Menu::where('description', $data['description'])->count();
+            if ($count > 0) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Menu description already exists. Cannot save duplicate.'
+                    'message' => "Menu description already exists ($count duplicates found)."
                 ]);
             }
+
             
                 // Generate transaction number
             // $trans = Menu::max('transNo');
