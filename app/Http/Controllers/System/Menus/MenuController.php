@@ -90,10 +90,9 @@ class MenuController extends Controller
              ], 500);
          }
      }
-     
+
     public function saveMenu(Request $request)
     {
-        // 
         $request->merge(['description' => $this->description]);
         $accessResponse = $this->accessmenu($request);
 
@@ -123,20 +122,11 @@ class MenuController extends Controller
                 ]);
             }
 
-            // Check if menu already exists
-            $menuexists = Menu::where('description', $data['description'])->exists();
-            if ($menuexists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Menu description already exists. Please avoid duplicates.'
-                ]);
-            }
-
             // Generate transaction number
             $trans = Menu::max('transNo');
             $transNo = empty($trans) ? 1 : $trans + 1;
 
-            // Insert Menu only
+            // Insert Menu
             Menu::insert([
                 "transNo" => $transNo,
                 'desc_code' => $data['desc_code'],
