@@ -93,6 +93,83 @@ class MenuController extends Controller
 
     public function saveMenu(Request $request)
     {
+        $data = $request->all();
+
+        $validator = Validator::make($data, [
+            'desc_code'   => 'required|string',
+            'description' => 'required|string',
+            'icon'        => 'required|string',
+            'class'       => 'required|string',
+            'routes'      => 'required|string',
+            'sort'        => 'required|integer',
+            'status'      => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ]);
+        }
+
+        // Check for duplicate description
+        if (DB::table('menus')->where('description', $data['description'])->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu description already exists. Please avoid duplicates.'
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Get next control number safely
+            $counter = DB::table('counters')
+                ->where('name', 'menu_transNo')
+                ->lockForUpdate()
+                ->first();
+
+            $transNo = $counter->last_number + 1;
+
+            // Update counter
+            DB::table('counters')
+                ->where('name', 'menu_transNo')
+                ->update(['last_number' => $transNo]);
+
+            // Insert menu
+            DB::table('menus')->insert([
+                'transNo'    => $transNo,
+                'desc_code'  => $data['desc_code'],
+                'description'=> $data['description'],
+                'icon'       => $data['icon'],
+                'class'      => $data['class'],
+                'routes'     => $data['routes'],
+                'sort'       => $data['sort'],
+                'status'     => $data['status'] ?? 'I',
+                'created_by' => Auth::user()->fullname,
+                'updated_by' => Auth::user()->fullname,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu created successfully',
+                'transNo' => $transNo
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+
+
+    public function saveMenuxxx(Request $request)
+    {
         try {
             DB::beginTransaction();
 
