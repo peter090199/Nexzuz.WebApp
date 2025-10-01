@@ -126,4 +126,32 @@ class Submenus extends Controller
         ]);
     }
 
+    public function deleteSubmenu($id)
+    {
+        try {
+            $submenu = DB::table('submenus')->where('id', $id)->first();
+
+            if (!$submenu) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Submenu with ID {$id} not found."
+                ]);
+            }
+
+            DB::table('submenus')->where('id', $id)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Submenu deleted successfully."
+            ]);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
+
+
 }

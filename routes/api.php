@@ -98,6 +98,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
 
     //submenu
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
+    Route::delete('deleteSubmenu/{id}', [MenuController::class, 'deleteSubmenu']);
     Route::post('saveSubmenus', [Submenus::class, 'saveSubmenus']);
     // Security roles
     Route::Resource('security',SecurityroleController::class)->names('security');
