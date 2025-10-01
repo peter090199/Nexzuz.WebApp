@@ -117,13 +117,13 @@ class MenuController extends Controller
         try {
             DB::beginTransaction();
 
-            // Check duplicate
-            // if (Menu::where('description', $request->description)->exists()) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'Menu description already exists. Cannot save duplicate.'
-            //     ]);
-            // }
+          //  Check duplicate
+            if (Menu::where('description', $request->description)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu description already exists. Cannot save duplicate.'
+                ]);
+            }
 
             // Generate next transNo safely
             $lastTrans = Menu::lockForUpdate()->max('transNo');
