@@ -165,7 +165,7 @@ class MenuController extends Controller
             ]);
         }
     }
-    
+
     public function deleteMenu($transNo)
     {
         DB::beginTransaction();
@@ -181,7 +181,7 @@ class MenuController extends Controller
             }
 
             // Delete submenus first (if any)
-            DB::table('submenus')->where('menu_transNo', $transNo)->delete();
+            DB::table('submenus')->where('transNo', $transNo)->delete();
 
             // Delete the menu
             DB::table('menus')->where('transNo', $transNo)->delete();
