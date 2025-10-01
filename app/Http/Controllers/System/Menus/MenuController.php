@@ -77,8 +77,7 @@ class MenuController extends Controller
      public function getAllModules()
      {
          try {
-             $modules = Menu::all();
- 
+            $modules = Menu::orderBy('transNo', 'asc')->get();
              return response()->json([
                  'success' => true,
                  'data'    => $modules
