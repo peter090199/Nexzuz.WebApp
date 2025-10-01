@@ -122,10 +122,8 @@ class MenuController extends Controller
                 ]);
             }
 
-            // Generate next transNo safely
-            $lastTrans = Menu::lockForUpdate()->max('transNo');
-            $transNo = $lastTrans ? $lastTrans + 1 : 1;
-
+            $trans = Menu::max('transNo');
+            $transNo = empty($trans) ? 1 : $trans + 1;
             // Save menu
             Menu::create([
                 'transNo'    => $transNo,
