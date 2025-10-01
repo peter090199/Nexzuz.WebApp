@@ -93,12 +93,6 @@ class MenuController extends Controller
 
     public function saveMenu(Request $request)
     {
-        // Check access
-        $request->merge(['description' => $this->description]);
-        if ($this->accessmenu($request) !== 1) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized']);
-        }
-
         // Validate input
         $validator = Validator::make($request->all(), [
             'desc_code'   => 'required|string',
@@ -111,14 +105,17 @@ class MenuController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ]);
         }
 
         try {
             DB::beginTransaction();
 
-          //  Check duplicate
-            if (Menu::where('description', $request->description)->exists()) {
+            // Check for duplicate description (case-insensitive)
+            if (Menu::whereRaw('LOWER(description) = ?', [strtolower($request->description)])->exists()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Menu description already exists. Cannot save duplicate.'
@@ -131,25 +128,31 @@ class MenuController extends Controller
 
             // Save menu
             Menu::create([
-                "transNo"    => $transNo,
-                "desc_code"  => $request->desc_code,
-                "description"=> $request->description,
-                "icon"       => $request->icon,
-                "class"      => $request->class,
-                "routes"     => $request->routes,
-                "sort"       => $request->sort,
-                "status"     => $request->status ?? 'I',
-                "created_by" => Auth::user()->fullname,
-                "updated_by" => Auth::user()->fullname,
+                'transNo'    => $transNo,
+                'desc_code'  => $request->desc_code,
+                'description'=> $request->description,
+                'icon'       => $request->icon,
+                'class'      => $request->class,
+                'routes'     => $request->routes,
+                'sort'       => $request->sort,
+                'status'     => $request->status ?? 'I',
+                'created_by' => Auth::user()->fullname,
+                'updated_by' => Auth::user()->fullname,
             ]);
 
             DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'Menu created successfully']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Menu created successfully'
+            ]);
 
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ]);
         }
     }
 
