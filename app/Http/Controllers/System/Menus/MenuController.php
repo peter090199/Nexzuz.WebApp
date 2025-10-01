@@ -93,63 +93,72 @@ class MenuController extends Controller
 
     public function saveMenu(Request $request)
     {
-    
         try {
             DB::beginTransaction();
-            $data = $request->all();
-            
-            $header = Validator::make($data, [
-                'desc_code' => 'required|string',
+
+            // Validate input
+            $validator = Validator::make($request->all(), [
+                'desc_code'   => 'required|string',
                 'description' => 'required|string',
-                'icon' => 'required|string',
-                'class' => 'required|string',
-                'routes' => 'required|string',
-                'sort' => 'required|integer',
-                'status' => 'nullable|string'
+                'icon'        => 'required|string',
+                'class'       => 'required|string',
+                'routes'      => 'required|string',
+                'sort'        => 'required|integer',
+                'status'      => 'nullable|string'
             ]);
-    
-            if ($header->fails()) {
+
+            if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $header->errors()
+                    'message' => $validator->errors()
                 ]);
             }
-    
-            // Check if the menu description already exists
-            if (Menu::where('description', $data['description'])->exists()) {
-                return response()->json(['success' => false, 'message' => 'Menu description already exists. Please avoid duplicates.']);
+
+            $data = $request->all();
+
+            // Check for duplicate description
+            $exists = DB::table('menus')->where('description', $data['description'])->exists();
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Menu description already exists. Please avoid duplicates.'
+                ]);
             }
-    
-            $trans = Menu::max('transNo');
+
+            // Get next transNo
+            $trans = DB::table('menus')->max('transNo');
             $transNo = empty($trans) ? 1 : $trans + 1;
-    
-            // Create the menu
-            Menu::insert([
-                "transNo" => $transNo,
-                'desc_code' => $data['desc_code'],
-                "description" => $data['description'],
-                'icon' => $data['icon'],
-                'class' => $data['class'],
-                'routes' => $data['routes'],
-                'sort' => $data['sort'],
-                'status' => $data['status'] ?: 'I',
+
+            // Insert menu using DB facade
+            DB::table('menus')->insert([
+                'transNo'    => $transNo,
+                'desc_code'  => $data['desc_code'],
+                'description'=> $data['description'],
+                'icon'       => $data['icon'],
+                'class'      => $data['class'],
+                'routes'     => $data['routes'],
+                'sort'       => $data['sort'],
+                'status'     => $data['status'] ?? 'I',
                 'created_by' => Auth::user()->fullname,
-                'updated_by' => Auth::user()->fullname
+                'updated_by' => Auth::user()->fullname,
             ]);
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Menu created successfully',
             ]);
+
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage()
+            ]);
         }
     }
-
-   
+    
     public function store(Request $request)
     {
         // 
