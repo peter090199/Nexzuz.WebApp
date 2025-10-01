@@ -165,65 +165,32 @@ class MenuController extends Controller
             ]);
         }
     }
-
-
-    public function saveMenuxxx(Request $request)
+    
+    public function deleteMenu($transNo)
     {
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
-
-            // Validate input
-            $validator = Validator::make($request->all(), [
-                'desc_code'   => 'required|string',
-                'description' => 'required|string',
-                'icon'        => 'required|string',
-                'class'       => 'required|string',
-                'routes'      => 'required|string',
-                'sort'        => 'required|integer',
-                'status'      => 'nullable|string'
-            ]);
-
-            if ($validator->fails()) {
+            // Check if the menu exists
+            $menu = DB::table('menus')->where('transNo', $transNo)->first();
+            if (!$menu) {
                 return response()->json([
                     'success' => false,
-                    'message' => $validator->errors()
+                    'message' => "Menu with transNo {$transNo} not found."
                 ]);
             }
 
-            $data = $request->all();
+            // Delete submenus first (if any)
+            DB::table('submenus')->where('menu_transNo', $transNo)->delete();
 
-            // Check for duplicate description
-            $exists = DB::table('menus')->where('description', $data['description'])->exists();
-            if ($exists) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Menu description already exists. Please avoid duplicates.'
-                ]);
-            }
-
-            // Get next transNo
-            $trans = DB::table('menus')->max('transNo');
-            $transNo = empty($trans) ? 1 : $trans + 1;
-
-            // Insert menu using DB facade
-            DB::table('menus')->insert([
-                'transNo'    => $transNo,
-                'desc_code'  => $data['desc_code'],
-                'description'=> $data['description'],
-                'icon'       => $data['icon'],
-                'class'      => $data['class'],
-                'routes'     => $data['routes'],
-                'sort'       => $data['sort'],
-                'status'     => $data['status'] ?? 'I',
-                'created_by' => Auth::user()->fullname,
-                'updated_by' => Auth::user()->fullname,
-            ]);
+            // Delete the menu
+            DB::table('menus')->where('transNo', $transNo)->delete();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Menu created successfully',
+                'message' => "Menu and its submenus deleted successfully."
             ]);
 
         } catch (\Throwable $th) {
@@ -234,6 +201,7 @@ class MenuController extends Controller
             ]);
         }
     }
+
     
     public function store(Request $request)
     {

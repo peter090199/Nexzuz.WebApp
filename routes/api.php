@@ -94,6 +94,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::Resource('menu',MenuController::class)->names('menu');
     Route::post('saveMenu', [MenuController::class, 'saveMenu']);
     Route::get('getAllModules', [MenuController::class, 'getAllModules']);
+    Route::delete('deleteMenu/{transNo}', [MenuController::class, 'deleteMenu']);
+
     //submenu
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
     Route::post('saveSubmenus', [Submenus::class, 'saveSubmenus']);
