@@ -118,7 +118,7 @@ class Submenus extends Controller
         $submenu->description = $request->input('description');
         $submenu->icon        = $request->input('icon');
         $submenu->class       = $request->input('class');
-        $submenu->route       = $request->input('routes'); // note: db column is "route"
+        $submenu->route       = $request->input('route'); // note: db column is "route"
         $submenu->sort        = $request->input('sort');
         $submenu->status      = $request->input('status');
         $submenu->updated_by  = Auth::user()->name ?? 'system'; // or $request->user if you pass it
