@@ -95,42 +95,43 @@ class Submenus extends Controller
      // Update submenu by ID
     public function updateSubmenuById(Request $request, $id)
     {
-       // ✅ Validate only fields that must be updated
-        $request->validate([
-            'description' => 'required|string|max:255',
-            'icon'        => 'required|string|max:255',
-            'class'       => 'nullable|string|max:255',
-            'routes'      => 'required|string|max:255',
-            'sort'        => 'required|integer|min:1',
-            'status'      => 'required|string|in:A,I',
-            'desc_code'   => 'nullable|string|max:255', // optional
-        ]);
+      // Find the submenu by ID
+        $submenu = Submenu::find($id);
 
-        $menu = Submenu::find($id);
-
-        if (!$menu) {
+        if (!$submenu) {
             return response()->json([
                 'success' => false,
-                'message' => "Menu with ID {$id} not found."
+                'message' => 'Submenu not found.'
             ], 404);
         }
 
-        // ✅ Update only allowed fields
-        $menu->update([
-            'desc_code'   => $request->desc_code ?? $menu->desc_code,
-            'description' => $request->description,
-            'icon'        => $request->icon,
-            'class'       => $request->class,
-            'routes'      => $request->routes,
-            'sort'        => $request->sort,
-            'status'      => $request->status,
-            'updated_by'  => Auth::user()->fullname ?? 'system'
+        // Validate input
+        $validator = Validator::make($request->all(), [
+            'transNo'     => 'sometimes|integer',
+            'desc_code'   => 'sometimes|string|max:255',
+            'description' => 'sometimes|string|max:255',
+            'icon'        => 'sometimes|string|max:255',
+            'class'       => 'nullable|string|max:255',
+            'routes'      => 'sometimes|string|max:255',
+            'sort'        => 'sometimes|integer',
+            'status'      => 'sometimes|boolean',
+            'updated_by'  => 'sometimes|string|max:255'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Update the submenu with validated data
+        $submenu->update($validator->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'Menu updated successfully',
-            'menu'    => $menu
+            'message' => 'Submenu updated successfully',
+            'data' => $submenu
         ]);
     }
 
