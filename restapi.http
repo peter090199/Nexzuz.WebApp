@@ -25,5 +25,10 @@ GET http://127.0.0.1:8000/api/getSubmenuByTransNo/2
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### getAllPostByFollow
+GET http://127.0.0.1:8000/api/getPost
+Authorization: Bearer {{token}}
+Accept: application/json
 
+# https://lightgreen-pigeon-122992.hostingersite.com/public/api/
 
