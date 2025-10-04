@@ -96,7 +96,6 @@ class Submenus extends Controller
     public function updateSubmenuById(Request $request, $id)
     {
         $request->validate([
-            'transNo'     => 'required|integer',
             'description' => 'required|string|max:255',
             'icon'        => 'required|string|max:255',
             'class'       => 'nullable|string|max:255',
@@ -114,7 +113,6 @@ class Submenus extends Controller
             ], 404);
         }
 
-        $submenu->transNo     = $request->input('transNo');
         $submenu->description = $request->input('description');
         $submenu->icon        = $request->input('icon');
         $submenu->class       = $request->input('class');
