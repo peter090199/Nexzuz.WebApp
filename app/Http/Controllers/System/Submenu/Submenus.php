@@ -95,7 +95,7 @@ class Submenus extends Controller
      // Update submenu by ID
     public function updateSubmenuById(Request $request, $id)
     {
-        // ✅ Validate input
+       // ✅ Validate only fields that must be updated
         $request->validate([
             'description' => 'required|string|max:255',
             'icon'        => 'required|string|max:255',
@@ -103,20 +103,21 @@ class Submenus extends Controller
             'routes'      => 'required|string|max:255',
             'sort'        => 'required|integer|min:1',
             'status'      => 'required|string|in:A,I',
+            'desc_code'   => 'nullable|string|max:255', // optional
         ]);
 
-        // ✅ Use findOrFail for cleaner handling
-        $submenu = Submenu::find($id);
+        $menu = Submenu::find($id);
 
-        if (!$submenu) {
+        if (!$menu) {
             return response()->json([
                 'success' => false,
-                'message' => "Submenu with ID {$id} not found."
+                'message' => "Menu with ID {$id} not found."
             ], 404);
         }
 
-        // ✅ Only update allowed fields
-        $submenu->update([
+        // ✅ Update only allowed fields
+        $menu->update([
+            'desc_code'   => $request->desc_code ?? $menu->desc_code,
             'description' => $request->description,
             'icon'        => $request->icon,
             'class'       => $request->class,
@@ -128,8 +129,8 @@ class Submenus extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Submenu updated successfully',
-            'submenu' => $submenu
+            'message' => 'Menu updated successfully',
+            'menu'    => $menu
         ]);
     }
 
