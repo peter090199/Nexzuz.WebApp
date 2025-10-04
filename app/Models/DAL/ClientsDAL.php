@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+
 
 class ClientsDAL extends Model
 {
@@ -420,11 +420,6 @@ class ClientsDAL extends Model
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('People you may know error', [
-                'user_code' => Auth::user()->code,
-                'message' => $e->getMessage()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again later.'
@@ -484,11 +479,6 @@ class ClientsDAL extends Model
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('People you may know error', [
-                'user_code' => Auth::user()->code,
-                'message' => $e->getMessage()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again later.'
@@ -580,11 +570,6 @@ class ClientsDAL extends Model
                 ]);
 
             } catch (\Exception $e) {
-                \Log::error('People you may know error', [
-                    'user_code' => Auth::user()->code,
-                    'message' => $e->getMessage()
-                ]);
-
                 return response()->json([
                     'success' => false,
                     'message' => 'Something went wrong. Please try again later.'
