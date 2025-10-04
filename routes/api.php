@@ -93,8 +93,8 @@
     Route::post('saveMenu', [MenuController::class, 'saveMenu']);
     Route::get('getAllModules', [MenuController::class, 'getAllModules']);
     Route::delete('deleteMenu/{transNo}', [MenuController::class, 'deleteMenu']);
-    Route::put('updateMenuById/{id}', [Submenus::class, 'updateMenuById']);
-    
+    Route::put('updateMenuById/{id}', [MenuController::class, 'updateMenuById']);
+
 
     //submenu
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
