@@ -95,41 +95,40 @@ class Submenus extends Controller
      // Update submenu by ID
     public function updateSubmenuById(Request $request, $id)
     {
-      // Find the submenu by ID
+        $request->validate([
+            'transNo'     => 'required|integer',
+            'description' => 'required|string|max:255',
+            'icon'        => 'required|string|max:255',
+            'class'       => 'nullable|string|max:255',
+            'routes'      => 'required|string|max:255',
+            'sort'        => 'required|integer|min:1',
+            'status'      => 'required|string|in:A,I',
+        ]);
+
         $submenu = Submenu::find($id);
 
         if (!$submenu) {
             return response()->json([
                 'success' => false,
-                'message' => 'Submenu not found.'
+                'message' => 'Submenu not found'
             ], 404);
         }
 
-        // Validate input
-        $validator = Validator::make($request->all(), [
-            'desc_code'   => 'sometimes|string|max:255',
-            'description' => 'sometimes|string|max:255',
-            'icon'        => 'sometimes|string|max:255',
-            'class'       => 'nullable|string|max:255',
-            'routes'      => 'sometimes|string|max:255',
-            'sort'        => 'sometimes|integer',
-            'status'      => 'sometimes|boolean',
-        ]);
+        $submenu->transNo     = $request->input('transNo');
+        $submenu->description = $request->input('description');
+        $submenu->icon        = $request->input('icon');
+        $submenu->class       = $request->input('class');
+        $submenu->route       = $request->input('route'); // note: db column is "route"
+        $submenu->sort        = $request->input('sort');
+        $submenu->status      = $request->input('status');
+        $submenu->updated_by  = Auth::user()->name ?? 'system'; // or $request->user if you pass it
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Update the submenu with validated data
-        $submenu->update($validator->validated());
+        $submenu->save();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Submenu updated successfully',
-            'data' => $submenu
+            'success'  => true,
+            'message'  => 'Submenu updated successfully',
+            'submenu'  => $submenu
         ]);
     }
 
