@@ -107,7 +107,6 @@ class Submenus extends Controller
 
         // Validate input
         $validator = Validator::make($request->all(), [
-            'transNo'     => 'sometimes|integer',
             'desc_code'   => 'sometimes|string|max:255',
             'description' => 'sometimes|string|max:255',
             'icon'        => 'sometimes|string|max:255',
@@ -115,7 +114,6 @@ class Submenus extends Controller
             'routes'      => 'sometimes|string|max:255',
             'sort'        => 'sometimes|integer',
             'status'      => 'sometimes|boolean',
-            'updated_by'  => 'sometimes|string|max:255'
         ]);
 
         if ($validator->fails()) {
