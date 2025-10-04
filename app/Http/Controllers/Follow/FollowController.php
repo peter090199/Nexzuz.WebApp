@@ -144,12 +144,12 @@ class FollowController extends Controller
     }
 
   // Get current user's reaction for a post
-    public function getReactionByPostId($postId)
+    public function getReactionByPostId($id)
     {
         $userCode = Auth::user()->code;
 
         // Check if the post exists
-        $postExists = DB::table('posts')->where('id', $postId)->exists();
+        $postExists = DB::table('posts')->where('id', $id)->exists();
         if (!$postExists) {
             return response()->json([
                 'success' => false,
