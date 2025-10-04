@@ -95,25 +95,34 @@ class FollowController extends Controller
     // }
 
 
-
     public function reactToPostById(Request $request)
     {
-        if (!$request->has('post_id') || is_null($request->post_id)) {
+        $userCode = Auth::user()->code; // authenticated user
+        $postId = $request->post_id;
+        $reactionType = $request->reaction;
+
+        // Check if post_id is provided
+        if (!$postId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Post ID is required'
             ], 400);
         }
 
+        // Check if the post exists in the database
+        $postExists = DB::table('posts')->where('id', $postId)->exists();
+
+        if (!$postExists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found in the database'
+            ], 404);
+        }
+
         // Validate reaction
         $request->validate([
-            'post_id'  => 'integer|exists:posts,id',
             'reaction' => 'required|string|max:50',
         ]);
-
-        $userCode = Auth::user()->code; // authenticated user
-        $postId = $request->post_id;
-        $reactionType = $request->reaction;
 
         // Insert or update reaction
         DB::table('reactionPost')->updateOrInsert(
