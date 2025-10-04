@@ -23,5 +23,20 @@ class Menu extends Model
         'updated_by'
     ];
 
+    public static function updateById($id, $data, $updatedBy = 'system')
+    {
+        $menu = self::find($id);
+
+        if (!$menu) {
+            return null;
+        }
+
+        $menu->fill($data);
+        $menu->updated_by = $updatedBy;
+        $menu->save();
+
+        return $menu;
+    }
+
     
 }

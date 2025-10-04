@@ -1,82 +1,82 @@
-<?php
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Broadcast;
-use  App\Http\Controllers\Lookup\LookupController;
-use  App\Http\Controllers\Auth\LoginController;
-use  App\Http\Controllers\Auth\RegisterController;
-use  App\Http\Controllers\Auth\ForgetpasswordController;
-use  App\Http\Controllers\Auth\ProfileController;
-use  App\Http\Controllers\Auth\ProfilepictureController;
-use  App\Http\Controllers\Auth\PostController;
-use  App\Http\Controllers\Postcomments\CommentController;
-use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
-use App\Http\Controllers\System\Menus\MenuController;
-use App\Http\Controllers\System\Securityroles\SecurityroleController;
-use App\Http\Controllers\System\Roles\RoleController;
-use App\Http\Controllers\SearchAccount\UserController;
-use App\Http\Controllers\Select2\SelectController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\Follow\ClientsBAL;
-use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
-use App\Http\Controllers\CV\UserLanguage;
-use App\Http\Controllers\CV\UserEducations;
-use App\Http\Controllers\CV\UserSkills;
-use App\Http\Controllers\CV\UserSeminars;
-use App\Http\Controllers\CV\UserTrainings;
-use App\Http\Controllers\CV\UserCertificates;
-use App\Http\Controllers\CV\UserWorkExperiences;
-use App\Http\Controllers\Follow\FollowController;
-use App\Http\Controllers\Jobs\JobPostingController;
-use App\Http\Controllers\Jobs\JobListController;
-use App\Http\Controllers\PhoneValidationController;
-use App\Http\Controllers\Jobs\QuestionController;
-use App\Http\Controllers\Jobs\AppliedJobController;
-use App\Http\Controllers\ReactionController;
-use App\Events\MessageSent; 
-use App\Events\Message;
-use App\Events\NotificationCountUpdated;
-use App\Http\Controllers\System\Submenu\Submenus;
+    <?php
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\Broadcast;
+    use  App\Http\Controllers\Lookup\LookupController;
+    use  App\Http\Controllers\Auth\LoginController;
+    use  App\Http\Controllers\Auth\RegisterController;
+    use  App\Http\Controllers\Auth\ForgetpasswordController;
+    use  App\Http\Controllers\Auth\ProfileController;
+    use  App\Http\Controllers\Auth\ProfilepictureController;
+    use  App\Http\Controllers\Auth\PostController;
+    use  App\Http\Controllers\Postcomments\CommentController;
+    use App\Http\Controllers\Accessrolemenu\AccessrolemenuController;
+    use App\Http\Controllers\System\Menus\MenuController;
+    use App\Http\Controllers\System\Securityroles\SecurityroleController;
+    use App\Http\Controllers\System\Roles\RoleController;
+    use App\Http\Controllers\SearchAccount\UserController;
+    use App\Http\Controllers\Select2\SelectController;
+    use App\Http\Controllers\ChatController;
+    use App\Http\Controllers\Follow\ClientsBAL;
+    use App\Http\Controllers\SearchAccount\SearchHistoryBAL;
+    use App\Http\Controllers\CV\UserLanguage;
+    use App\Http\Controllers\CV\UserEducations;
+    use App\Http\Controllers\CV\UserSkills;
+    use App\Http\Controllers\CV\UserSeminars;
+    use App\Http\Controllers\CV\UserTrainings;
+    use App\Http\Controllers\CV\UserCertificates;
+    use App\Http\Controllers\CV\UserWorkExperiences;
+    use App\Http\Controllers\Follow\FollowController;
+    use App\Http\Controllers\Jobs\JobPostingController;
+    use App\Http\Controllers\Jobs\JobListController;
+    use App\Http\Controllers\PhoneValidationController;
+    use App\Http\Controllers\Jobs\QuestionController;
+    use App\Http\Controllers\Jobs\AppliedJobController;
+    use App\Http\Controllers\ReactionController;
+    use App\Events\MessageSent; 
+    use App\Events\Message;
+    use App\Events\NotificationCountUpdated;
+    use App\Http\Controllers\System\Submenu\Submenus;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/  
+    /*
+    |--------------------------------------------------------------------------
+    | API Routes
+    |--------------------------------------------------------------------------
+    |
+    | Here is where you can register API routes for your application. These
+    | routes are loaded by the RouteServiceProvider and all of them will
+    | be assigned to the "api" middleware group. Make something great!
+    |
+    */  
 
-// PUBLIC
-Route::post('login',[LoginController::class,'login'])->name('login');
+    // PUBLIC
+    Route::post('login',[LoginController::class,'login'])->name('login');
 
-Route::post('resetpassword',[ForgetpasswordController::class,'resetpassword'])->name('resetpassword');
+    Route::post('resetpassword',[ForgetpasswordController::class,'resetpassword'])->name('resetpassword');
 
-Route::post('forgetpassword',[ForgetpasswordController::class,'forgetpassword'])->name('forgetpassword');
+    Route::post('forgetpassword',[ForgetpasswordController::class,'forgetpassword'])->name('forgetpassword');
 
-Route::post('register',[RegisterController::class,'register'])->name('register');
+    Route::post('register',[RegisterController::class,'register'])->name('register');
 
-Route::post('accountactivation',[RegisterController::class,'accountactivation'])->name('accountactivation');
+    Route::post('accountactivation',[RegisterController::class,'accountactivation'])->name('accountactivation');
 
-Route::post('send-message', function (Request $request) {
+    Route::post('send-message', function (Request $request) {
     $message = $request->input('message');
 
     event(new MessageSent($message)); // ✅ Corrected event class name
 
     return response()->json(['success' => true, 'message' => $message]);
-});
+    });
 
-Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
+    Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
     return Broadcast::auth(request());
-});
+    });
 
 
-Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
-    
+    Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
+
     Route::get('user', function (Request $request) {return $request->user();});
-    
+
     //logout
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
@@ -93,6 +93,8 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::post('saveMenu', [MenuController::class, 'saveMenu']);
     Route::get('getAllModules', [MenuController::class, 'getAllModules']);
     Route::delete('deleteMenu/{transNo}', [MenuController::class, 'deleteMenu']);
+    Route::put('updateMenuById/{id}', [Submenus::class, 'updateMenuById']);
+    
 
     //submenu
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
@@ -109,39 +111,39 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('userlists',[LookupController::class,'userlists'])->name('userlists');
     //search fullname
     Route::get('searchUsers', [UserController::class, 'searchUsers']);
-   //get Onlineusers
-   Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
- 
-   //chat meesages realtime
-   Route::post('send-message', [ChatController::class, 'sendMessage']);
-   Route::post('messages/read', [ChatController::class, 'markAsRead']);
-   Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
-   Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
-   Route::put('messagesIsread', [ChatController::class, 'markAsReadMessage']);
+    //get Onlineusers
+    Route::get('getIsOnline', [LoginController::class, 'getIsOnline']);
 
-   Route::post('savePost', [PostController::class, 'savePost']);
-   Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
-   Route::get('getDataPost', [PostController::class, 'getDataPost']);
+    //chat meesages realtime
+    Route::post('send-message', [ChatController::class, 'sendMessage']);
+    Route::post('messages/read', [ChatController::class, 'markAsRead']);
+    Route::get('receivemessages/{receiverId}', [ChatController::class, 'fetchMessages']);
+    Route::get('getActiveUsers', [ChatController::class, 'getActiveUsers']);
+    Route::put('messagesIsread', [ChatController::class, 'markAsReadMessage']);
 
-   Route::get('getNotificationsIsUnRead', [ChatController::class, 'getNotificationsIsUnRead']);
-   Route::get('getNotificationsIsRead', [ChatController::class, 'getNotificationsIsRead']);
-  
-   Route::post('messages/mark_allAsread', [ChatController::class, 'markAllAsRead']);
-   Route::get('messages_receive/{receiverId}', [ChatController::class, 'messages_receive']);
-   Route::get('getMessagesAll', [ChatController::class, 'getMessagesAll']);
-   
-   //Post 
-   Route::resource('post',PostController::class)->names('post');
-   Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
-   //Comment
-   Route::resource('comment',CommentController::class)->names('comment');
-   Route::post('commentreply', [CommentController::class, 'commentreply']);
-   //Reactions  
-   Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
-   //Follow  App\Http\Controllers\Follow
-   Route::resource('follow',FollowController::class)->names('follow');
-   Route::get('getPost', [FollowController::class, 'getPost']);
-   
+    Route::post('savePost', [PostController::class, 'savePost']);
+    Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
+    Route::get('getDataPost', [PostController::class, 'getDataPost']);
+
+    Route::get('getNotificationsIsUnRead', [ChatController::class, 'getNotificationsIsUnRead']);
+    Route::get('getNotificationsIsRead', [ChatController::class, 'getNotificationsIsRead']);
+
+    Route::post('messages/mark_allAsread', [ChatController::class, 'markAllAsRead']);
+    Route::get('messages_receive/{receiverId}', [ChatController::class, 'messages_receive']);
+    Route::get('getMessagesAll', [ChatController::class, 'getMessagesAll']);
+
+    //Post 
+    Route::resource('post',PostController::class)->names('post');
+    Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
+    //Comment
+    Route::resource('comment',CommentController::class)->names('comment');
+    Route::post('commentreply', [CommentController::class, 'commentreply']);
+    //Reactions  
+    Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
+    //Follow  App\Http\Controllers\Follow
+    Route::resource('follow',FollowController::class)->names('follow');
+    Route::get('getPost', [FollowController::class, 'getPost']);
+
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
@@ -211,13 +213,13 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     //company profile
     Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
     Route::get('country_codes', function () {
-        $phones = file_get_contents("http://country.io/phone.json");
-        $names = file_get_contents("http://country.io/names.json");
+    $phones = file_get_contents("http://country.io/phone.json");
+    $names = file_get_contents("http://country.io/names.json");
 
-        return response()->json([
-            'phones' => json_decode($phones, true),
-            'names'  => json_decode($names, true),
-        ]);
+    return response()->json([
+    'phones' => json_decode($phones, true),
+    'names'  => json_decode($names, true),
+    ]);
     });
     Route::post('validate_phone', [PhoneValidationController::class, 'validate_phone']);
     //AppliedQuestions
@@ -232,6 +234,6 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('react/{postId}', [ReactionController::class, 'getReactions']);
 
 
-});
+    });
 
-   Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
+    Route::post('saveReaction', [ReactionController::class, 'saveReaction']);

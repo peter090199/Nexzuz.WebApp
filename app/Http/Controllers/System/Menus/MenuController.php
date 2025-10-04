@@ -323,13 +323,85 @@ class MenuController extends Controller
         //
     }
 
+
+    public function updateMenuById(Request $request, $id)
+    {
+        $request->validate([
+            'desc_code' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'icon' => 'required|string|max:255',
+            'class' => 'nullable|string|max:255',
+            'routes' => 'required|string|max:255',
+            'sort' => 'required|integer|min:1',
+            'status' => 'required|string|in:A,I',
+        ]);
+
+        $menu = Menu::updateById(
+            $id,
+            $request->only(['desc_code','description','icon','class','routes','sort','status']),
+            Auth::user()->name ?? 'system'
+        );
+
+        if (!$menu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Menu not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Menu updated successfully',
+            'menu' => $menu
+        ]);
+    }
+
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+
+
+    // public function updateMenuById(Request $request, $id)
+    // {
+    //     $request->validate([
+    //        // 'transNo'     => 'required|integer',
+    //         'desc_code' => 'required|string|max:255',
+    //         'description' => 'required|string|max:255',
+    //         'icon'        => 'required|string|max:255',
+    //         'class'       => 'nullable|string|max:255',
+    //         'routes'      => 'required|string|max:255',
+    //         'sort'        => 'required|integer|min:1',
+    //         'status'      => 'required|string|in:A,I',
+    //     ]);
+
+    //     $data = Menu::find($id);
+
+    //     if (!$data) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Menu not found'
+    //         ], 404);
+    //     }
+
+    //     $data->description     = $request->input('description');
+    //     $data->desc_code = $request->input('desc_code');
+    //     $data->icon        = $request->input('icon');
+    //     $data->class       = $request->input('class');
+    //     $data->routes       = $request->input('routes'); // note: db column is "route"
+    //     $data->sort        = $request->input('sort');
+    //     $data->status      = $request->input('status');
+    //     $subdatamenu->updated_by  = Auth::user()->name ?? 'system'; // or $request->user if you pass it
+    //     $data->save();
+
+    //     return response()->json([
+    //         'success'  => true,
+    //         'message'  => 'Menu updated successfully',
+    //         'submenu'  => $data
+    //     ]);
+    // }
+
+    
 
     /**
      * Remove the specified resource from storage.
