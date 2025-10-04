@@ -16,83 +16,117 @@ use Illuminate\Support\Facades\DB;
 
 class FollowController extends Controller
 {
-    public function getPostxx()
+    // public function getPostxx()
+    // {
+    //     $currentUserCode = Auth::user()->code;
+
+    //     // 1️⃣ Fetch posts related to user or accepted follows
+    //     $posts = DB::table('posts as p')
+    //         ->leftJoin('follows as f1', function ($join) use ($currentUserCode) {
+    //             $join->on('f1.following_code', '=', 'p.code')
+    //                 ->where('f1.follower_code', '=', $currentUserCode)
+    //                 ->where('f1.follow_status', '=', 'accepted');
+    //         })
+    //         ->leftJoin('follows as f2', function ($join) use ($currentUserCode) {
+    //             $join->on('f2.follower_code', '=', 'p.code')
+    //                 ->where('f2.following_code', '=', $currentUserCode)
+    //                 ->where('f2.follow_status', '=', 'accepted');
+    //         })
+    //         ->where('p.status', 1)
+    //         ->where(function ($query) use ($currentUserCode) {
+    //             $query->whereNotNull('f1.follower_code')
+    //                 ->orWhereNotNull('f2.following_code')
+    //                 ->orWhere('p.code', '=', $currentUserCode);
+    //         })
+    //         ->orderByDesc('p.created_at')
+    //         ->select('p.id', 'p.posts_uuid', 'p.caption', 'p.status', 'p.created_at', 'p.updated_at', 'p.code as post_owner')
+    //         ->limit(50) // optional for faster load
+    //         ->get();
+
+    //     if ($posts->isEmpty()) {
+    //         return response()->json(['success' => true, 'data' => []]);
+    //     }
+
+    //     $userCodes = $posts->pluck('post_owner')->unique();
+    //     $postUuids = $posts->pluck('posts_uuid');
+
+    //     // 2️⃣ Fetch user info
+    //     $users = DB::table('users')
+    //         ->whereIn('code', $userCodes)
+    //         ->select([
+    //             'code',
+    //             DB::raw("IFNULL(full_name, 'Unknown User') AS fullname"), // adjust column if needed
+    //             DB::raw("IFNULL(photo, '') AS profile_pic") // adjust column if needed
+    //         ])
+    //         ->get()
+    //         ->keyBy('code');
+
+    //     // 3️⃣ Fetch attachments
+    //     $attachments = DB::table('attachmentposts')
+    //         ->whereIn('posts_uuid', $postUuids)
+    //         ->where('status', 1)
+    //         ->select('posts_uuid', 'posts_type', 'file_url') // replace file_url if different
+    //         ->get()
+    //         ->groupBy('posts_uuid');
+
+    //     // 4️⃣ Map posts to include user info and attachments
+    //     $result = $posts->map(function ($post) use ($users, $attachments) {
+    //         $user = $users[$post->post_owner] ?? null;
+    //         $files = $attachments[$post->posts_uuid] ?? collect();
+
+    //         return [
+    //             'id'          => $post->id,
+    //             'posts_uuid'  => $post->posts_uuid,
+    //             'caption'     => $post->caption,
+    //             'status'      => $post->status,
+    //             'created_at'  => $post->created_at,
+    //             'updated_at'  => $post->updated_at,
+    //             'fullname'    => $user->fullname ?? 'Unknown User',
+    //             'profile_pic' => $user->profile_pic ?? '',
+    //             'images'      => $files->where('posts_type', 'image')->pluck('file_url')->values(),
+    //             'videos'      => $files->where('posts_type', 'video')->pluck('file_url')->values(),
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $result,
+    //     ]);
+    // }
+
+
+
+    public function reactToPostById(Request $request)
     {
-        $currentUserCode = Auth::user()->code;
+        $request->validate([
+            'post_id'  => 'required|integer|exists:posts,id',
+            'reaction' => 'required|string|max:50',
+        ]);
 
-        // 1️⃣ Fetch posts related to user or accepted follows
-        $posts = DB::table('posts as p')
-            ->leftJoin('follows as f1', function ($join) use ($currentUserCode) {
-                $join->on('f1.following_code', '=', 'p.code')
-                    ->where('f1.follower_code', '=', $currentUserCode)
-                    ->where('f1.follow_status', '=', 'accepted');
-            })
-            ->leftJoin('follows as f2', function ($join) use ($currentUserCode) {
-                $join->on('f2.follower_code', '=', 'p.code')
-                    ->where('f2.following_code', '=', $currentUserCode)
-                    ->where('f2.follow_status', '=', 'accepted');
-            })
-            ->where('p.status', 1)
-            ->where(function ($query) use ($currentUserCode) {
-                $query->whereNotNull('f1.follower_code')
-                    ->orWhereNotNull('f2.following_code')
-                    ->orWhere('p.code', '=', $currentUserCode);
-            })
-            ->orderByDesc('p.created_at')
-            ->select('p.id', 'p.posts_uuid', 'p.caption', 'p.status', 'p.created_at', 'p.updated_at', 'p.code as post_owner')
-            ->limit(50) // optional for faster load
-            ->get();
+        $userCode = Auth::user()->code; // your authenticated user
+        $postId = $request->post_id;
+        $reactionType = $request->reaction;
 
-        if ($posts->isEmpty()) {
-            return response()->json(['success' => true, 'data' => []]);
-        }
-
-        $userCodes = $posts->pluck('post_owner')->unique();
-        $postUuids = $posts->pluck('posts_uuid');
-
-        // 2️⃣ Fetch user info
-        $users = DB::table('users')
-            ->whereIn('code', $userCodes)
-            ->select([
-                'code',
-                DB::raw("IFNULL(full_name, 'Unknown User') AS fullname"), // adjust column if needed
-                DB::raw("IFNULL(photo, '') AS profile_pic") // adjust column if needed
-            ])
-            ->get()
-            ->keyBy('code');
-
-        // 3️⃣ Fetch attachments
-        $attachments = DB::table('attachmentposts')
-            ->whereIn('posts_uuid', $postUuids)
-            ->where('status', 1)
-            ->select('posts_uuid', 'posts_type', 'file_url') // replace file_url if different
-            ->get()
-            ->groupBy('posts_uuid');
-
-        // 4️⃣ Map posts to include user info and attachments
-        $result = $posts->map(function ($post) use ($users, $attachments) {
-            $user = $users[$post->post_owner] ?? null;
-            $files = $attachments[$post->posts_uuid] ?? collect();
-
-            return [
-                'id'          => $post->id,
-                'posts_uuid'  => $post->posts_uuid,
-                'caption'     => $post->caption,
-                'status'      => $post->status,
-                'created_at'  => $post->created_at,
-                'updated_at'  => $post->updated_at,
-                'fullname'    => $user->fullname ?? 'Unknown User',
-                'profile_pic' => $user->profile_pic ?? '',
-                'images'      => $files->where('posts_type', 'image')->pluck('file_url')->values(),
-                'videos'      => $files->where('posts_type', 'video')->pluck('file_url')->values(),
-            ];
-        });
+        // Insert or update reaction
+        DB::table('reactionPost')->updateOrInsert(
+            [
+                'post_id' => $postId,
+                'code'    => $userCode,
+            ],
+            [
+                'reaction'        => $reactionType,
+                'post_uuidOrUind' => null, // optional, can set if needed
+                'updated_at'      => now(),
+                'create_at'       => now(), // match your column name
+            ]
+        );
 
         return response()->json([
             'success' => true,
-            'data' => $result,
+            'message' => 'Reaction saved successfully',
         ]);
     }
+
 
 
     public function getPost()

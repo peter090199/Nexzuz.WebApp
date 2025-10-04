@@ -139,6 +139,8 @@
     //Post 
     Route::resource('post',PostController::class)->names('post');
     Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
+    Route::post('reactToPostById', [FollowController::class, 'reactToPostById']);
+
     //Comment
     Route::resource('comment',CommentController::class)->names('comment');
     Route::post('commentreply', [CommentController::class, 'commentreply']);
