@@ -153,7 +153,7 @@ class Submenus extends Controller
                 'desccode' => $submenu->desc_code,
                 'description' => $submenu->description,
                 'icon' => $submenu->icon,
-                'route' => $submenu->routes,
+                'routes' => $submenu->routes,
                 'class' => $submenu->class,
                 'sort' => $submenu->sort,
                 'status' => $submenu->status,
