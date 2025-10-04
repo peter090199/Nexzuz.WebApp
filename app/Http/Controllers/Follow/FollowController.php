@@ -98,12 +98,20 @@ class FollowController extends Controller
 
     public function reactToPostById(Request $request)
     {
+        if (!$request->has('post_id') || is_null($request->post_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post ID is required'
+            ], 400);
+        }
+
+        // Validate reaction
         $request->validate([
-            'post_id'  => 'required|integer|exists:posts,id',
+            'post_id'  => 'integer|exists:posts,id',
             'reaction' => 'required|string|max:50',
         ]);
 
-        $userCode = Auth::user()->code; // your authenticated user
+        $userCode = Auth::user()->code; // authenticated user
         $postId = $request->post_id;
         $reactionType = $request->reaction;
 
@@ -114,10 +122,9 @@ class FollowController extends Controller
                 'code'    => $userCode,
             ],
             [
-                'reaction'        => $reactionType,
-                'post_uuidOrUind' => null, // optional, can set if needed
-                'updated_at'      => now(),
-                'create_at'       => now(), // match your column name
+                'reaction'   => $reactionType,
+                'updated_at' => now(),
+                'create_at'  => now(),
             ]
         );
 
@@ -126,8 +133,6 @@ class FollowController extends Controller
             'message' => 'Reaction saved successfully',
         ]);
     }
-
-
 
     public function getPost()
     {
