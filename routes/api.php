@@ -75,9 +75,7 @@ Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
 
 Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     
-    Route::get('user', function (Request $request) {
-        return $request->user(); 
-    });
+    Route::get('user', function (Request $request) {return $request->user();});
     
     //logout
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
@@ -100,6 +98,7 @@ Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('getSubmenuByTransNo/{transNo}', [Submenus::class, 'getSubmenuByMenuTransNo']);
     Route::delete('deleteSubmenu/{id}', [Submenus::class, 'deleteSubmenu']);
     Route::post('saveSubmenus', [Submenus::class, 'saveSubmenus']);
+    Route::put('updateSubmenuById/{id}', [Submenus::class, 'updateSubmenuById']);
     // Security roles
     Route::Resource('security',SecurityroleController::class)->names('security');
     //Role

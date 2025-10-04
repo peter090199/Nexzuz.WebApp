@@ -92,6 +92,46 @@ class Submenus extends Controller
         }
     }
     
+     // Update submenu by ID
+    public function updateSubmenuById(Request $request, $id)
+    {
+        $request->validate([
+            'transNo'     => 'required|integer',
+            'description' => 'required|string|max:255',
+            'icon'        => 'required|string|max:255',
+            'class'       => 'nullable|string|max:255',
+            'routes'      => 'required|string|max:255',
+            'sort'        => 'required|integer|min:1',
+            'status'      => 'required|string|in:A,I',
+        ]);
+
+        $submenu = Submenu::find($id);
+
+        if (!$submenu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Submenu not found'
+            ], 404);
+        }
+
+        $submenu->transNo     = $request->input('transNo');
+        $submenu->description = $request->input('description');
+        $submenu->icon        = $request->input('icon');
+        $submenu->class       = $request->input('class');
+        $submenu->route       = $request->input('routes'); // note: db column is "route"
+        $submenu->sort        = $request->input('sort');
+        $submenu->status      = $request->input('status');
+        $submenu->updated_by  = Auth::user()->name ?? 'system'; // or $request->user if you pass it
+
+        $submenu->save();
+
+        return response()->json([
+            'success'  => true,
+            'message'  => 'Submenu updated successfully',
+            'submenu'  => $submenu
+        ]);
+    }
+
     
     public function getSubmenuByMenuTransNo($transNo)
     {
