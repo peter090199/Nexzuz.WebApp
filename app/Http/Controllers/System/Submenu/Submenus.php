@@ -95,6 +95,7 @@ class Submenus extends Controller
      // Update submenu by ID
     public function updateSubmenuById(Request $request, $id)
     {
+        // ✅ Validate input
         $request->validate([
             'description' => 'required|string|max:255',
             'icon'        => 'required|string|max:255',
@@ -104,28 +105,31 @@ class Submenus extends Controller
             'status'      => 'required|string|in:A,I',
         ]);
 
+        // ✅ Use findOrFail for cleaner handling
         $submenu = Submenu::find($id);
 
         if (!$submenu) {
             return response()->json([
                 'success' => false,
-                'message' => 'Submenu not found'
+                'message' => "Submenu with ID {$id} not found."
             ], 404);
         }
 
-        $submenu->description = $request->input('description');
-        $submenu->icon        = $request->input('icon');
-        $submenu->class       = $request->input('class');
-        $submenu->routes       = $request->input('routes'); 
-        $submenu->sort        = $request->input('sort');
-        $submenu->status      = $request->input('status');
-        $submenu->updated_by  = Auth::user()->fullname ?? 'system'; 
-        $submenu->save();
+        // ✅ Only update allowed fields
+        $submenu->update([
+            'description' => $request->description,
+            'icon'        => $request->icon,
+            'class'       => $request->class,
+            'routes'      => $request->routes,
+            'sort'        => $request->sort,
+            'status'      => $request->status,
+            'updated_by'  => Auth::user()->fullname ?? 'system'
+        ]);
 
         return response()->json([
-            'success'  => true,
-            'message'  => 'Submenu updated successfully',
-            'submenu'  => $submenu
+            'success' => true,
+            'message' => 'Submenu updated successfully',
+            'submenu' => $submenu
         ]);
     }
 
