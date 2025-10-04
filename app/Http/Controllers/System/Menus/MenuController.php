@@ -88,7 +88,7 @@ class MenuController extends Controller
         $menu = Menu::updateById(
             $id,
             $request->only(['desc_code','description','icon','class','routes','sort','status']),
-            Auth::user()->name ?? 'system'
+            Auth::user()->fullname ?? 'system'
         );
 
         if (!$menu) {
