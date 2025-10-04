@@ -154,6 +154,7 @@ class Submenus extends Controller
                 'description' => $submenu->description,
                 'icon' => $submenu->icon,
                 'route' => $submenu->routes,
+                'class' => $submenu->class,
                 'sort' => $submenu->sort,
                 'status' => $submenu->status,
                 'updated_by' => $submenu->updated_by,
