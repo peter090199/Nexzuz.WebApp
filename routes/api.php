@@ -37,6 +37,7 @@
     use App\Events\Message;
     use App\Events\NotificationCountUpdated;
     use App\Http\Controllers\System\Submenu\Submenus;
+    use App\Http\Controllers\System\Users\AppUsersController;
 
     /*
     |--------------------------------------------------------------------------
@@ -74,7 +75,6 @@
 
 
     Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
-
     Route::get('user', function (Request $request) {return $request->user();});
 
     //logout
@@ -85,9 +85,13 @@
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
     Route::resource('profile_pic',ProfilepictureController::class)->names('profile_pic');
-    // Accessrolemenu
-    // User access to the menu depends on their role. GET 
+
+    //accessmenu
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
+
+    //users
+    Route::get('getUsers', [AppUsersController::class, 'getUsers']);
+
     // Menus
     Route::Resource('menu',MenuController::class)->names('menu');
     Route::post('saveMenu', [MenuController::class, 'saveMenu']);
