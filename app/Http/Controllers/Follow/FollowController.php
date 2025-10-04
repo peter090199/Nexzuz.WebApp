@@ -161,14 +161,13 @@ class FollowController extends Controller
         $reaction = DB::table('reactionPost')
             ->where('post_id', $postId)
             ->where('code', $userCode)
-            ->value('reaction'); // directly get the reaction value
+            ->value('reaction'); // returns null if no reaction
 
         return response()->json([
             'success'  => true,
-            'reaction' => $reaction // null if no reaction yet
+            'reaction' => $reaction
         ]);
     }
-
     
     public function getPost()
     {
