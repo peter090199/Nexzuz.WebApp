@@ -140,6 +140,7 @@
     Route::resource('post',PostController::class)->names('post');
     Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
     Route::post('reactToPostById', [FollowController::class, 'reactToPostById']);
+    Route::get('getReactionByPostId/{postId}', [FollowController::class, 'getReactionByPostId']);
 
     //Comment
     Route::resource('comment',CommentController::class)->names('comment');

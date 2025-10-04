@@ -143,6 +143,22 @@ class FollowController extends Controller
         ]);
     }
 
+  // Get current user's reaction for a post
+    public function getReactionByPostId(Request $request, $postId)
+    {
+        $userCode = Auth::user()->code;
+
+        $reaction = DB::table('reactionPost')
+            ->where('post_id', $postId)
+            ->where('code', $userCode)
+            ->first();
+
+        return response()->json([
+            'success'  => true,
+            'reaction' => $reaction ? $reaction->reaction : null
+        ]);
+    }
+    
     public function getPost()
     {
         $currentUserCode = Auth::user()->code;
