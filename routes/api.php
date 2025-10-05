@@ -148,12 +148,11 @@
 
     //Reactions  
     Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
-    Route::get('getReactionPost', [ReactionController::class, 'getReactionPost']);
+    Route::get('getReactionPost/{post_id}', [ReactionController::class, 'getReactionPost']);
 
     //Follow  App\Http\Controllers\Follow
     Route::resource('follow',FollowController::class)->names('follow');
     Route::get('getPost', [FollowController::class, 'getPost']);
-
 
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
     //List clients base on rrofile
