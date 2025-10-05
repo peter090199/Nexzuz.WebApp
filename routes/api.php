@@ -136,6 +136,9 @@
     Route::get('messages_receive/{receiverId}', [ChatController::class, 'messages_receive']);
     Route::get('getMessagesAll', [ChatController::class, 'getMessagesAll']);
 
+    //Reactions
+    Route::get('getReactionPost', [FollowController::class, 'getReactionPost']);
+
     //Post 
     Route::resource('post',PostController::class)->names('post');
     Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
@@ -151,7 +154,7 @@
     Route::resource('follow',FollowController::class)->names('follow');
     Route::get('getPost', [FollowController::class, 'getPost']);
 
-    
+
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
