@@ -151,6 +151,7 @@
     Route::resource('follow',FollowController::class)->names('follow');
     Route::get('getPost', [FollowController::class, 'getPost']);
 
+    
     // Route::post('/post-attachment/{id}', [PostController::class, 'deleteIndividualPost']);
     //List clients base on rrofile
     Route::get('getListClients', [ClientsBAL::class, 'getListClients']);
