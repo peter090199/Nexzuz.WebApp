@@ -148,7 +148,7 @@
 
     //Reactions  
     Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
-    Route::get('getReactionPost', [App\Http\Controllers\PostReaction\ReactionPostMainController::class, 'getReactionPost']);
+    Route::get('getReactionPost', [ReactionController::class, 'getReactionPost']);
 
     //Follow  App\Http\Controllers\Follow
     Route::resource('follow',FollowController::class)->names('follow');
