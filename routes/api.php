@@ -38,7 +38,6 @@
     use App\Events\NotificationCountUpdated;
     use App\Http\Controllers\System\Submenu\Submenus;
     use App\Http\Controllers\System\Users\AppUsersController;
-    use App\Http\Controllers\Postreaction\PostreactionController;
     /*
     |--------------------------------------------------------------------------
     | API Routes
@@ -148,7 +147,7 @@
 
     //Reactions  
     Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
-    Route::get('getReactionPost', [PostreactionController::class, 'getReactionPost']);
+    Route::get('getReactionPost', [App\Http\Controllers\Postreaction\PostreactionController::class, 'getReactionPost']);
 
     //Follow  App\Http\Controllers\Follow
     Route::resource('follow',FollowController::class)->names('follow');
