@@ -38,7 +38,7 @@
     use App\Events\NotificationCountUpdated;
     use App\Http\Controllers\System\Submenu\Submenus;
     use App\Http\Controllers\System\Users\AppUsersController;
-
+    use App\Http\Controllers\Postreaction\PostreactionController;
     /*
     |--------------------------------------------------------------------------
     | API Routes
@@ -136,9 +136,6 @@
     Route::get('messages_receive/{receiverId}', [ChatController::class, 'messages_receive']);
     Route::get('getMessagesAll', [ChatController::class, 'getMessagesAll']);
 
-    //Reactions
-    Route::get('getReactionPost', [FollowController::class, 'getReactionPost']);
-
     //Post 
     Route::resource('post',PostController::class)->names('post');
     Route::post('deleteindidualpost/{id}', [PostController::class, 'deleteIndividualPost']);
@@ -148,8 +145,11 @@
     //Comment
     Route::resource('comment',CommentController::class)->names('comment');
     Route::post('commentreply', [CommentController::class, 'commentreply']);
+
     //Reactions  
     Route::resource('reaction',App\Http\Controllers\Postreaction\PostreactionController::class)->names('reaction');
+    Route::get('getReactionPost', [PostreactionController::class, 'getReactionPost']);
+
     //Follow  App\Http\Controllers\Follow
     Route::resource('follow',FollowController::class)->names('follow');
     Route::get('getPost', [FollowController::class, 'getPost']);
