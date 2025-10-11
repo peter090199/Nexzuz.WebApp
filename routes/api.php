@@ -77,6 +77,11 @@
     Route::middleware(['auth:sanctum','checkstatus'])->group(function () {
     Route::get('user', function (Request $request) {return $request->user();});
 
+    //accessmenu
+    // Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
+    Route::get('accessmenu', [AccessrolemenuController::class, 'accessmenu'])
+    ->middleware('throttle:200,1');
+
     //logout
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
@@ -86,8 +91,6 @@
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
     Route::resource('profile_pic',ProfilepictureController::class)->names('profile_pic');
 
-    //accessmenu
-    Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
 
     //users
     Route::get('getUsers', [AppUsersController::class, 'getUsers']);
