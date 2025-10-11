@@ -12,13 +12,82 @@ use App\Models\Roleaccesssubmenu;
 use App\Models\Submenu;
 use App\Models\Menu;
 use DB;
+use Illuminate\Support\Facades\Cache;
 
 class AccessrolemenuController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-   // REVISED CODE
+  public function getModule(Request $request)
+    {
+        // ✅ Check authentication
+        if (!Auth::check()) {
+            return response("authenticated", 401);
+        }
+
+        $roleCode = Auth::user()->role_code;
+        $descCode = $request->input('desc_code');
+
+        // ✅ Cache results for this role + desc_code for 5 minutes
+        $cacheKey = "accessmenu_{$roleCode}_{$descCode}";
+        return Cache::remember($cacheKey, 300, function () use ($roleCode, $descCode) {
+
+            // ✅ Get all allowed menu IDs for this role
+            $roleMenus = Roleaccessmenu::where('rolecode', $roleCode)->pluck('menus_id', 'transNo');
+
+            // ✅ Fetch all menus in one query
+            $menus = Menu::whereIn('id', $roleMenus->values())
+                ->where('status', 'A')
+                ->where('desc_code', $descCode)
+                ->orderBy('sort')
+                ->get();
+
+            // ✅ Get all submenu access for this role (one query)
+            $roleSubmenus = Roleaccesssubmenu::where('rolecode', $roleCode)->get();
+
+            // ✅ Get all submenu IDs used by role
+            $submenuIds = $roleSubmenus->pluck('submenus_id');
+
+            // ✅ Fetch all submenus in one query
+            $submenus = Submenu::whereIn('id', $submenuIds)
+                ->where('status', 'A')
+                ->where('desc_code', $descCode)
+                ->orderBy('sort')
+                ->get()
+                ->groupBy('id');
+
+            // ✅ Build structured result
+            $result = $menus->map(function ($menu) use ($roleMenus, $roleSubmenus, $submenus) {
+                $subList = [];
+
+                // Find all submodules for this menu's transaction number
+                $transNo = $roleMenus->search($menu->id);
+                $subsForMenu = $roleSubmenus->where('transNo', $transNo);
+
+                foreach ($subsForMenu as $sub) {
+                    $found = $submenus->get($sub->submenus_id);
+                    if ($found) {
+                        $item = $found->first();
+                        $subList[] = [
+                            "description" => $item->description,
+                            "icon" => $item->icon,
+                            "route" => $item->routes,
+                            "sort" => $item->sort
+                        ];
+                    }
+                }
+
+                return [
+                    "description" => $menu->description,
+                    "icon" => $menu->icon,
+                    "route" => $menu->routes,
+                    "sort" => $menu->sort,
+                    "submenus" => collect($subList)->sortBy('sort')->values()->toArray()
+                ];
+            })->sortBy('sort')->values();
+
+            return response()->json($result);
+        });
+    }
+
    public function index(Request $request)
    {
 

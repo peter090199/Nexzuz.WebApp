@@ -78,13 +78,9 @@
     Route::get('user', function (Request $request) {return $request->user();});
 
     //accessmenu
-    // Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
+    Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
+    Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
 
- 
-    Route::get('accessmenu', [AccessrolemenuController::class, 'index'])
-        ->middleware('throttle:200,1')
-        ->name('accessmenu.index');
-    //logout
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
 
