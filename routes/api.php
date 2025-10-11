@@ -79,12 +79,7 @@
 
     //accessmenu
     // Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
-    // Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
-    Route::middleware(['throttle:200,1'])->group(function () {
-        Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
-        // Add other APIs here
-    });
-
+    Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
 
