@@ -78,8 +78,8 @@
     Route::get('user', function (Request $request) {return $request->user();});
 
     //accessmenu
-    // Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
-    Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
+    Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
+    // Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
 
 
