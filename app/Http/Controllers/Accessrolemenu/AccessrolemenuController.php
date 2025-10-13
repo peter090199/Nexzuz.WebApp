@@ -88,73 +88,73 @@ class AccessrolemenuController extends Controller
         });
     }
 
-   public function index(Request $request)
-   {
+    public function index(Request $request)
+    {
 
-        if (Auth::check()) {
-            $modules = Roleaccessmenu::where('rolecode', Auth::user()->role_code)->get(); 
+            if (Auth::check()) {
+                $modules = Roleaccessmenu::where('rolecode', Auth::user()->role_code)->get(); 
 
-            $result = [];
-            for ($m = 0; $m < count($modules); $m++) {
-                
-                $menus = Menu::where('id', $modules[$m]->menus_id)
-                    ->where('status', 'A')
-                    ->where('desc_code', $request->desc_code)
-                    ->orderBy('sort')
-                    ->get();
-
-            
-                for ($me = 0; $me < count($menus); $me++) {
+                $result = [];
+                for ($m = 0; $m < count($modules); $m++) {
                     
-                    $submodule = Roleaccesssubmenu::where([
-                        ['rolecode', Auth::user()->role_code],
-                        ['transNo', $modules[$m]->transNo]
-                    ])->get();
-
-                    // Initialize an empty submenus array
-                    $sub = [];
-
-            
-                    for ($sb = 0; $sb < count($submodule); $sb++) {
-                        $submenus = Submenu::where('id', $submodule[$sb]->submenus_id)
-                            ->where('status', 'A')
-                            ->where('desc_code', $request->desc_code)
-                            ->orderBy('sort')
-                            ->get();
-                        for ($su = 0; $su < count($submenus); $su++) {
-                            $sub[] = [
-                                "description" => $submenus[$su]->description,
-                                "icon" => $submenus[$su]->icon,
-                                "route" => $submenus[$su]->routes,
-                                "sort" => $submenus[$su]->sort
-                            ];
-                        }
-                    }
+                    $menus = Menu::where('id', $modules[$m]->menus_id)
+                        ->where('status', 'A')
+                        ->where('desc_code', $request->desc_code)
+                        ->orderBy('sort')
+                        ->get();
 
                 
-                    $result[] = [
-                        "description" => $menus[$me]->description,
-                        "icon" => $menus[$me]->icon,
-                        "route" => $menus[$me]->routes,
-                        "sort" => $menus[$me]->sort,
-                        "submenus" => $sub
-                    ];
+                    for ($me = 0; $me < count($menus); $me++) {
+                        
+                        $submodule = Roleaccesssubmenu::where([
+                            ['rolecode', Auth::user()->role_code],
+                            ['transNo', $modules[$m]->transNo]
+                        ])->get();
+
+                        // Initialize an empty submenus array
+                        $sub = [];
+
+                
+                        for ($sb = 0; $sb < count($submodule); $sb++) {
+                            $submenus = Submenu::where('id', $submodule[$sb]->submenus_id)
+                                ->where('status', 'A')
+                                ->where('desc_code', $request->desc_code)
+                                ->orderBy('sort')
+                                ->get();
+                            for ($su = 0; $su < count($submenus); $su++) {
+                                $sub[] = [
+                                    "description" => $submenus[$su]->description,
+                                    "icon" => $submenus[$su]->icon,
+                                    "route" => $submenus[$su]->routes,
+                                    "sort" => $submenus[$su]->sort
+                                ];
+                            }
+                        }
+
+                    
+                        $result[] = [
+                            "description" => $menus[$me]->description,
+                            "icon" => $menus[$me]->icon,
+                            "route" => $menus[$me]->routes,
+                            "sort" => $menus[$me]->sort,
+                            "submenus" => $sub
+                        ];
+                    }
                 }
+
+            
+                usort($result, function($a, $b) {
+                    return $a['sort'] <=> $b['sort'];
+                });
+
+                return response()->json($result);
+            } else {
+                return response("authenticated");
             }
 
-        
-            usort($result, function($a, $b) {
-                return $a['sort'] <=> $b['sort'];
-            });
 
-            return response()->json($result);
-        } else {
-            return response("authenticated");
-        }
-
-
-        
-   }
+            
+    }
     /**
      * Show the form for creating a new resource.
      */
