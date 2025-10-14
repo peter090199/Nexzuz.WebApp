@@ -19,6 +19,7 @@ class UserController extends Controller
             ->leftJoin('userskills', 'userskills.code', '=', 'users.code')
             ->select(
                 'users.code', 
+                'users.role_code',
                 'users.status', 
                 'users.fullname', 
                 'users.is_online', 
@@ -32,7 +33,7 @@ class UserController extends Controller
                       ->orWhere('userskills.skills', 'LIKE', "%$search%");
                 });
             })
-            ->groupBy('users.code', 'users.status', 'users.fullname', 'users.is_online') // ✅ Ensure all selected fields are grouped
+            ->groupBy('users.code','users.role_code','users.status', 'users.fullname', 'users.is_online') // ✅ Ensure all selected fields are grouped
             ->orderByRaw("
                 CASE 
                     WHEN users.fullname = ? THEN 1 
