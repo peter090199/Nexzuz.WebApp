@@ -174,10 +174,11 @@ class FollowController extends Controller
         $currentUserCode = Auth::user()->code;
         $page = $request->query('page', 1);
         $perPage = $request->query('per_page', 5);
+        $since = $request->query('since'); // new posts timestamp
         $offset = ($page - 1) * $perPage;
 
-        $data = DB::select(
-            '
+        // Build base query
+        $query = '
             SELECT 
                 (SELECT getUserprofilepic(p.code)) AS profile_pic,
                 (SELECT getFullname(p.code)) AS fullname,
@@ -199,21 +200,35 @@ class FollowController extends Controller
                 OR f2.following_code IS NOT NULL
                 OR p.code = ?
             )
-            ORDER BY p.created_at DESC
-            LIMIT ? OFFSET ?
-            ',
-            [$currentUserCode, $currentUserCode, $currentUserCode, $perPage, $offset]
-        );
+        ';
+
+        $bindings = [$currentUserCode, $currentUserCode, $currentUserCode];
+
+        // If fetching new posts only
+        if ($since) {
+            $query .= ' AND p.created_at > ?';
+            $bindings[] = $since;
+        }
+
+        $query .= ' ORDER BY p.created_at DESC';
+
+        // Apply pagination only if not fetching new posts
+        if (!$since) {
+            $query .= ' LIMIT ? OFFSET ?';
+            $bindings[] = $perPage;
+            $bindings[] = $offset;
+        }
+
+        $data = DB::select($query, $bindings);
 
         $result = [];
 
         foreach ($data as $post) {
-            // Get attachments for post
             $attachments = DB::table('attachmentposts')
                 ->where('posts_uuid', $post->posts_uuid)
-                ->where(function($query) use ($currentUserCode) {
-                    $query->where('status', 1)
-                          ->orWhere('code', $currentUserCode);
+                ->where(function($q) use ($currentUserCode) {
+                    $q->where('status', 1)
+                      ->orWhere('code', $currentUserCode);
                 })
                 ->get();
 
@@ -239,70 +254,140 @@ class FollowController extends Controller
             'data' => $result
         ]);
     }
-    
-    public function getPost()
-    {
-        $currentUserCode = Auth::user()->code;
+    // public function getFollowedPosts(Request $request)
+    // {
+    //     $currentUserCode = Auth::user()->code;
+    //     $page = $request->query('page', 1);
+    //     $perPage = $request->query('per_page', 5);
+    //     $offset = ($page - 1) * $perPage;
 
-        $data = DB::select('
-            SELECT 
-                (SELECT getUserprofilepic(p.code)) AS profile_pic,
-                (SELECT getFullname(p.code)) AS fullname,
-                p.id,
-                p.posts_uuid,
-                p.caption,
-                p.status,
-                p.created_at,
-                p.updated_at,
-                p.code AS post_owner
-            FROM posts AS p
-            LEFT JOIN follows AS f1 
-                ON f1.following_code = p.code AND f1.follower_code = ? AND f1.follow_status = "accepted"
-            LEFT JOIN follows AS f2 
-                ON f2.follower_code = p.code AND f2.following_code = ? AND f2.follow_status = "accepted"
-            WHERE p.status = 1
-            AND (
-                f1.follower_code IS NOT NULL
-                OR f2.following_code IS NOT NULL
-                OR p.code = ?
-            )
-            ORDER BY p.created_at DESC
-        ', [$currentUserCode, $currentUserCode, $currentUserCode]);
+    //     $data = DB::select(
+    //         '
+    //         SELECT 
+    //             (SELECT getUserprofilepic(p.code)) AS profile_pic,
+    //             (SELECT getFullname(p.code)) AS fullname,
+    //             p.id,
+    //             p.posts_uuid,
+    //             p.caption,
+    //             p.status,
+    //             p.created_at,
+    //             p.updated_at,
+    //             p.code AS post_owner
+    //         FROM posts AS p
+    //         LEFT JOIN follows AS f1 
+    //             ON f1.following_code = p.code AND f1.follower_code = ? AND f1.follow_status = "accepted"
+    //         LEFT JOIN follows AS f2 
+    //             ON f2.follower_code = p.code AND f2.following_code = ? AND f2.follow_status = "accepted"
+    //         WHERE p.status = 1
+    //         AND (
+    //             f1.follower_code IS NOT NULL
+    //             OR f2.following_code IS NOT NULL
+    //             OR p.code = ?
+    //         )
+    //         ORDER BY p.created_at DESC
+    //         LIMIT ? OFFSET ?
+    //         ',
+    //         [$currentUserCode, $currentUserCode, $currentUserCode, $perPage, $offset]
+    //     );
 
-        $result = [];
+    //     $result = [];
 
-        foreach ($data as $post) {
-            // Fetch attachments grouped by type
-            $attachments = DB::table('attachmentposts')
-                ->where('posts_uuid', $post->posts_uuid)
-                ->where(function($query) use ($currentUserCode, $post) {
-                    $query->where('status', 1)
-                        ->orWhere('code', $currentUserCode);
-                })
-                ->get();
+    //     foreach ($data as $post) {
+    //         // Get attachments for post
+    //         $attachments = DB::table('attachmentposts')
+    //             ->where('posts_uuid', $post->posts_uuid)
+    //             ->where(function($query) use ($currentUserCode) {
+    //                 $query->where('status', 1)
+    //                       ->orWhere('code', $currentUserCode);
+    //             })
+    //             ->get();
 
-            $images = $attachments->where('posts_type', 'image')->values();
-            $videos = $attachments->where('posts_type', 'video')->values();
+    //         $images = $attachments->where('posts_type', 'image')->values();
+    //         $videos = $attachments->where('posts_type', 'video')->values();
 
-            $result[] = [
-                "id"=> $post->id,
-                "profile_pic" => $post->profile_pic,
-                "fullname" => $post->fullname,
-                "posts_uuid" => $post->posts_uuid,
-                "caption" => $post->caption,
-                "status" => $post->status,
-                "created_at" => $post->created_at,
-                "updated_at" => $post->updated_at,
-                "images" => $images,
-                "videos" => $videos
-            ];
-        }
+    //         $result[] = [
+    //             'id' => $post->id,
+    //             'profile_pic' => $post->profile_pic,
+    //             'fullname' => $post->fullname,
+    //             'posts_uuid' => $post->posts_uuid,
+    //             'caption' => $post->caption,
+    //             'status' => $post->status,
+    //             'created_at' => $post->created_at,
+    //             'updated_at' => $post->updated_at,
+    //             'images' => $images,
+    //             'videos' => $videos,
+    //         ];
+    //     }
 
-        return response()->json([
-            'success' => true,
-            'data' => $result
-        ]);
-    }
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $result
+    //     ]);
+    // }
+
+    // public function getPost()
+    // {
+    //     $currentUserCode = Auth::user()->code;
+
+    //     $data = DB::select('
+    //         SELECT 
+    //             (SELECT getUserprofilepic(p.code)) AS profile_pic,
+    //             (SELECT getFullname(p.code)) AS fullname,
+    //             p.id,
+    //             p.posts_uuid,
+    //             p.caption,
+    //             p.status,
+    //             p.created_at,
+    //             p.updated_at,
+    //             p.code AS post_owner
+    //         FROM posts AS p
+    //         LEFT JOIN follows AS f1 
+    //             ON f1.following_code = p.code AND f1.follower_code = ? AND f1.follow_status = "accepted"
+    //         LEFT JOIN follows AS f2 
+    //             ON f2.follower_code = p.code AND f2.following_code = ? AND f2.follow_status = "accepted"
+    //         WHERE p.status = 1
+    //         AND (
+    //             f1.follower_code IS NOT NULL
+    //             OR f2.following_code IS NOT NULL
+    //             OR p.code = ?
+    //         )
+    //         ORDER BY p.created_at DESC
+    //     ', [$currentUserCode, $currentUserCode, $currentUserCode]);
+
+    //     $result = [];
+
+    //     foreach ($data as $post) {
+    //         // Fetch attachments grouped by type
+    //         $attachments = DB::table('attachmentposts')
+    //             ->where('posts_uuid', $post->posts_uuid)
+    //             ->where(function($query) use ($currentUserCode, $post) {
+    //                 $query->where('status', 1)
+    //                     ->orWhere('code', $currentUserCode);
+    //             })
+    //             ->get();
+
+    //         $images = $attachments->where('posts_type', 'image')->values();
+    //         $videos = $attachments->where('posts_type', 'video')->values();
+
+    //         $result[] = [
+    //             "id"=> $post->id,
+    //             "profile_pic" => $post->profile_pic,
+    //             "fullname" => $post->fullname,
+    //             "posts_uuid" => $post->posts_uuid,
+    //             "caption" => $post->caption,
+    //             "status" => $post->status,
+    //             "created_at" => $post->created_at,
+    //             "updated_at" => $post->updated_at,
+    //             "images" => $images,
+    //             "videos" => $videos
+    //         ];
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $result
+    //     ]);
+    // }
 
         // follower_code	The user who follows (that's you)
         // following_code	The user who is being followed
