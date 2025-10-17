@@ -38,7 +38,7 @@
     use App\Events\NotificationCountUpdated;
     use App\Http\Controllers\System\Submenu\Submenus;
     use App\Http\Controllers\System\Users\AppUsersController;
-
+    use App\Http\Controllers\Api\PasswordResetController;
     /*
     |--------------------------------------------------------------------------
     | API Routes
@@ -68,6 +68,11 @@
 
     return response()->json(['success' => true, 'message' => $message]);
     });
+
+
+    Route::post('phone/send-code', [PasswordResetController::class, 'sendCode']);
+    Route::post('phone/verify-code', [PasswordResetController::class, 'verifyCode']);
+
 
     Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
     return Broadcast::auth(request());
