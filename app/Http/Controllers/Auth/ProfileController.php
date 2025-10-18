@@ -28,6 +28,71 @@ class ProfileController extends Controller
   
     public function uploadCoverPhoto(Request $request)
     {
+        // Ensure the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+        $userCode = $user->code;
+        $now = now();
+        $coverPhotoPath = null;
+
+        try {
+            DB::beginTransaction();
+
+            // Validate the uploaded file
+            $validator = Validator::make($request->all(), [
+                'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->all(),
+                ], 422);
+            }
+
+            // Handle file upload
+            if ($request->hasFile('coverphoto')) {
+                $file = $request->file('coverphoto');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/{$filePath}";
+            }
+
+            // Save or update in user profile
+            $profile = UserProfile::firstOrNew(['code' => $userCode]);
+            $profile->cover_photo = $coverPhotoPath;
+            $profile->updated_at = $now;
+            $profile->save();
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cover photo uploaded successfully.',
+                'coverphoto' => $coverPhotoPath
+            ], 201);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred: ' . $th->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function uploadCoverPhotoxxxx(Request $request)
+    {
         /** @var User $user */
         $user = Auth::user();
 
