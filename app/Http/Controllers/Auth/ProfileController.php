@@ -31,7 +31,14 @@ class ProfileController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        // ✅ API-friendly validation
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        // ✅ API-friendly validation for 'coverphoto' field
         $validator = Validator::make($request->all(), [
             'coverphoto' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120',
         ]);
@@ -44,18 +51,14 @@ class ProfileController extends Controller
             ], 422);
         }
 
-        // ✅ If validation passes
-        $coverPhotoUrl = $user->saveCoverPhoto($request->file('coverphoto'));
-
+        // ✅ Save new cover photo
+      $coverPhotoUrl = $user->saveCoverPhoto($request->file('coverphoto'));
         return response()->json([
             'success' => true,
             'message' => 'Cover photo updated successfully',
             'coverphoto' => $coverPhotoUrl,
         ], 201);
     }
-
-
-    
 
 
     public function index()
