@@ -61,9 +61,9 @@ class ProfileController extends Controller
                 $uuid = Str::uuid();
                 $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs($folderPath, $fileName, 'app/public');
+                $filePath = $file->storeAs($folderPath, $fileName, 'public');
 
-                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/{$filePath}";
+                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/{$filePath}";
             }
 
             // Update the coverphoto using DB facade
@@ -92,7 +92,7 @@ class ProfileController extends Controller
     }
 
 
-
+    
     public function uploadCoverPhotoxxxx(Request $request)
     {
         /** @var User $user */
