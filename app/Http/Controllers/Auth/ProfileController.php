@@ -33,7 +33,7 @@ class ProfileController extends Controller
 
         // ✅ API-friendly validation
         $validator = Validator::make($request->all(), [
-            'cover_photo' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120',
+            'coverphoto' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120',
         ]);
 
         if ($validator->fails()) {
