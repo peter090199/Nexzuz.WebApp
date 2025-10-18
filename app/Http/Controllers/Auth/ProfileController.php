@@ -38,17 +38,17 @@ class ProfileController extends Controller
             ], 401);
         }
 
-         $validator = Validator::make($request->all(), [
-        'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
-        ]);
+        //  $validator = Validator::make($request->all(), [
+        // 'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Validation failed',
+        //         'errors' => $validator->errors(),
+        //     ], 422);
+        // }
        $file = $request->file('coverphoto');
 
         if (!$file) {
