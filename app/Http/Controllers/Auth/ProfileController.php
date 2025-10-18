@@ -20,13 +20,44 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 class ProfileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+  
+    public function uploadCoverPhoto(Request $request)
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        // ✅ API-friendly validation
+        $validator = Validator::make($request->all(), [
+            'cover_photo' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // ✅ If validation passes
+        $coverPhotoUrl = $user->saveCoverPhoto($request->file('cover_photo'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cover photo updated successfully',
+            'cover_photo' => $coverPhotoUrl,
+        ], 201);
+    }
+
+
+    
+
+
     public function index()
     {
          if (Auth::check()) {

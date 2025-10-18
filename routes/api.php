@@ -88,7 +88,7 @@
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
     Route::resource('profile_pic',ProfilepictureController::class)->names('profile_pic');
-
+    Route::post('uploadCoverPhoto', [ProfileController::class, 'uploadCoverPhoto']);
 
     //users
     Route::get('getUsers', [AppUsersController::class, 'getUsers']);

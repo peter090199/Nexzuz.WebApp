@@ -41,7 +41,7 @@ class AppliedJobController extends Controller
             $resumePath = null;
             if ($request->hasFile('resume_pdf')) {
                 $file = $request->file('resume_pdf');
-                $uuid = \Str::uuid();
+                $uuid = Str::uuid();
                 $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
