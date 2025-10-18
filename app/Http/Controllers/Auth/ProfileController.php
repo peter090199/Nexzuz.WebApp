@@ -520,7 +520,7 @@ class ProfileController extends Controller
 
     public function userAuth() {
         if (Auth::check()) {
-            $user = User::where('code', Auth::user()->code)->first();
+            $user = Resource::where('code', Auth::user()->code)->first();
             if ($user) {
                 return response()->json([
                     'success' => true,
