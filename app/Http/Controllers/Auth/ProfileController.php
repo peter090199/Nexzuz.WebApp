@@ -45,12 +45,12 @@ class ProfileController extends Controller
         }
 
         // ✅ If validation passes
-        $coverPhotoUrl = $user->saveCoverPhoto($request->file('cover_photo'));
+        $coverPhotoUrl = $user->saveCoverPhoto($request->file('coverphoto'));
 
         return response()->json([
             'success' => true,
             'message' => 'Cover photo updated successfully',
-            'cover_photo' => $coverPhotoUrl,
+            'coverphoto' => $coverPhotoUrl,
         ], 201);
     }
 

@@ -84,7 +84,7 @@ class User extends Authenticatable
 
         // Store new cover photo
         $uuid = \Illuminate\Support\Str::uuid();
-        $folderPath = "uploads/{$this->id}/cover_photo/{$uuid}";
+        $folderPath = "uploads/{$this->id}/coverphoto/{$uuid}";
         $fileName = time() . '.' . $file->getClientOriginalExtension();
         $filePath = $file->storeAs($folderPath, $fileName, 'public');
         $fullPath = '/storage/app/public/' . $filePath;
