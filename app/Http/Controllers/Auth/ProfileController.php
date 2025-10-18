@@ -38,9 +38,8 @@ class ProfileController extends Controller
             ], 401);
         }
 
-        // ✅ API-friendly validation for 'coverphoto' field
-        $validator = Validator::make($request->all(), [
-            'coverphoto' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120',
+         $validator = Validator::make($request->all(), [
+        'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -50,6 +49,7 @@ class ProfileController extends Controller
                 'errors' => $validator->errors(),
             ], 422);
         }
+
 
         // ✅ Save new cover photo
       $coverPhotoUrl = $user->saveCoverPhoto($request->file('coverphoto'));
