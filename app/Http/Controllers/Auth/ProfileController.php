@@ -76,6 +76,13 @@ class ProfileController extends Controller
                     'updated_at' => now(),
                 ]);
 
+            DB::table('resources')
+                ->where('code', $userCode)
+                ->update([
+                    'coverphoto' => $coverPhotoPath,
+                    'updated_at' => now(),
+                ]);
+
             DB::commit();
 
             return response()->json([
