@@ -94,38 +94,6 @@ class ProfileController extends Controller
     }
 
 
-    
-    public function uploadCoverPhotoxxxx(Request $request)
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not authenticated'
-            ], 401);
-        }
-
-    
-       $file = $request->file('coverphoto');
-
-        if (!$file) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No file uploaded',
-            ], 400);
-        }
-
-        $coverPhotoUrl = $user->saveCoverPhoto($file);
-        return response()->json([
-            'success' => true,
-            'message' => 'Cover photo updated successfully',
-            'coverphoto' => $coverPhotoUrl,
-        ], 201);
-    }
-
-
     public function index()
     {
          if (Auth::check()) {
@@ -552,7 +520,7 @@ class ProfileController extends Controller
 
     public function userAuth() {
         if (Auth::check()) {
-            $user = Resource::where('code', Auth::user()->code)->first();
+            $user = User::where('code', Auth::user()->code)->first();
             if ($user) {
                 return response()->json([
                     'success' => true,

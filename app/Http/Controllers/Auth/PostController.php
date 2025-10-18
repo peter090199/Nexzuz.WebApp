@@ -13,7 +13,7 @@ use App\Models\Attachmentpost;
 use App\Models\Resource;
 use App\Models\Userprofile;
 use Illuminate\Support\Str;
-use DB;
+use Illuminate\Support\Facades\DB; 
 use  App\Http\Controllers\Postcomments\CommentController;
 
 class PostController extends Controller
