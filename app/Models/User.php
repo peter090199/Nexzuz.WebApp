@@ -2,22 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'id',
         'username',
@@ -33,15 +28,9 @@ class User extends Authenticatable
         'code',
         'role_code',
         'is_online',
-        'coverphoto'
+        'coverphoto',
     ];
 
-   
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -49,51 +38,44 @@ class User extends Authenticatable
         'role_code',
         'status',
         'created_at',
-        'updated_at'
-
+        'updated_at',
     ];
 
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_online' => 'boolean'
+        'is_online' => 'boolean',
     ];
 
-    
     /**
      * Save or update the user's cover photo
      *
      * @param \Illuminate\Http\UploadedFile $file
-     * @return string $coverPhotoUrl
+     * @return string The public URL of the saved cover photo
+     * @throws \Exception
      */
-
-    public function saveCoverPhoto($file)
+    public function saveCoverPhoto($file): string
     {
+        if (!$file) {
+            throw new \Exception("No file provided");
+        }
+
         // Delete old cover photo if exists
-        if ($this->cover_photo) {
-            $oldPath = str_replace('/storage/', 'public/', $this->cover_photo);
+        if ($this->coverphoto) {
+            $oldPath = str_replace(Storage::url(''), '', $this->coverphoto);
             if (Storage::exists($oldPath)) {
                 Storage::delete($oldPath);
             }
         }
 
-        // Store new cover photo
-        $uuid = \Illuminate\Support\Str::uuid();
-        $folderPath = "uploads/{$this->id}/coverphoto/{$uuid}";
+        $uuid = Str::uuid();
+        $folderPath = "uploads/{$this->id}/cover_photo/{$uuid}";
         $fileName = time() . '.' . $file->getClientOriginalExtension();
         $filePath = $file->storeAs($folderPath, $fileName, 'public');
-        $fullPath = '/storage/app/public/' . $filePath;
 
-        // Save URL to database
-        $this->cover_photo = Storage::url($fullPath);
+        // Use Storage::url() to get proper public URL
+        $this->coverphoto = Storage::url($filePath);
         $this->save();
 
-        return $this->cover_photo;
+        return $this->coverphoto;
     }
-
 }

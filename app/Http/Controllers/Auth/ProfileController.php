@@ -49,10 +49,16 @@ class ProfileController extends Controller
         //         'errors' => $validator->errors(),
         //     ], 422);
         // }
+       $file = $request->file('coverphoto');
 
+        if (!$file) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No file uploaded',
+            ], 400);
+        }
 
-        // ✅ Save new cover photo
-      $coverPhotoUrl = $user->saveCoverPhoto($request->file('coverphoto'));
+        $coverPhotoUrl = $user->saveCoverPhoto($file);
         return response()->json([
             'success' => true,
             'message' => 'Cover photo updated successfully',
