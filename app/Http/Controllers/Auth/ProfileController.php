@@ -130,20 +130,10 @@ class ProfileController extends Controller
                 ], 422);
             }
 
-            // 🔹 Delete the old cover photo if exists
-            if ($user->coverphoto) {
-                // Convert full URL to relative storage path
-                $relativePath = str_replace(
-                    'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/',
-                    '',
-                    $user->coverphoto
-                );
-
-                // Delete old file from 'public' disk
-                if (Storage::disk('public')->exists($relativePath)) {
-                    Storage::disk('public')->delete($relativePath);
+           // 🔹 Delete old photo if exists
+                if ($user->coverphoto && Storage::disk('public')->exists($user->coverphoto)) {
+                    Storage::disk('public')->delete($user->coverphoto);
                 }
-            }
 
             // 🔹 Handle new file upload
             if ($request->hasFile('coverphoto')) {
