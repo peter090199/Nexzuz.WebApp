@@ -20,6 +20,7 @@ class Resource extends Model
         'mname',
         'fullname',
         'contact_no',
+        'coverphoto',
         'age',
         'email',
         'profession',
