@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-     public function uploadCoverPhoto(Request $request)
+     public function uploadCoverPhotox1(Request $request)
     {
         // Ensure the user is authenticated
         if (!Auth::check()) {
@@ -69,6 +69,97 @@ class ProfileController extends Controller
             }
 
             // Update the coverphoto using DB facade
+            DB::table('users')
+                ->where('code', $userCode)
+                ->update([
+                    'coverphoto' => $coverPhotoPath,
+                    'updated_at' => now(),
+                ]);
+
+            DB::table('resources')
+                ->where('code', $userCode)
+                ->update([
+                    'coverphoto' => $coverPhotoPath,
+                    'updated_at' => now(),
+                ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cover photo uploaded successfully.',
+                'coverphoto' => $coverPhotoPath
+            ], 201);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error occurred: ' . $th->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function uploadCoverPhoto(Request $request)
+    {
+        // Ensure the user is authenticated
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access.',
+            ], 401);
+        }
+
+        $user = Auth::user();
+        $userCode = $user->code;
+        $coverPhotoPath = null;
+
+        try {
+            DB::beginTransaction();
+
+            // Validate the uploaded file
+            $validator = Validator::make($request->all(), [
+                'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->all(),
+                ], 422);
+            }
+
+            // 🔹 Delete the old cover photo if exists
+            if ($user->coverphoto) {
+                // Convert full URL to relative storage path
+                $relativePath = str_replace(
+                    'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/',
+                    '',
+                    $user->coverphoto
+                );
+
+                // Delete old file from 'public' disk
+                if (Storage::disk('public')->exists($relativePath)) {
+                    Storage::disk('public')->delete($relativePath);
+                }
+            }
+
+            // 🔹 Handle new file upload
+            if ($request->hasFile('coverphoto')) {
+                $file = $request->file('coverphoto');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+
+                // Store file in the "public" disk (storage/app/public)
+                $file->storeAs($folderPath, $fileName, 'public');
+
+                // Build accessible URL
+                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
+            }
+
+            // 🔹 Update in database
             DB::table('users')
                 ->where('code', $userCode)
                 ->update([
