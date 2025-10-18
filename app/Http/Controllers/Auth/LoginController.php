@@ -46,7 +46,7 @@ class LoginController extends Controller
                 // Update user's online status
                 $user->is_online = true;
                 $user->save();
-    
+                
                 // If the account is active, create a token
                 $token = $user->createToken('Personal Access Token')->plainTextToken;
     

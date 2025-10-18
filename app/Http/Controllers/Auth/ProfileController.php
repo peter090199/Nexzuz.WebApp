@@ -38,7 +38,6 @@ class ProfileController extends Controller
 
         $user = Auth::user();
         $userCode = $user->code;
-        $now = now();
         $coverPhotoPath = null;
 
         try {
@@ -67,11 +66,13 @@ class ProfileController extends Controller
                 $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/{$filePath}";
             }
 
-            // Save or update in user profile
-            $profile = User::firstOrNew(['code' => $userCode]);
-            $profile->cover_photo = $coverPhotoPath;
-            $profile->updated_at = $now;
-            $profile->save();
+            // Update the coverphoto using DB facade
+            DB::table('users')
+                ->where('code', $userCode)
+                ->update([
+                    'coverphoto' => $coverPhotoPath,
+                    'updated_at' => now(),
+                ]);
 
             DB::commit();
 
@@ -91,6 +92,7 @@ class ProfileController extends Controller
     }
 
 
+    
     public function uploadCoverPhotoxxxx(Request $request)
     {
         /** @var User $user */
