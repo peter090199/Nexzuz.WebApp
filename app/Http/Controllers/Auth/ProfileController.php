@@ -68,11 +68,11 @@ class ProfileController extends Controller
             }
 
             // Save or update in user profile
-            $profile = UserProfile::firstOrNew(['code' => $userCode]);
+            $profile = User::firstOrNew(['code' => $userCode]);
             $profile->cover_photo = $coverPhotoPath;
             $profile->updated_at = $now;
             $profile->save();
-            
+
             DB::commit();
 
             return response()->json([
