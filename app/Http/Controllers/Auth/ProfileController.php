@@ -25,8 +25,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-  
-    public function uploadCoverPhoto(Request $request)
+     public function uploadCoverPhoto(Request $request)
     {
         // Ensure the user is authenticated
         if (!Auth::check()) {
@@ -61,9 +60,12 @@ class ProfileController extends Controller
                 $uuid = Str::uuid();
                 $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                
+                // Store file in the "public" disk (storage/app/public)
+                $file->storeAs($folderPath, $fileName, 'public');
 
-                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/{$filePath}";
+                // Correct URL format
+                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
             }
 
             // Update the coverphoto using DB facade
