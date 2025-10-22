@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
-use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Post;
 use App\Models\Attachmentpost;
 use App\Models\Resource;
 use App\Models\Userprofile;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 use  App\Http\Controllers\Postcomments\CommentController;
 
 class PostController extends Controller
@@ -27,7 +27,7 @@ class PostController extends Controller
             try {
                 $requestedCode = $request->code;
                 $authCode = Auth::user()->code;
-                
+
                 $result = [];
 
                 if ($requestedCode) {
@@ -38,8 +38,8 @@ class PostController extends Controller
                     } else {
                         // Show only public posts
                         $posts = Post::where('status', 1)
-                                    ->where('code', $requestedCode)
-                                    ->get();
+                            ->where('code', $requestedCode)
+                            ->get();
                     }
 
                     $commentController = new CommentController();
@@ -100,9 +100,9 @@ class PostController extends Controller
             try {
                 $requestedCode = $request->code;
                 $authCode = Auth::user()->code;
-                
+
                 $result = [];
-                
+
                 if ($requestedCode) {
                     // Scenario 1: Viewing a specific code profile
                     if ($authCode == $requestedCode) {
@@ -111,23 +111,23 @@ class PostController extends Controller
                     } else {
                         // Show only public posts
                         $posts = Post::where('status', 1)
-                                     ->where('code', $requestedCode)
-                                     ->get();
+                            ->where('code', $requestedCode)
+                            ->get();
                     }
-                
+
                     $commentController = new CommentController();
                     // Loop through posts and add attachments to result
                     foreach ($posts as $post) {
                         // Conditional attachments based on access
                         $attachmentQuery = Attachmentpost::where('posts_uuid', $post->posts_uuid);
-                
+
                         if ($authCode != $requestedCode) {
                             // If viewing someone else's posts, only show public attachments
                             $attachmentQuery->where('status', 1);
                         }
-                
+
                         $attachments = $attachmentQuery->get();
-                
+
 
                         // Create a new Request object with posts_uuid as query param
                         $fakeRequest = new Request(['post_uuidOrUind' => $post->posts_uuid]);
@@ -244,7 +244,7 @@ class PostController extends Controller
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $data['status'],
-                    'path_url'    => asset("storage/{$videoPath}"), 
+                    'path_url'    => asset("storage/{$videoPath}"),
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
                 ]);
@@ -252,11 +252,20 @@ class PostController extends Controller
 
             DB::commit(); // Commit transaction
 
+            // After DB::commit()
+            event(new \App\Events\NewPostCreated([
+                'transNo' => $newtrans,
+                'code' => $codeuser,
+                'caption' => $data['caption'] ?? '',
+                'created_by' => Auth::user()->fullname,
+                'created_at' => now(),
+            ]));
+
+
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully uploaded.'
             ]);
-
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback transaction on error
 
@@ -275,34 +284,34 @@ class PostController extends Controller
             'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
             'caption' => 'nullable|string',
             'status' => 'required|integer',
-            
+
         ]);
-        
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-            
+
         try {
             DB::beginTransaction(); // Start transaction
-        
+
             $transNo = Post::max('transNo');
             $newtrans = empty($transNo) ? 1 : $transNo + 1;
-        
+
             $uploadedFiles = [];
             $folderuuid = Str::uuid();
             $codeuser = Auth::user()->code;
             Post::insert([
                 [
-                    'code' =>$codeuser,
-                    'posts_uuid' =>$folderuuid,
+                    'code' => $codeuser,
+                    'posts_uuid' => $folderuuid,
                     'transNo' => $newtrans,
                     'caption' =>  $data['caption'],
                     'status' => $data['status'],
                     'created_by' => Auth::user()->fullname,
                     'updated_by' => '',
-                    'created_at'=> now()
+                    'created_at' => now()
                 ]
-            ]); 
+            ]);
 
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
@@ -310,14 +319,14 @@ class PostController extends Controller
                     $filename = time() . '_' . $file->getClientOriginalName();
                     $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
                     $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-                
+
                     // Determine file type
                     $mime = $file->getMimeType();
                     $postType = str_contains($mime, 'video') ? 'video' : (str_contains($mime, 'image') ? 'image' : 'other');
-                
+
                     // Store full URL to the file
                     $storageUrl = asset('storage/' . $filePath);
-    
+
                     // Store file record in DB
                     DB::table('attachmentposts')->insert([
                         'code' => $codeuser,
@@ -338,7 +347,6 @@ class PostController extends Controller
                         'type' => $postType,
                     ];
                 }
-                
             } else {
                 $uuid = Str::uuid(); // Ensure $uuid is always set
                 DB::table('posts')->insert([
@@ -351,13 +359,12 @@ class PostController extends Controller
                     'created_by' => Auth::user()->fullname
                 ]);
             }
-        
+
             DB::commit(); // Commit transaction
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully uploaded.',
             ]);
-        
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback the transaction on error
             return response()->json([
@@ -374,30 +381,30 @@ class PostController extends Controller
     {
         //
         // return 'test';
-        if(Auth::check()){
+        if (Auth::check()) {
             try {
-                
+
                 if (Auth::check()) {
                     try {
                         $requestedCode = $request->code;
                         $authCode = Auth::user()->code;
-                        
+
                         $result = [];
-                        
+
                         // Scenario 1: Viewing a specific code profile
                         if ($authCode == $requestedCode) {
                             // Show all posts (including private)
                             $posts = Post::where('code', $authCode)
-                                         ->where('posts_uuid', $id)
-                                         ->get();
+                                ->where('posts_uuid', $id)
+                                ->get();
                         } else {
                             // Show only public posts
                             $posts = Post::where('status', 1)
-                                         ->where('code', $requestedCode)
-                                         ->where('posts_uuid', $id)
-                                         ->get();
+                                ->where('code', $requestedCode)
+                                ->where('posts_uuid', $id)
+                                ->get();
                         }
-                        
+
                         // Loop through posts and add attachments to result
                         foreach ($posts as $post) {
                             // Determine if full attachments should be shown
@@ -407,10 +414,10 @@ class PostController extends Controller
                             } else {
                                 // Show only public attachments
                                 $attachments = Attachmentpost::where('posts_uuid', $post->posts_uuid)
-                                                             ->where('status', 1)
-                                                             ->get();
+                                    ->where('status', 1)
+                                    ->get();
                             }
-                        
+
                             $profilePic = Userprofile::select('photo_pic')->where('code', $requestedCode)->first();
                             $result[] = [
                                 "Fullname" => $post->created_by,
@@ -429,7 +436,6 @@ class PostController extends Controller
                         ]);
                     }
                 }
-
             } catch (\Throwable $th) {
                 DB::rollBack();
                 return response()->json([
@@ -438,7 +444,6 @@ class PostController extends Controller
                 ]);
             }
         }
-        
     }
 
     /**
@@ -452,7 +457,7 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
 
 
@@ -466,17 +471,17 @@ class PostController extends Controller
             'caption' => 'nullable|string',
             'status' => 'required|integer',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-    
+
         try {
             DB::beginTransaction(); // Start transaction
-    
+
             // Find the post to be updated
             $post = Post::where('posts_uuid', $id)->first();
-    
+
             // If post doesn't exist or user doesn't own the post, return error
             if (!$post || $post->code !== Auth::user()->code) {
                 return response()->json([
@@ -484,38 +489,38 @@ class PostController extends Controller
                     'message' => 'You are not authorized to update this post.',
                 ], 403);
             }
-    
+
             // Get the transaction number and folder UUID
             $transNo = $post->transNo;
             $folderuuid = $post->posts_uuid;
             $codeuser = Auth::user()->code;
-    
+
             // Update the post table
             $post->caption = $data['caption'] ?? $post->caption; // Only update if provided
             $post->status = $data['status'] ?? $post->status;   // Only update if provided
             $post->updated_by = Auth::user()->fullname;
             $post->updated_at = now();
             $post->save(); // Save updated post data
-    
+
             // Handle file uploads if any
             $uploadedFiles = [];
             if ($request->hasFile('posts')) {
                 // Remove old attachments related to this post before updating
                 DB::table('attachmentposts')->where('posts_uuid', $folderuuid)->delete();
-    
+
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
                     $filename = time() . '_' . $file->getClientOriginalName();
                     $filePath = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
                     $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-    
+
                     // Determine file type
                     $mime = $file->getMimeType();
                     $postType = str_contains($mime, 'video') ? 'video' : (str_contains($mime, 'image') ? 'image' : 'other');
-    
+
                     // Store full URL to the file
                     $storageUrl = asset('storage/' . $filePath);
-    
+
                     // Store file record in DB
                     DB::table('attachmentposts')->insert([
                         'code' => $codeuser,
@@ -523,10 +528,10 @@ class PostController extends Controller
                         'posts_uuid' => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status' => $data['status'],
-                        'path_url' =>'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
+                        'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'created_by' => Auth::user()->fullname,
                     ]);
-    
+
                     // Optional array to return or track uploaded files
                     // $uploadedFiles[] = [
                     //     'uuid' => $uuid,
@@ -537,15 +542,14 @@ class PostController extends Controller
                     // ];
                 }
             }
-    
+
             DB::commit(); // Commit transaction
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Successfully updated.',
                 // 'uploadedFiles' => $uploadedFiles ?? [],
             ]);
-    
         } catch (\Throwable $th) {
             DB::rollBack(); // Rollback the transaction on error
             return response()->json([
@@ -554,10 +558,10 @@ class PostController extends Controller
             ]);
         }
     }
-    
 
-    
-    
+
+
+
 
     /**
      * Remove the specified resource from storage.
@@ -566,17 +570,17 @@ class PostController extends Controller
     public function destroy(string $id)
     {
         //
-        if(Auth::check()){
+        if (Auth::check()) {
             DB::beginTransaction();
 
             try {
                 // Find the post that matches the ID and belongs to the authenticated user
                 $post = Post::where('posts_uuid', $id)->where('code', Auth::user()->code)->first();
-            
+
                 if (!$post) {
                     DB::rollBack();
-                    return response()->json(['success' => false,'message' => 'You are not authorized to delete this post.',], 403);
-                }   
+                    return response()->json(['success' => false, 'message' => 'You are not authorized to delete this post.',], 403);
+                }
 
                 $folderPath = "uploads/posts/$post->code/$post->posts_uuid";
 
@@ -586,53 +590,56 @@ class PostController extends Controller
                 // Delete the post and its attachments
                 Post::where('posts_uuid', $id)->delete();
                 Attachmentpost::where('posts_uuid', $id)->delete();
-            
+
                 DB::commit();
-                return response()->json(['success' => true,'message' => 'Post and its attachments were successfully deleted.',], 200);
-            
+                return response()->json(['success' => true, 'message' => 'Post and its attachments were successfully deleted.',], 200);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['success' => false,'message' => 'Something went wrong. Please try again.','error' => $e->getMessage()
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong. Please try again.',
+                    'error' => $e->getMessage()
                 ], 500);
             }
         }
-
     }
 
     // DELETE INDIVIDUAL ATTACHMENT 
-    public function deleteIndividualPost(string $id) {
-        if(Auth::check()){
+    public function deleteIndividualPost(string $id)
+    {
+        if (Auth::check()) {
             DB::beginTransaction();
 
             try {
                 // Find the post that matches the ID and belongs to the authenticated user
-                $countAttach = Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->get();
+                $countAttach = Attachmentpost::where('posts_uuind', $id)->where('code', Auth::user()->code)->get();
 
                 if (count($countAttach) > 0) {
-                    $Attachment = Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->first();
+                    $Attachment = Attachmentpost::where('posts_uuind', $id)->where('code', Auth::user()->code)->first();
                     $folderPath = "uploads/posts/$Attachment->code/$Attachment->posts_uuid/$Attachment->posts_uuind";
 
-                     Attachmentpost::where('posts_uuind',$id)->where('code',Auth::user()->code)->delete();
+                    Attachmentpost::where('posts_uuind', $id)->where('code', Auth::user()->code)->delete();
                     // Delete the entire folder and its contents
                     Storage::disk('public')->deleteDirectory($folderPath);
                     DB::commit();
-                    return response()->json(['success' => true,'message' => 'Post and its attachments were successfully deleted.',], 200);
-                } 
+                    return response()->json(['success' => true, 'message' => 'Post and its attachments were successfully deleted.',], 200);
+                }
                 DB::rollBack();
-                return response()->json(['success' => false,'message' => 'You are not authorized to delete this post.',], 403);
-
-            }catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'You are not authorized to delete this post.',], 403);
+            } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['success' => false,'message' => 'Something went wrong. Please try again.','error' => $e->getMessage()
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Something went wrong. Please try again.',
+                    'error' => $e->getMessage()
                 ], 500);
             }
         }
     }
 
-    public function authpostshow(){
-        if(Auth::check()){
-            
-
+    public function authpostshow()
+    {
+        if (Auth::check()) {
         }
     }
     public function showForm()
@@ -676,5 +683,4 @@ class PostController extends Controller
             return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
     }
-
 }

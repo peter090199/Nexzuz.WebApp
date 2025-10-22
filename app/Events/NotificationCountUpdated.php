@@ -53,7 +53,7 @@ class NotificationCountUpdated implements ShouldBroadcast
         $this->unreadCount = $unreadCount;
     }
 
-    public function broadcastOn()
+    public function broadcastOn()//CHANNEL
     {
         return new Channel('notification.count.' . $this->userId);
     }
