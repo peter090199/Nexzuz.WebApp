@@ -251,8 +251,6 @@ class PostController extends Controller
             }
 
             DB::commit(); // Commit transaction
-
-            // After DB::commit()
             event(new \App\Events\NewPostCreated([
                 'transNo' => $newtrans,
                 'code' => $codeuser,

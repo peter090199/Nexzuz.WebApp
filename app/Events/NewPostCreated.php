@@ -1,14 +1,14 @@
 <?php
 
 namespace App\Events;
-use App\Models\Post;
+
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class NewPostCreated implements ShouldBroadcast
+class NewPostCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -16,7 +16,7 @@ class NewPostCreated implements ShouldBroadcast
 
     public function __construct($post)
     {
-        $this->post = $post;
+        $this->post = $post; // array or object
     }
 
     public function broadcastOn()
