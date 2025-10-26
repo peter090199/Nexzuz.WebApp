@@ -9,13 +9,61 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Userprofile;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
-use DB;
+use Illuminate\Support\Facades\DB;
+
 
 
 class LoginController extends Controller
 {
     
-      public function login(Request $request)
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password.'
+            ], 401);
+        }
+
+        if ($user->status === 'I') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your account is inactive. Please activate your account via the email we sent.'
+            ], 403);
+        }
+        $user->tokens()->delete(); // revoke old tokens
+        $token = $user->createToken('auth_token')->plainTextToken;
+        $user->is_online = true;
+        $user->save();
+        // 🧩 Check if profile exists or specific role logic
+        $userProfileExists = Userprofile::where('code', $user->code)->exists();
+
+        $redirectFlag = ($user->role_code === 'DEF-CLIENT' 
+            || $user->role_code === 'DEF-MASTERADMIN' 
+            || ($userProfileExists && $user->role_code === 'DEF-USERS')) ? 0 : 1;
+
+        return response()->json([
+            'success'   => true,
+            'token'     => $token,
+            'message'   => $redirectFlag,
+            'is_online' => true
+        ], 200);
+    }
+
+      public function loginxx1(Request $request)
       {
             // Validate the request
             $validator = Validator::make($request->all(), [
@@ -32,7 +80,6 @@ class LoginController extends Controller
         
             // Attempt to authenticate the user
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                // Authentication passed
                 $user = Auth::user();
         
                 // Check if the user's status is "I" (inactive)
@@ -42,7 +89,6 @@ class LoginController extends Controller
                     return response()->json(['success' => false, 'message' => "Your account is inactive. Please activate your account through the email we sent to your Gmail."]);
                
                 }
-    
                 // Update user's online status
                 $user->is_online = true;
                 $user->save();

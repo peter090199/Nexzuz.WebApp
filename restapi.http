@@ -1,13 +1,13 @@
 
-@token = 1604|89pmTsNsXuyP2c9SllvzIos6d2RkWd6c21rw64Iseea6af80
+@token = 1782|v6GLdVEkyVtxsIVOTM1HHa1UJsZYkWLQ0pjQUedB5d4734ca
 
 ### Login
 POST http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
 {
-  "email": "pedroyorpo17@gmail.com",
-  "password": "Madmin123@"
+  "email": "pedroyorpo22@gmail.com",
+  "password": "Pedro123@"
 }
 
 ### getAllModules
