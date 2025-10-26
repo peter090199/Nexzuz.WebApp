@@ -6,8 +6,8 @@ POST http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
 {
-  "email": "pedroyorpo22@gmail.com",
-  "password": "Pedro123@"
+  "email": "pedroyorpo17@gmail.com",
+  "password": "Madmin123@"
 }
 
 ### getAllModules
