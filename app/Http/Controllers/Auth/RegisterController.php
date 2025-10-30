@@ -19,8 +19,104 @@ use Carbon\Carbon;
 
 class RegisterController extends Controller
 {
-    //
     public function register(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            // ✅ Validation rules (no default assignment here)
+            $validator = Validator::make($request->all(), [
+                'fname' => 'required|string|max:255',
+                'lname' => 'required|string|max:255',
+                'contactno' => 'nullable|string|max:15',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|confirmed|min:8',
+                'company' => 'nullable|string|max:255',
+                'industry' => 'nullable|string|max:255',
+                'companywebsite' => 'nullable|string|max:255',
+                'designation' => 'nullable|string|max:255',
+                'age' => 'nullable|integer|min:1|max:150',
+                'profession' => 'nullable|string|max:255',
+                'statuscode' => 'required|integer|in:0,1',
+                'coverphoto' => 'nullable|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->all(),
+                ]);
+            }
+
+            // ✅ Generate unique user code
+            $lastCode = User::max('code');
+            $newCode = empty($lastCode) ? 701 : $lastCode + 1;
+
+            // ✅ Create User
+            $user = User::create([
+                'fname' => $request->fname,
+                'lname' => $request->lname,
+                'mname' => '',
+                'fullname' => ucfirst($request->fname . ' ' . $request->lname),
+                'contactno' => $request->contactno,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'company' => $request->company,
+                'code' => $newCode,
+                'role_code' => $request->statuscode == 0 ? 'DEF-USERS' : 'DEF-CLIENT',
+            ]);
+
+            // ✅ Create Resource (add default coverphoto)
+            Resource::create([
+                'code' => $newCode,
+                'fname' => $request->fname,
+                'lname' => $request->lname,
+                'mname' => '',
+                'fullname' => ucfirst($request->fname . ' ' . $request->lname),
+                'contact_no' => $request->contactno,
+                'age' => $request->age,
+                'email' => $request->email,
+                'profession' => $request->profession,
+                'company' => $request->company,
+                'industry' => $request->industry,
+                'companywebsite' => $request->companywebsite,
+                'role_code' => $request->statuscode == 0 ? 'DEF-USERS' : 'DEF-CLIENT',
+                'designation' => $request->designation,
+                'coverphoto' => $request->coverphoto ?? 'default.jpg', // ✅ FIXED HERE
+            ]);
+
+            // ✅ Generate verification code
+            $verificationCode = Str::random(7);
+
+            DB::insert('INSERT INTO email_codes (email, code) VALUES (?, ?)', [
+                $request->email,
+                $verificationCode,
+            ]);
+
+            // ✅ Send activation email
+            $data = [
+                'fname' => $request->fname,
+                'email' => $request->email,
+                'code' => $verificationCode,
+            ];
+            Mail::to($request->email)->send(new Registeractivation($data));
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "You have registered successfully. Please check your email to activate your account.",
+            ], 201);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function registerxx(Request $request)
     {
         try {
             // Begin Transaction
@@ -39,7 +135,8 @@ class RegisterController extends Controller
                 'designation' => 'nullable|string|max:255',
                 'age' => 'nullable|integer|min:1|max:150',
                 'profession' => 'nullable|string|max:255',
-                'statuscode' => 'required|integer|in:0,1', // Validates status codes
+                'statuscode' => 'required|integer|in:0,1', 
+                'coverphoto' => $request->coverphoto ?? 'default.jpg', 
             ]);
 
             // Check for validation errors

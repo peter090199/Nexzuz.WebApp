@@ -82,14 +82,11 @@
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
     // Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
-
-
     // PROFILE resource
     Route::Resource('profile',ProfileController::class)->names('profile');
     Route::get('user/profile',[ProfileController::class,'userAuth'])->name('user/profile');
     Route::resource('profile_pic',ProfilepictureController::class)->names('profile_pic');
     Route::post('uploadCoverPhoto', [ProfileController::class, 'uploadCoverPhoto']);
-
     //users
     Route::get('getUsers', [AppUsersController::class, 'getUsers']);
 
