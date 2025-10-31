@@ -278,9 +278,14 @@ class PostController extends Controller
     {
         $data = $request->all();
 
+        // Cast status to integer if it comes as string (from Postman)
+        if (isset($data['status'])) {
+            $data['status'] = (int) $data['status'];
+        }
+
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
-            'status'  => 'required|string',
+            'status'  => 'required|integer', // must be int
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000',
             'remove_files' => 'nullable|array',
@@ -294,9 +299,9 @@ class PostController extends Controller
             DB::beginTransaction();
 
             $codeuser = Auth::user()->code;
-            $post = Post::where('id', $id)
-                ->where('code', $codeuser)
-                ->first();
+
+            // Find post by ID and code
+            $post = Post::where('id', $id)->where('code', $codeuser)->first();
 
             if (!$post) {
                 return response()->json([
@@ -305,10 +310,10 @@ class PostController extends Controller
                 ], 404);
             }
 
-            // Update post fields
+            // Update post
             $post->update([
                 'caption'    => $data['caption'] ?? $post->caption,
-                'status'     => $data['status'] ?? $post->status,
+                'status'     => $data['status'],
                 'updated_by' => Auth::user()->fullname,
                 'updated_at' => now(),
             ]);
@@ -316,9 +321,7 @@ class PostController extends Controller
             $folderuuid = $post->posts_uuid;
             $transNo = $post->transNo;
 
-            /** -------------------------------
-             * 🧹 Remove Files (images or videos)
-             * ------------------------------- */
+            // Remove files
             if (!empty($data['remove_files'])) {
                 $uniqueIds = array_unique($data['remove_files']);
 
@@ -334,7 +337,6 @@ class PostController extends Controller
                         if (file_exists($absolutePath)) {
                             @unlink($absolutePath);
                         }
-
                         DB::table('attachmentposts')
                             ->where('posts_uuind', $file->posts_uuind)
                             ->delete();
@@ -344,9 +346,7 @@ class PostController extends Controller
                 }
             }
 
-            /** -------------------------------
-             * 📸 Upload New Images
-             * ------------------------------- */
+            // Upload images
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid     = Str::uuid();
@@ -368,9 +368,7 @@ class PostController extends Controller
                 }
             }
 
-            /** -------------------------------
-             * 🎥 Upload New Video (replace old)
-             * ------------------------------- */
+            // Upload video
             if ($request->hasFile('video')) {
                 // Delete existing videos
                 $oldVideos = DB::table('attachmentposts')
@@ -385,9 +383,7 @@ class PostController extends Controller
                     if (file_exists($absolutePath)) {
                         @unlink($absolutePath);
                     }
-                    DB::table('attachmentposts')
-                        ->where('posts_uuind', $old->posts_uuind)
-                        ->delete();
+                    DB::table('attachmentposts')->where('posts_uuind', $old->posts_uuind)->delete();
                 }
 
                 $video    = $request->file('video');
@@ -424,7 +420,6 @@ class PostController extends Controller
             ]);
         }
     }
-
 
     public function store(Request $request)
     {
