@@ -273,14 +273,14 @@ class PostController extends Controller
             ]);
         }
     }
-    
+
     public function updatePost(Request $request, $id)
     {
         $data = $request->all();
 
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
-            'status'  => 'required|integer',
+            'status'  => 'required|string',
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000',
             'remove_files' => 'nullable|array',
