@@ -273,18 +273,17 @@ class PostController extends Controller
             ]);
         }
     }
-
-    public function updatePost(Request $request, $transNo)
+    
+    public function updatePost(Request $request, $id)
     {
         $data = $request->all();
 
-        // Validate inputs
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
             'status'  => 'required|integer',
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000',
-            'remove_files' => 'nullable|array', // list of file UUIDs to delete
+            'remove_files' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -295,7 +294,7 @@ class PostController extends Controller
             DB::beginTransaction();
 
             $codeuser = Auth::user()->code;
-            $post = Post::where('transNo', $transNo)
+            $post = Post::where('id', $id)
                 ->where('code', $codeuser)
                 ->first();
 
@@ -306,7 +305,7 @@ class PostController extends Controller
                 ], 404);
             }
 
-            // Update post main fields
+            // Update post fields
             $post->update([
                 'caption'    => $data['caption'] ?? $post->caption,
                 'status'     => $data['status'] ?? $post->status,
@@ -315,28 +314,39 @@ class PostController extends Controller
             ]);
 
             $folderuuid = $post->posts_uuid;
+            $transNo = $post->transNo;
 
-            // Remove selected old files (if provided)
+            /** -------------------------------
+             * 🧹 Remove Files (images or videos)
+             * ------------------------------- */
             if (!empty($data['remove_files'])) {
+                $uniqueIds = array_unique($data['remove_files']);
+
                 $attachments = DB::table('attachmentposts')
-                    ->whereIn('posts_uuind', $data['remove_files'])
+                    ->whereIn('posts_uuind', $uniqueIds)
                     ->where('code', $codeuser)
                     ->get();
 
                 foreach ($attachments as $file) {
-                    $relativePath = str_replace(asset('storage/'), '', $file->path_url);
-                    $absolutePath = storage_path("app/public/{$relativePath}");
-                    if (file_exists($absolutePath)) {
-                        @unlink($absolutePath);
-                    }
+                    try {
+                        $relativePath = str_replace(asset('storage/'), '', $file->path_url);
+                        $absolutePath = storage_path("app/public/{$relativePath}");
+                        if (file_exists($absolutePath)) {
+                            @unlink($absolutePath);
+                        }
 
-                    DB::table('attachmentposts')
-                        ->where('posts_uuind', $file->posts_uuind)
-                        ->delete();
+                        DB::table('attachmentposts')
+                            ->where('posts_uuind', $file->posts_uuind)
+                            ->delete();
+                    } catch (\Throwable $e) {
+                        \Log::error('File deletion failed: ' . $e->getMessage());
+                    }
                 }
             }
 
-            // Upload new images (if any)
+            /** -------------------------------
+             * 📸 Upload New Images
+             * ------------------------------- */
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid     = Str::uuid();
@@ -358,9 +368,11 @@ class PostController extends Controller
                 }
             }
 
-            // Upload new video (if any)
+            /** -------------------------------
+             * 🎥 Upload New Video (replace old)
+             * ------------------------------- */
             if ($request->hasFile('video')) {
-                // Optional: delete old video before replacing
+                // Delete existing videos
                 $oldVideos = DB::table('attachmentposts')
                     ->where('transNo', $transNo)
                     ->where('code', $codeuser)
@@ -406,13 +418,13 @@ class PostController extends Controller
 
         } catch (\Throwable $th) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred: ' . $th->getMessage(),
             ]);
         }
     }
+
 
     public function store(Request $request)
     {
