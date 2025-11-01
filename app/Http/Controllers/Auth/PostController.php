@@ -276,13 +276,11 @@ class PostController extends Controller
 
     public function updatePost(Request $request, $id)
     {
-        $data = $request->all();
-
-        $validator = Validator::make($data, [
-            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
+        $validator = Validator::make($request->all(), [
             'caption' => 'nullable|string',
             'status'  => 'nullable|integer',
-            'video'   => 'nullable|mimetypes:video/mp4|max:50000'
+            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
+            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
         ]);
 
         if ($validator->fails()) {
@@ -295,17 +293,17 @@ class PostController extends Controller
             $post = Post::findOrFail($id);
             $codeuser = Auth::user()->code;
             $folderuuid = $post->posts_uuid ?? Str::uuid();
-            $status = $data['status'] ?? $post->status;
+            $status = $request->status ?? $post->status;
 
-            // ✅ Update main post
+            // ✅ Update post data
             $post->update([
-                'caption'    => $data['caption'] ?? $post->caption,
+                'caption'    => $request->caption ?? $post->caption,
                 'status'     => $status,
                 'updated_by' => Auth::user()->fullname,
                 'updated_at' => now(),
             ]);
 
-            // ✅ Delete all previous attachments (files + DB)
+            // ✅ Delete old attachments (files + DB)
             $attachments = DB::table('attachmentposts')
                 ->where('posts_uuid', $folderuuid)
                 ->get();
@@ -324,6 +322,7 @@ class PostController extends Controller
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
                     $filename = time().'_'.$file->getClientOriginalName();
+                    $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
                     $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
                     DB::table('attachmentposts')->insert([
@@ -332,7 +331,7 @@ class PostController extends Controller
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status'      => $status,
-                        'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
+                        'path_url'    => asset("storage/{$path}"),
                         'posts_type'  => 'image',
                         'created_by'  => Auth::user()->fullname,
                     ]);
@@ -344,6 +343,7 @@ class PostController extends Controller
                 $video = $request->file('video');
                 $uuid = Str::uuid();
                 $filename = time().'_'.$video->getClientOriginalName();
+                $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
                 $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
                 DB::table('attachmentposts')->insert([
@@ -352,7 +352,7 @@ class PostController extends Controller
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $status,
-                    'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
+                    'path_url'    => asset("storage/{$path}"),
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
                 ]);
@@ -362,13 +362,15 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post updated successfully.'
+                'message' => 'Post updated successfully.',
+                'post_id' => $post->id,
             ]);
+
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $th->getMessage()
+                'message' => 'Error: ' . $th->getMessage(),
             ]);
         }
     }
