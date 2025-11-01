@@ -281,7 +281,7 @@ class PostController extends Controller
         $validator = Validator::make($data, [
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'caption' => 'nullable|string',
-            'status'  => 'required|integer',
+            'status'  => 'nullable|integer', // ✅ now optional
             'video'   => 'nullable|mimetypes:video/mp4|max:50000'
         ]);
 
@@ -298,7 +298,7 @@ class PostController extends Controller
 
             $post->update([
                 'caption'    => $data['caption'] ?? $post->caption,
-                'status'     => $data['status'],
+                'status'     => $data['status'] ?? $post->status, // ✅ keep old if not provided
                 'updated_by' => Auth::user()->fullname,
                 'updated_at' => now(),
             ]);
@@ -315,7 +315,7 @@ class PostController extends Controller
                         'transNo'     => $post->transNo,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
-                        'status'      => $data['status'],
+                        'status'      => $post->status,
                         'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                         'posts_type'  => 'image',
                         'created_by'  => Auth::user()->fullname,
@@ -335,7 +335,7 @@ class PostController extends Controller
                     'transNo'     => $post->transNo,
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
-                    'status'      => $data['status'],
+                    'status'      => $post->status,
                     'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
