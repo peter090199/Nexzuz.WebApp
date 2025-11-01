@@ -281,7 +281,7 @@ class PostController extends Controller
         $validator = Validator::make($data, [
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'caption' => 'nullable|string',
-            'status'  => 'nullable|integer', // ✅ now optional
+            'status'  => 'nullable|integer',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000'
         ]);
 
@@ -295,15 +295,31 @@ class PostController extends Controller
             $post = Post::findOrFail($id);
             $codeuser = Auth::user()->code;
             $folderuuid = $post->posts_uuid ?? Str::uuid();
+            $status = $data['status'] ?? $post->status;
 
+            // ✅ Update main post
             $post->update([
                 'caption'    => $data['caption'] ?? $post->caption,
-                'status'     => $data['status'] ?? $post->status, // ✅ keep old if not provided
+                'status'     => $status,
                 'updated_by' => Auth::user()->fullname,
                 'updated_at' => now(),
             ]);
 
-            // Handle images
+            // ✅ Delete previous attachments (DB + files)
+            $attachments = DB::table('attachmentposts')
+                ->where('posts_uuid', $folderuuid)
+                ->get();
+
+            foreach ($attachments as $item) {
+                $path = str_replace(asset('storage') . '/', '', $item->path_url);
+                Storage::disk('public')->delete($path);
+            }
+
+            DB::table('attachmentposts')
+                ->where('posts_uuid', $folderuuid)
+                ->delete();
+
+            // ✅ Save new image files
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
@@ -315,7 +331,7 @@ class PostController extends Controller
                         'transNo'     => $post->transNo,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
-                        'status'      => $post->status,
+                        'status'      => $status,
                         'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                         'posts_type'  => 'image',
                         'created_by'  => Auth::user()->fullname,
@@ -323,7 +339,7 @@ class PostController extends Controller
                 }
             }
 
-            // Handle video
+            // ✅ Save new video file
             if ($request->hasFile('video')) {
                 $video = $request->file('video');
                 $uuid = Str::uuid();
@@ -335,7 +351,7 @@ class PostController extends Controller
                     'transNo'     => $post->transNo,
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
-                    'status'      => $post->status,
+                    'status'      => $status,
                     'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
@@ -346,7 +362,7 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post updated successfully.'
+                'message' => 'Post updated successfully. Previous attachments deleted.'
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
