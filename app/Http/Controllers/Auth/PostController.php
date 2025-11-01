@@ -290,14 +290,14 @@ class PostController extends Controller
         try {
             DB::beginTransaction();
 
-            $codeuser = Auth::user()->code;
-            $fullname = Auth::user()->fullname;
+            $user = Auth::user();
+            $codeuser = $user->code;
+            $fullname = $user->fullname;
 
-            // ✅ Find post belonging to current user
-            $post = DB::table('posts')
-                ->where('id', $id)
-                ->where('code', $codeuser)
-                ->first();
+            // ✅ Find the post owned by current user
+            $post = Post::where('id', $id)
+                        ->where('code', $codeuser)
+                        ->first();
 
             if (!$post) {
                 return response()->json(['message' => 'Post not found or not owned by user.'], 404);
@@ -306,16 +306,13 @@ class PostController extends Controller
             $folderuuid = $post->posts_uuid;
             $status = $request->status ?? $post->status;
 
-            // ✅ Update main post
-            DB::table('posts')
-                ->where('id', $id)
-                ->where('code', $codeuser)
-                ->update([
-                    'caption'    => $request->caption ?? $post->caption,
-                    'status'     => $status,
-                    'updated_by' => $fullname,
-                    'updated_at' => now(),
-                ]);
+            // ✅ Update post caption and status
+            $post->update([
+                'caption'    => $request->caption ?? $post->caption,
+                'status'     => $status,
+                'updated_by' => $fullname,
+                'updated_at' => now(),
+            ]);
 
             // ✅ Delete previous attachments (DB + storage)
             $attachments = DB::table('attachmentposts')
@@ -324,8 +321,8 @@ class PostController extends Controller
                 ->get();
 
             foreach ($attachments as $file) {
-                $relativePath = str_replace(asset('storage') . '/', '', $file->path_url);
-                Storage::disk('public')->delete($relativePath);
+                $filePath = str_replace(asset('storage') . '/', '', $file->path_url);
+                Storage::disk('public')->delete($filePath);
             }
 
             DB::table('attachmentposts')
@@ -343,7 +340,7 @@ class PostController extends Controller
 
                     DB::table('attachmentposts')->insert([
                         'code'        => $codeuser,
-                        'transNo'     => $post->transNo ?? 0,
+                        'transNo'     => $post->transNo,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status'      => $status,
@@ -351,6 +348,7 @@ class PostController extends Controller
                         'posts_type'  => 'image',
                         'created_by'  => $fullname,
                         'created_at'  => now(),
+                        'caption'     => $request->caption ?? null, // optional caption for attachment
                     ]);
                 }
             }
@@ -365,7 +363,7 @@ class PostController extends Controller
 
                 DB::table('attachmentposts')->insert([
                     'code'        => $codeuser,
-                    'transNo'     => $post->transNo ?? 0,
+                    'transNo'     => $post->transNo,
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $status,
@@ -373,6 +371,7 @@ class PostController extends Controller
                     'posts_type'  => 'video',
                     'created_by'  => $fullname,
                     'created_at'  => now(),
+                    'caption'     => $request->caption ?? null, // optional
                 ]);
             }
 
@@ -380,15 +379,15 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post updated successfully.',
-                'id'      => $id,
+                'message' => 'Post and attachments updated successfully.',
+                'post_id' => $id,
             ]);
 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $th->getMessage(),
+                'message' => 'Error: '.$th->getMessage(),
             ]);
         }
     }
