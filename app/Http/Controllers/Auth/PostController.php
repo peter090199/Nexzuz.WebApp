@@ -274,7 +274,7 @@ class PostController extends Controller
         }
     }
 
-    public function updatePost(Request $request, $id)
+    public function updatePostByTransNo(Request $request, $transNo)
     {
         $validator = Validator::make($request->all(), [
             'caption' => 'nullable|string',
@@ -294,8 +294,8 @@ class PostController extends Controller
             $codeuser = $user->code;
             $fullname = $user->fullname;
 
-            // ✅ Find the post owned by current user
-            $post = Post::where('id', $id)
+            // ✅ Find post by transNo and user code
+            $post = Post::where('transNo', $transNo)
                         ->where('code', $codeuser)
                         ->first();
 
@@ -306,7 +306,7 @@ class PostController extends Controller
             $folderuuid = $post->posts_uuid;
             $status = $request->status ?? $post->status;
 
-            // ✅ Update post caption and status
+            // ✅ Update main post caption & status
             $post->update([
                 'caption'    => $request->caption ?? $post->caption,
                 'status'     => $status,
@@ -314,7 +314,7 @@ class PostController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // ✅ Delete previous attachments (DB + storage)
+            // ✅ Delete old attachments (DB + storage)
             $attachments = DB::table('attachmentposts')
                 ->where('posts_uuid', $folderuuid)
                 ->where('code', $codeuser)
@@ -348,7 +348,7 @@ class PostController extends Controller
                         'posts_type'  => 'image',
                         'created_by'  => $fullname,
                         'created_at'  => now(),
-                        'caption'     => $request->caption ?? null, // optional caption for attachment
+                        'caption'     => $request->caption ?? null,
                     ]);
                 }
             }
@@ -371,7 +371,7 @@ class PostController extends Controller
                     'posts_type'  => 'video',
                     'created_by'  => $fullname,
                     'created_at'  => now(),
-                    'caption'     => $request->caption ?? null, // optional
+                    'caption'     => $request->caption ?? null,
                 ]);
             }
 
@@ -379,15 +379,15 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post and attachments updated successfully.',
-                'post_id' => $id,
+                'message' => 'Post updated successfully by transNo.',
+                'transNo' => $transNo,
             ]);
 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error: '.$th->getMessage(),
+                'message' => 'Error: ' . $th->getMessage(),
             ]);
         }
     }
