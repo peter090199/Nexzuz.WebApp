@@ -305,21 +305,21 @@ class PostController extends Controller
                 'updated_at' => now(),
             ]);
 
-            // ✅ Delete previous attachments (DB + files)
+            // ✅ Delete all previous attachments (files + DB)
             $attachments = DB::table('attachmentposts')
                 ->where('posts_uuid', $folderuuid)
                 ->get();
 
             foreach ($attachments as $item) {
-                $path = str_replace(asset('storage') . '/', '', $item->path_url);
-                Storage::disk('public')->delete($path);
+                $filePath = str_replace(asset('storage') . '/', '', $item->path_url);
+                Storage::disk('public')->delete($filePath);
             }
 
             DB::table('attachmentposts')
                 ->where('posts_uuid', $folderuuid)
                 ->delete();
 
-            // ✅ Save new image files
+            // ✅ Upload new images
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
@@ -339,7 +339,7 @@ class PostController extends Controller
                 }
             }
 
-            // ✅ Save new video file
+            // ✅ Upload new video
             if ($request->hasFile('video')) {
                 $video = $request->file('video');
                 $uuid = Str::uuid();
@@ -362,7 +362,7 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post updated successfully. Previous attachments deleted.'
+                'message' => 'Post updated successfully.'
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -372,6 +372,7 @@ class PostController extends Controller
             ]);
         }
     }
+
 
 
     public function store(Request $request)
