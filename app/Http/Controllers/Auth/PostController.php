@@ -290,27 +290,34 @@ class PostController extends Controller
         try {
             DB::beginTransaction();
 
-            $post = Post::findOrFail($id);
+            $post = DB::table('posts')->where('id', $id)->first();
+
+            if (!$post) {
+                return response()->json(['message' => 'Post not found.'], 404);
+            }
+
             $codeuser = Auth::user()->code;
             $folderuuid = $post->posts_uuid ?? Str::uuid();
             $status = $request->status ?? $post->status;
 
-            // ✅ Update post data
-            $post->update([
-                'caption'    => $request->caption ?? $post->caption,
-                'status'     => $status,
-                'updated_by' => Auth::user()->fullname,
-                'updated_at' => now(),
-            ]);
+            // ✅ Update post table (caption/status)
+            DB::table('posts')
+                ->where('id', $id)
+                ->update([
+                    'caption'    => $request->caption ?? $post->caption,
+                    'status'     => $status,
+                    'updated_at' => now(),
+                    'updated_by' => Auth::user()->fullname,
+                ]);
 
-            // ✅ Delete old attachments (files + DB)
-            $attachments = DB::table('attachmentposts')
+            // ✅ Delete previous images/videos from DB + storage
+            $oldAttachments = DB::table('attachmentposts')
                 ->where('posts_uuid', $folderuuid)
                 ->get();
 
-            foreach ($attachments as $item) {
-                $filePath = str_replace(asset('storage') . '/', '', $item->path_url);
-                Storage::disk('public')->delete($filePath);
+            foreach ($oldAttachments as $file) {
+                $relativePath = str_replace(asset('storage') . '/', '', $file->path_url);
+                Storage::disk('public')->delete($relativePath);
             }
 
             DB::table('attachmentposts')
@@ -319,21 +326,22 @@ class PostController extends Controller
 
             // ✅ Upload new images
             if ($request->hasFile('posts')) {
-                foreach ($request->file('posts') as $file) {
+                foreach ($request->file('posts') as $image) {
                     $uuid = Str::uuid();
-                    $filename = time().'_'.$file->getClientOriginalName();
+                    $filename = time().'_'.$image->getClientOriginalName();
                     $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                    $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+                    $image->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
                     DB::table('attachmentposts')->insert([
                         'code'        => $codeuser,
-                        'transNo'     => $post->transNo,
+                        'transNo'     => $post->transNo ?? 0,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status'      => $status,
                         'path_url'    => asset("storage/{$path}"),
                         'posts_type'  => 'image',
                         'created_by'  => Auth::user()->fullname,
+                        'created_at'  => now(),
                     ]);
                 }
             }
@@ -348,13 +356,14 @@ class PostController extends Controller
 
                 DB::table('attachmentposts')->insert([
                     'code'        => $codeuser,
-                    'transNo'     => $post->transNo,
+                    'transNo'     => $post->transNo ?? 0,
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $status,
                     'path_url'    => asset("storage/{$path}"),
                     'posts_type'  => 'video',
                     'created_by'  => Auth::user()->fullname,
+                    'created_at'  => now(),
                 ]);
             }
 
@@ -363,7 +372,7 @@ class PostController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Post updated successfully.',
-                'post_id' => $post->id,
+                'id'      => $id,
             ]);
 
         } catch (\Throwable $th) {
