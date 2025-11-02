@@ -276,12 +276,14 @@ class PostController extends Controller
 
     public function updatePostByTransNo(Request $request, $transNo)
     {
-        $validator = Validator::make($request->all(), [
+        $data = $request->all();
+          $validator = Validator::make($data, [
+            'posts.*' => 'file|mimes:jpeg,png,jpg,gif|max:3000', // only images here
             'caption' => 'nullable|string',
             'status'  => 'required|integer',
-            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
-            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
+            'video'   => 'nullable|mimetypes:video/mp4|max:50000' // separate video
         ]);
+
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
@@ -312,8 +314,8 @@ class PostController extends Controller
                 ->where('transNo', $transNo)
                 ->where('code', $codeuser)
                 ->update([
-                    'caption'    => $request->caption,
-                    'status'     => $status,
+                    'caption'    => $data['caption'] ?? null,
+                    'status'     => $data['status'],
                     'updated_by' => $fullname,
                     'updated_at' => now(),
                 ]);
@@ -351,7 +353,7 @@ class PostController extends Controller
                             'transNo'     => $post->transNo,
                             'posts_uuid'  => $folderuuid,
                             'posts_uuind' => $uuid,
-                            'status'      => $status,
+                            'status'     => $data['status'],
                             'path_url'    => asset("storage/{$path}"),
                             'posts_type'  => 'image',
                             'created_by'  => $fullname,
@@ -374,7 +376,7 @@ class PostController extends Controller
                         'transNo'     => $post->transNo,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
-                        'status'      => $status,
+                        'status'     => $data['status'],
                         'path_url'    => asset("storage/{$path}"),
                         'posts_type'  => 'video',
                         'created_by'  => $fullname,
