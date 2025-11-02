@@ -66,6 +66,8 @@ class PostController extends Controller
 
                         $result[] = [
                             "profile_pic" => $post->profile_pic,
+                            "id"=>$post->id,
+                            "transNo"=>$post->transNo,
                             "fullname" => $post->fullname,
                             "posts_uuid" => $post->posts_uuid,
                             "caption" => $post->caption,
@@ -385,7 +387,6 @@ class PostController extends Controller
             'posts.*' => 'file|mimes:jpeg,png,jpg,gif,mp4,avi,mov|max:3000', // Validate multiple files
             'caption' => 'nullable|string',
             'status' => 'required|integer',
-
         ]);
 
         if ($validator->fails()) {
