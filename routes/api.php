@@ -124,7 +124,7 @@
     Route::put('messagesIsread', [ChatController::class, 'markAsReadMessage']);
 
     Route::post('savePost', [PostController::class, 'savePost']);
-    Route::put('updatePostByTransNo/{transNo}', [PostController::class, 'saveOrUpdatePost']);
+    Route::post('updatePostByTransNo/{transNo}', [PostController::class, 'saveOrUpdatePost']);
     Route::get('update_count', [ChatController::class, 'updateNotificationCount']);
     Route::get('getDataPost', [PostController::class, 'getDataPost']);
 
