@@ -328,6 +328,8 @@ class FollowController extends Controller
         public function getPost()
         {
             $currentUserCode = Auth::user()->code;
+            $role_code = Auth::user()->role_code;
+          
 
             $data = DB::select('
                 SELECT 
@@ -372,6 +374,7 @@ class FollowController extends Controller
 
                 $result[] = [
                     "id"=> $post->id,
+                    "role_code"=>$role_code,
                     "transNo"=>$post->transNo,
                     "profile_pic" => $post->profile_pic,
                     "fullname" => $post->fullname,

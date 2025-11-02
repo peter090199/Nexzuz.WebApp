@@ -213,7 +213,6 @@ class PostController extends Controller
                 'caption'    => $data['caption'] ?? $post->caption,
                 'status'     => $data['status'],
                 'updated_by' => $fullname,
-                'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
