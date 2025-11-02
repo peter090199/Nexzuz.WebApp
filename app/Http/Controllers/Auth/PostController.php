@@ -278,7 +278,7 @@ class PostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'caption' => 'nullable|string',
-            'status'  => 'nullable|integer',
+            'status'  => 'required|integer',
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000',
         ]);
