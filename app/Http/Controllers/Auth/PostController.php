@@ -278,18 +278,14 @@ class PostController extends Controller
     {
         $data = $request->all();
 
-        // ✅ Validate input
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
-            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000', // only images
-            'video'   => 'nullable|mimetypes:video/mp4|max:50000', // optional video
+            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
+            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         try {
@@ -297,31 +293,24 @@ class PostController extends Controller
 
             $user = Auth::user();
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized user.',
-                ], 401);
+                return response()->json(['message' => 'Unauthorized user.'], 401);
             }
 
             $codeuser = $user->code;
             $fullname = $user->fullname;
 
-            // ✅ Find post by transaction number
             $post = DB::table('posts')
                 ->where('transNo', $transNo)
                 ->where('code', $codeuser)
                 ->first();
 
             if (!$post) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Post not found or not owned by user.',
-                ], 404);
+                return response()->json(['message' => 'Post not found or not owned by user.'], 404);
             }
 
             $folderuuid = $post->posts_uuid;
 
-            // ✅ Update post caption and metadata
+            // ✅ Update caption only
             DB::table('posts')
                 ->where('transNo', $transNo)
                 ->where('code', $codeuser)
@@ -331,22 +320,20 @@ class PostController extends Controller
                     'updated_at' => now(),
                 ]);
 
-            // ✅ If new images or video are uploaded, replace old ones
+            // ✅ If new files exist, replace old attachments
             if ($request->hasFile('posts') || $request->hasFile('video')) {
 
-                // Fetch existing attachments
-                $attachments = DB::table('attachmentposts')
+                // Delete old attachments
+                $oldAttachments = DB::table('attachmentposts')
                     ->where('posts_uuid', $folderuuid)
                     ->where('code', $codeuser)
                     ->get();
 
-                // Delete old files from storage
-                foreach ($attachments as $file) {
+                foreach ($oldAttachments as $file) {
                     $filePath = str_replace(asset('storage') . '/', '', $file->path_url);
                     Storage::disk('public')->delete($filePath);
                 }
 
-                // Delete old database records
                 DB::table('attachmentposts')
                     ->where('posts_uuid', $folderuuid)
                     ->where('code', $codeuser)
@@ -355,10 +342,35 @@ class PostController extends Controller
                 // ✅ Upload new images
                 if ($request->hasFile('posts')) {
                     foreach ($request->file('posts') as $file) {
+                        if ($file->isValid()) {
+                            $uuid = (string) Str::uuid();
+                            $filename = time().'_'.$file->getClientOriginalName();
+                            $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
+                            $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+
+                            DB::table('attachmentposts')->insert([
+                                'code'        => $codeuser,
+                                'transNo'     => $post->transNo,
+                                'posts_uuid'  => $folderuuid,
+                                'posts_uuind' => $uuid,
+                                'path_url'    => asset("storage/{$path}"),
+                                'posts_type'  => 'image',
+                                'caption'     => $data['caption'] ?? null,
+                                'created_by'  => $fullname,
+                                'created_at'  => now(),
+                            ]);
+                        }
+                    }
+                }
+
+                // ✅ Upload new video
+                if ($request->hasFile('video')) {
+                    $video = $request->file('video');
+                    if ($video->isValid()) {
                         $uuid = (string) Str::uuid();
-                        $filename = time().'_'.$file->getClientOriginalName();
+                        $filename = time().'_'.$video->getClientOriginalName();
                         $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                        $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+                        $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
 
                         DB::table('attachmentposts')->insert([
                             'code'        => $codeuser,
@@ -366,33 +378,12 @@ class PostController extends Controller
                             'posts_uuid'  => $folderuuid,
                             'posts_uuind' => $uuid,
                             'path_url'    => asset("storage/{$path}"),
-                            'posts_type'  => 'image',
+                            'posts_type'  => 'video',
                             'caption'     => $data['caption'] ?? null,
                             'created_by'  => $fullname,
                             'created_at'  => now(),
                         ]);
                     }
-                }
-
-                // ✅ Upload new video
-                if ($request->hasFile('video')) {
-                    $video = $request->file('video');
-                    $uuid = (string) Str::uuid();
-                    $filename = time().'_'.$video->getClientOriginalName();
-                    $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                    $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                    DB::table('attachmentposts')->insert([
-                        'code'        => $codeuser,
-                        'transNo'     => $post->transNo,
-                        'posts_uuid'  => $folderuuid,
-                        'posts_uuind' => $uuid,
-                        'path_url'    => asset("storage/{$path}"),
-                        'posts_type'  => 'video',
-                        'caption'     => $data['caption'] ?? null,
-                        'created_by'  => $fullname,
-                        'created_at'  => now(),
-                    ]);
                 }
             }
 
@@ -402,14 +393,14 @@ class PostController extends Controller
                 'success' => true,
                 'message' => 'Post updated successfully.',
                 'transNo' => $transNo,
-            ], 200);
+            ]);
 
         } catch (\Throwable $th) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $th->getMessage(),
-            ], 500);
+                'message' => 'Error: '.$th->getMessage(),
+            ]);
         }
     }
 
