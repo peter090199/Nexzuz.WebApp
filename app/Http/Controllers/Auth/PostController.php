@@ -272,7 +272,7 @@ class PostController extends Controller
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
                     'status'      => $data['status'], // save status for attachment
-                    'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
+                    'path_url'    => asset("storage/app/public/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                     'posts_type'  => 'video',
                     'created_by'  => $fullname,
                     'created_at'  => now(),
