@@ -166,10 +166,136 @@ class PostController extends Controller
     {
         //
     }
+    public function saveOrUpdatePost(Request $request, $transNo = null)
+    {
+        $data = $request->all();
 
-    /**
-     * Store a newly created resource in storage.
-     */
+        $validator = Validator::make($data, [
+            'caption' => 'nullable|string',
+            'status'  => 'required|integer', // status is now required
+            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
+            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $codeuser = Auth::user()->code;
+            $fullname = Auth::user()->fullname;
+
+            // ---------- CREATE NEW POST ----------
+            if (is_null($transNo)) {
+                $transNo = Post::max('transNo') ? Post::max('transNo') + 1 : 1;
+                $folderuuid = Str::uuid();
+
+                Post::create([
+                    'code'       => $codeuser,
+                    'posts_uuid' => $folderuuid,
+                    'transNo'    => $transNo,
+                    'caption'    => $data['caption'] ?? null,
+                    'status'     => $data['status'],
+                    'created_by' => $fullname,
+                    'updated_by' => '',
+                    'created_at' => now(),
+                ]);
+            }
+            // ---------- UPDATE EXISTING POST ----------
+            else {
+                $post = Post::where('transNo', $transNo)
+                    ->where('code', $codeuser)
+                    ->first();
+
+                if (!$post) {
+                    return response()->json(['success' => false, 'message' => 'Post not found.'], 404);
+                }
+
+                $folderuuid = $post->posts_uuid;
+
+                // Delete old attachments
+                $attachments = DB::table('attachmentposts')
+                    ->where('posts_uuid', $folderuuid)
+                    ->get();
+
+                foreach ($attachments as $a) {
+                    $path = str_replace(asset('storage') . '/', '', $a->path_url);
+                    Storage::disk('public')->delete($path);
+                }
+
+                DB::table('attachmentposts')
+                    ->where('posts_uuid', $folderuuid)
+                    ->delete();
+
+                // Update post
+                $post->update([
+                    'caption'    => $data['caption'] ?? $post->caption,
+                    'status'     => $data['status'], // update status
+                    'updated_by' => $fullname,
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // ---------- UPLOAD IMAGES ----------
+            if ($request->hasFile('posts')) {
+                foreach ($request->file('posts') as $file) {
+                    $uuid = Str::uuid();
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+
+                    DB::table('attachmentposts')->insert([
+                        'code'        => $codeuser,
+                        'transNo'     => $transNo,
+                        'posts_uuid'  => $folderuuid,
+                        'posts_uuind' => $uuid,
+                        'status'      => $data['status'], // save status for attachment
+                        'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
+                        'posts_type'  => 'image',
+                        'created_by'  => $fullname,
+                        'created_at'  => now(),
+                    ]);
+                }
+            }
+
+            // ---------- UPLOAD VIDEO ----------
+            if ($request->hasFile('video')) {
+                $video = $request->file('video');
+                $uuid = Str::uuid();
+                $filename = time() . '_' . $video->getClientOriginalName();
+                $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
+
+                DB::table('attachmentposts')->insert([
+                    'code'        => $codeuser,
+                    'transNo'     => $transNo,
+                    'posts_uuid'  => $folderuuid,
+                    'posts_uuind' => $uuid,
+                    'status'      => $data['status'], // save status for attachment
+                    'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
+                    'posts_type'  => 'video',
+                    'created_by'  => $fullname,
+                    'created_at'  => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Post saved/updated successfully.',
+                'transNo' => $transNo,
+            ]);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $th->getMessage(),
+            ]);
+        }
+    }
+
 
     public function savePost(Request $request)
     {
