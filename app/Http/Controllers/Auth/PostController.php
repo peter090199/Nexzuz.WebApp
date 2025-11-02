@@ -305,14 +305,14 @@ class PostController extends Controller
             }
 
             $folderuuid = $post->posts_uuid;
-            $status = $request->status ?? $post->status;
+            $status = $request->status;
 
             // ✅ Update posts table
             DB::table('posts')
                 ->where('transNo', $transNo)
                 ->where('code', $codeuser)
                 ->update([
-                    'caption'    => $request->caption ?? $post->caption,
+                    'caption'    => $request->caption,
                     'status'     => $status,
                     'updated_by' => $fullname,
                     'updated_at' => now(),
