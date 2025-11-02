@@ -372,7 +372,7 @@ class FollowController extends Controller
 
                 $result[] = [
                     "id"=> $post->id,
-                    "transNo"=>$posts->transNo,
+                    "transNo"=>$post->transNo,
                     "profile_pic" => $post->profile_pic,
                     "fullname" => $post->fullname,
                     "posts_uuid" => $post->posts_uuid,
