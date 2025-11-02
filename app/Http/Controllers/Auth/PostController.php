@@ -274,11 +274,10 @@ class PostController extends Controller
         }
     }
 
-    public function saveOrUpdatePost(Request $request, $transNo = null)
+    public function updatePostByTransNo(Request $request, $transNo)
     {
         $data = $request->all();
 
-        // ✅ Remove 'status' from validation (optional now)
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
@@ -292,58 +291,47 @@ class PostController extends Controller
 
         try {
             DB::beginTransaction();
+
             $codeuser = Auth::user()->code;
             $fullname = Auth::user()->fullname;
 
-            // CREATE NEW
-            if (is_null($transNo)) {
-                $transNo = Post::max('transNo') ? Post::max('transNo') + 1 : 1;
-                $folderuuid = Str::uuid();
+            // ✅ Find existing post
+            $post = Post::where('transNo', $transNo)
+                ->where('code', $codeuser)
+                ->first();
 
-                Post::create([
-                    'code'       => $codeuser,
-                    'posts_uuid' => $folderuuid,
-                    'transNo'    => $transNo,
-                    'caption'    => $data['caption'] ?? null,
-                    'created_by' => $fullname,
-                    'created_at' => now(),
-                ]);
-            }
-            // UPDATE EXISTING
-            else {
-                $post = Post::where('transNo', $transNo)->where('code', $codeuser)->first();
-                if (!$post) {
-                    return response()->json(['success' => false, 'message' => 'Post not found.'], 404);
-                }
-
-                $post->update([
-                    'caption'    => $data['caption'] ?? $post->caption,
-                    'updated_by' => $fullname,
-                    'updated_at' => now(),
-                ]);
-
-                $folderuuid = $post->posts_uuid;
-
-                // DELETE OLD ATTACHMENTS (if requested)
-                if (!empty($data['delete_attachments'])) {
-                    $attachments = DB::table('attachmentposts')
-                        ->where('transNo', $transNo)
-                        ->whereIn('posts_uuind', $data['delete_attachments'])
-                        ->get();
-
-                    foreach ($attachments as $a) {
-                        $path = str_replace(asset('storage') . '/', '', $a->path_url);
-                        Storage::disk('public')->delete($path);
-                    }
-
-                    DB::table('attachmentposts')
-                        ->where('transNo', $transNo)
-                        ->whereIn('posts_uuind', $data['delete_attachments'])
-                        ->delete();
-                }
+            if (!$post) {
+                return response()->json(['success' => false, 'message' => 'Post not found or not owned by user.'], 404);
             }
 
-            // UPLOAD IMAGES
+            $folderuuid = $post->posts_uuid;
+
+            // ✅ Update main post record
+            $post->update([
+                'caption'    => $data['caption'] ?? $post->caption,
+                'updated_by' => $fullname,
+                'updated_at' => now(),
+            ]);
+
+            // ✅ Delete attachments if requested
+            if (!empty($data['delete_attachments'])) {
+                $attachments = DB::table('attachmentposts')
+                    ->where('transNo', $transNo)
+                    ->whereIn('posts_uuind', $data['delete_attachments'])
+                    ->get();
+
+                foreach ($attachments as $a) {
+                    $path = str_replace(asset('storage') . '/', '', $a->path_url);
+                    Storage::disk('public')->delete($path);
+                }
+
+                DB::table('attachmentposts')
+                    ->where('transNo', $transNo)
+                    ->whereIn('posts_uuind', $data['delete_attachments'])
+                    ->delete();
+            }
+
+            // ✅ Upload new images
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
@@ -358,11 +346,12 @@ class PostController extends Controller
                         'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                         'posts_type'  => 'image',
                         'created_by'  => $fullname,
+                        'created_at'  => now(),
                     ]);
                 }
             }
 
-            // UPLOAD VIDEO
+            // ✅ Upload new video
             if ($request->hasFile('video')) {
                 $video = $request->file('video');
                 $uuid = Str::uuid();
@@ -377,14 +366,24 @@ class PostController extends Controller
                     'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                     'posts_type'  => 'video',
                     'created_by'  => $fullname,
+                    'created_at'  => now(),
                 ]);
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Post saved/updated successfully.', 'transNo' => $transNo]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Post updated successfully.',
+                'transNo' => $transNo
+            ]);
+
         } catch (\Throwable $th) {
             DB::rollBack();
-            return response()->json(['success' => false, 'message' => $th->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $th->getMessage(),
+            ]);
         }
     }
 
