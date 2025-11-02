@@ -319,7 +319,7 @@ class PostController extends Controller
                     ->where('transNo', $transNo)
                     ->whereIn('posts_uuind', $data['delete_attachments'])
                     ->get();
-
+                
                 foreach ($attachments as $a) {
                     $path = str_replace(asset('storage') . '/', '', $a->path_url);
                     Storage::disk('public')->delete($path);
