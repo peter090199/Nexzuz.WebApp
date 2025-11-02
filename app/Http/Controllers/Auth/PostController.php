@@ -159,20 +159,13 @@ class PostController extends Controller
     }
 
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-    public function saveOrUpdatePost(Request $request, $transNo = null)
+    public function updatePostByTransNo(Request $request, $transNo)
     {
         $data = $request->all();
 
         $validator = Validator::make($data, [
             'caption' => 'nullable|string',
-            'status'  => 'required|integer', // status is now required
+            'status'  => 'required|integer', // status is required
             'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
             'video'   => 'nullable|mimetypes:video/mp4|max:50000',
         ]);
@@ -187,58 +180,43 @@ class PostController extends Controller
             $codeuser = Auth::user()->code;
             $fullname = Auth::user()->fullname;
 
-            // ---------- CREATE NEW POST ----------
-            if (is_null($transNo)) {
-                $transNo = Post::max('transNo') ? Post::max('transNo') + 1 : 1;
-                $folderuuid = Str::uuid();
+            // ---------- FIND EXISTING POST ----------
+            $post = Post::where('transNo', $transNo)
+                ->where('code', $codeuser)
+                ->first();
 
-                Post::create([
-                    'code'       => $codeuser,
-                    'posts_uuid' => $folderuuid,
-                    'transNo'    => $transNo,
-                    'caption'    => $data['caption'] ?? null,
-                    'status'     => $data['status'],
-                    'created_by' => $fullname,
-                    'updated_by' => '',
-                    'created_at' => now(),
-                ]);
-            }
-            // ---------- UPDATE EXISTING POST ----------
-            else {
-                $post = Post::where('transNo', $transNo)
-                    ->where('code', $codeuser)
-                    ->first();
-
-                if (!$post) {
-                    return response()->json(['success' => false, 'message' => 'Post not found.'], 404);
-                }
-
-                $folderuuid = $post->posts_uuid;
-
-                // Delete old attachments
-                $attachments = DB::table('attachmentposts')
-                    ->where('posts_uuid', $folderuuid)
-                    ->get();
-
-                foreach ($attachments as $a) {
-                    $path = str_replace(asset('storage') . '/', '', $a->path_url);
-                    Storage::disk('public')->delete($path);
-                }
-
-                DB::table('attachmentposts')
-                    ->where('posts_uuid', $folderuuid)
-                    ->delete();
-
-                // Update post
-                $post->update([
-                    'caption'    => $data['caption'] ?? $post->caption,
-                    'status'     => $data['status'], // update status
-                    'updated_by' => $fullname,
-                    'updated_at' => now(),
-                ]);
+            if (!$post) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post not found or not owned by user.'
+                ], 404);
             }
 
-            // ---------- UPLOAD IMAGES ----------
+            $folderuuid = $post->posts_uuid;
+
+            // ---------- DELETE OLD ATTACHMENTS ----------
+            $attachments = DB::table('attachmentposts')
+                ->where('posts_uuid', $folderuuid)
+                ->get();
+
+            foreach ($attachments as $a) {
+                $path = str_replace(asset('storage') . '/', '', $a->path_url);
+                Storage::disk('public')->delete($path);
+            }
+
+            DB::table('attachmentposts')
+                ->where('posts_uuid', $folderuuid)
+                ->delete();
+
+            // ---------- UPDATE POST ----------
+            $post->update([
+                'caption'    => $data['caption'] ?? $post->caption,
+                'status'     => $data['status'],
+                'updated_by' => $fullname,
+                'updated_at' => now(),
+            ]);
+
+            // ---------- UPLOAD NEW IMAGES ----------
             if ($request->hasFile('posts')) {
                 foreach ($request->file('posts') as $file) {
                     $uuid = Str::uuid();
@@ -250,7 +228,7 @@ class PostController extends Controller
                         'transNo'     => $transNo,
                         'posts_uuid'  => $folderuuid,
                         'posts_uuind' => $uuid,
-                        'status'      => $data['status'], // save status for attachment
+                        'status'      => $data['status'],
                         'path_url'    => asset("storage/app/public/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                         'posts_type'  => 'image',
                         'created_by'  => $fullname,
@@ -259,7 +237,7 @@ class PostController extends Controller
                 }
             }
 
-            // ---------- UPLOAD VIDEO ----------
+            // ---------- UPLOAD NEW VIDEO ----------
             if ($request->hasFile('video')) {
                 $video = $request->file('video');
                 $uuid = Str::uuid();
@@ -271,7 +249,7 @@ class PostController extends Controller
                     'transNo'     => $transNo,
                     'posts_uuid'  => $folderuuid,
                     'posts_uuind' => $uuid,
-                    'status'      => $data['status'], // save status for attachment
+                    'status'      => $data['status'],
                     'path_url'    => asset("storage/app/public/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
                     'posts_type'  => 'video',
                     'created_by'  => $fullname,
@@ -283,7 +261,7 @@ class PostController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Post saved/updated successfully.',
+                'message' => 'Post updated successfully.',
                 'transNo' => $transNo,
             ]);
 
@@ -295,7 +273,6 @@ class PostController extends Controller
             ]);
         }
     }
-
 
     public function savePost(Request $request)
     {
@@ -400,253 +377,7 @@ class PostController extends Controller
         }
     }
 
-    public function updatePostByTransNo(Request $request, $transNo)
-    {
-        $data = $request->all();
-
-        $validator = Validator::make($data, [
-            'caption' => 'nullable|string',
-            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
-            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
-            'delete_attachments' => 'nullable|array',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $codeuser = Auth::user()->code;
-            $fullname = Auth::user()->fullname;
-
-            // ✅ Find existing post
-            $post = Post::where('transNo', $transNo)
-                ->where('code', $codeuser)
-                ->first();
-
-            if (!$post) {
-                return response()->json(['success' => false, 'message' => 'Post not found or not owned by user.'], 404);
-            }
-
-            $folderuuid = $post->posts_uuid;
-
-            // ✅ Update main post record
-            $post->update([
-                'caption'    => $data['caption'] ?? $post->caption,
-                'updated_by' => $fullname,
-                'updated_at' => now(),
-            ]);
-
-            // ✅ Delete attachments if requested
-            if (!empty($data['delete_attachments'])) {
-                $attachments = DB::table('attachmentposts')
-                    ->where('transNo', $transNo)
-                    ->whereIn('posts_uuind', $data['delete_attachments'])
-                    ->get();
-                
-                foreach ($attachments as $a) {
-                    $path = str_replace(asset('storage') . '/', '', $a->path_url);
-                    Storage::disk('public')->delete($path);
-                }
-
-                DB::table('attachmentposts')
-                    ->where('transNo', $transNo)
-                    ->whereIn('posts_uuind', $data['delete_attachments'])
-                    ->delete();
-            }
-
-            // ✅ Upload new images
-            if ($request->hasFile('posts')) {
-                foreach ($request->file('posts') as $file) {
-                    $uuid = Str::uuid();
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                    DB::table('attachmentposts')->insert([
-                        'code'        => $codeuser,
-                        'transNo'     => $transNo,
-                        'posts_uuid'  => $folderuuid,
-                        'posts_uuind' => $uuid,
-                        'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
-                        'posts_type'  => 'image',
-                        'created_by'  => $fullname,
-                        'created_at'  => now(),
-                    ]);
-                }
-            }
-
-            // ✅ Upload new video
-            if ($request->hasFile('video')) {
-                $video = $request->file('video');
-                $uuid = Str::uuid();
-                $filename = time() . '_' . $video->getClientOriginalName();
-                $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                DB::table('attachmentposts')->insert([
-                    'code'        => $codeuser,
-                    'transNo'     => $transNo,
-                    'posts_uuid'  => $folderuuid,
-                    'posts_uuind' => $uuid,
-                    'path_url'    => asset("storage/uploads/posts/{$codeuser}/{$folderuuid}/{$filename}"),
-                    'posts_type'  => 'video',
-                    'created_by'  => $fullname,
-                    'created_at'  => now(),
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Post updated successfully.',
-                'transNo' => $transNo
-            ]);
-
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: ' . $th->getMessage(),
-            ]);
-        }
-    }
-
-
-
-    public function updatePostByTransNoxx(Request $request, $transNo)
-    {
-        $data = $request->all();
-
-        $validator = Validator::make($data, [
-            'caption' => 'nullable|string',
-            'posts.*' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:3000',
-            'video'   => 'nullable|mimetypes:video/mp4|max:50000',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json(['message' => 'Unauthorized user.'], 401);
-            }
-
-            $codeuser = $user->code;
-            $fullname = $user->fullname;
-
-            $post = DB::table('posts')
-                ->where('transNo', $transNo)
-                ->where('code', $codeuser)
-                ->first();
-
-            if (!$post) {
-                return response()->json(['message' => 'Post not found or not owned by user.'], 404);
-            }
-
-            $folderuuid = $post->posts_uuid;
-
-            // ✅ Update caption only
-            DB::table('posts')
-                ->where('transNo', $transNo)
-                ->where('code', $codeuser)
-                ->update([
-                    'caption'    => $data['caption'] ?? $post->caption,
-                    'updated_by' => $fullname,
-                    'updated_at' => now(),
-                ]);
-
-            // ✅ If new files exist, replace old attachments
-            if ($request->hasFile('posts') || $request->hasFile('video')) {
-
-                // Delete old attachments
-                $oldAttachments = DB::table('attachmentposts')
-                    ->where('posts_uuid', $folderuuid)
-                    ->where('code', $codeuser)
-                    ->get();
-
-                foreach ($oldAttachments as $file) {
-                    $filePath = str_replace(asset('storage') . '/', '', $file->path_url);
-                    Storage::disk('public')->delete($filePath);
-                }
-
-                DB::table('attachmentposts')
-                    ->where('posts_uuid', $folderuuid)
-                    ->where('code', $codeuser)
-                    ->delete();
-
-                // ✅ Upload new images
-                if ($request->hasFile('posts')) {
-                    foreach ($request->file('posts') as $file) {
-                        if ($file->isValid()) {
-                            $uuid = (string) Str::uuid();
-                            $filename = time().'_'.$file->getClientOriginalName();
-                            $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                            $file->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                            DB::table('attachmentposts')->insert([
-                                'code'        => $codeuser,
-                                'transNo'     => $post->transNo,
-                                'posts_uuid'  => $folderuuid,
-                                'posts_uuind' => $uuid,
-                                'path_url'    => asset("storage/{$path}"),
-                                'posts_type'  => 'image',
-                                'caption'     => $data['caption'] ?? null,
-                                'created_by'  => $fullname,
-                                'created_at'  => now(),
-                            ]);
-                        }
-                    }
-                }
-
-                // ✅ Upload new video
-                if ($request->hasFile('video')) {
-                    $video = $request->file('video');
-                    if ($video->isValid()) {
-                        $uuid = (string) Str::uuid();
-                        $filename = time().'_'.$video->getClientOriginalName();
-                        $path = "uploads/posts/{$codeuser}/{$folderuuid}/{$filename}";
-                        $video->storeAs("uploads/posts/{$codeuser}/{$folderuuid}", $filename, 'public');
-
-                        DB::table('attachmentposts')->insert([
-                            'code'        => $codeuser,
-                            'transNo'     => $post->transNo,
-                            'posts_uuid'  => $folderuuid,
-                            'posts_uuind' => $uuid,
-                            'path_url'    => asset("storage/{$path}"),
-                            'posts_type'  => 'video',
-                            'caption'     => $data['caption'] ?? null,
-                            'created_by'  => $fullname,
-                            'created_at'  => now(),
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Post updated successfully.',
-                'transNo' => $transNo,
-            ]);
-
-        } catch (\Throwable $th) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error: '.$th->getMessage(),
-            ]);
-        }
-    }
-
-
-
+  
     public function store(Request $request)
     {
         $data = $request->all();
