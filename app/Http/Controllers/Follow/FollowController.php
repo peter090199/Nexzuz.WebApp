@@ -334,6 +334,7 @@ class FollowController extends Controller
                     (SELECT getUserprofilepic(p.code)) AS profile_pic,
                     (SELECT getFullname(p.code)) AS fullname,
                     p.id,
+                    p.transNo,
                     p.posts_uuid,
                     p.caption,
                     p.status,
