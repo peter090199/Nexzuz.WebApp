@@ -27,6 +27,7 @@ class PostController extends Controller
             try {
                 $requestedCode = $request->code;
                 $authCode = Auth::user()->code;
+                $fullname = Auth::user()->fname . ' ' . Auth::user()->lname;
 
                 $result = [];
 
@@ -68,7 +69,7 @@ class PostController extends Controller
                             "profile_pic" => $post->profile_pic,
                             "id"=>$post->id,
                             "transNo"=>$post->transNo,
-                            "fullname" => $post->fullname,
+                            "fullname" => $fullname,
                             "posts_uuid" => $post->posts_uuid,
                             "caption" => $post->caption,
                             "status" => $post->status,
