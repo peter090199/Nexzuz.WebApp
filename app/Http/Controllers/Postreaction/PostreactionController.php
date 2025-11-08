@@ -14,32 +14,29 @@ use Illuminate\Support\Facades\Validator;
 
 class PostreactionController extends Controller
 {
-    public function index()
-    {
-        //
-
-
-    }
-
-    public function create()
-    {
-        //
-    }
-
-    public function store(Request $request)
-    {
-        //
-    }
-
     public function show(string $id)
     {
-        $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,
-            post_uuidOrUind,reaction,created_at FROM reactions WHERE post_uuidOrUind = ? AND reaction !="Unlike"', [$id]);
+        $data = DB::select('
+            SELECT 
+                r.code,
+                CONCAT(u.fname, " ", u.lname) AS fullname,
+                pf.photo_pic AS photo_pic,
+                r.post_uuidOrUind,
+                r.reaction,
+                r.created_at
+            FROM reactions AS r
+            LEFT JOIN users AS u 
+                ON u.code = r.code
+            LEFT JOIN userprofiles AS pf 
+                ON pf.code = r.code
+            WHERE r.post_uuidOrUind = ?
+            AND r.reaction != "Unlike"
+        ', [$id]);
 
         $grouped = [];
         foreach ($data as $item) {
             $type = $item->reaction;
-    
+
             if (!isset($grouped[$type])) {
                 $grouped[$type] = [
                     'reaction' => $type,
@@ -47,27 +44,23 @@ class PostreactionController extends Controller
                     'person' => []
                 ];
             }
+
             $grouped[$type]['count']++;
             $grouped[$type]['person'][] = [
                 "code" => $item->code,
-                "fullname" =>$item->fullname,
-                "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
+                "fullname" => $item->fullname,
+                "photo_pic" => $item->photo_pic 
             ];
         }
+
         $react = array_values($grouped);
         $result = [
             'count' => count($data),
             'reaction' => $data,
             'react' => $react
         ];
-    
+
         return response()->json($result);
-    }
-
-
-    public function edit(string $id)
-    {
-        //
     }
 
     public function update(Request $request, string $id)
@@ -114,8 +107,4 @@ class PostreactionController extends Controller
     }
 
     
-    public function destroy(string $id)
-    {
-        //
-    }
 }
