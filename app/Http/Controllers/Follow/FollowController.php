@@ -452,8 +452,8 @@ class FollowController extends Controller
 
             $data = DB::select('
                 SELECT 
-                    (SELECT getUserprofilepic(p.code)) AS profile_pic,
-                    (SELECT getFullname(p.code)) AS fullname,
+                    pf.photo_pic AS profile_pic,
+                    CONCAT(u.fname, ' ', u.lname) AS fullname,
                     u.role_code,
                     p.id,
                     p.code,
@@ -466,6 +466,8 @@ class FollowController extends Controller
                     p.code AS post_owner
                 FROM posts AS p
                 LEFT JOIN users AS u ON u.code = p.code
+                LEFT JOIN userprofiles AS pf 
+                    ON pf.code = u.code
                 LEFT JOIN follows AS f1 
                     ON f1.following_code = p.code 
                     AND f1.follower_code = ? 
