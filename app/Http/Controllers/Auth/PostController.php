@@ -21,7 +21,7 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
-    
+    //test
     public function index(Request $request)
     {
         if (Auth::check()) {
