@@ -68,13 +68,27 @@ class ReactionController extends Controller
 
     public function getReactionPost(string $post_id)
     {
-        $data = DB::select('SELECT code,getFullname(code) AS fullname,getUserprofilepic(code) AS photo_pic,
-            post_id,reaction,create_at FROM reactionPost WHERE post_id = ? AND reaction !="Unlike"', [$post_id]);
+        $data = DB::select('
+            SELECT 
+                r.code,
+                CONCAT(u.fname, " ", u.lname) AS fullname,
+                pf.photo_pic AS photo_pic,
+                r.post_id,
+                r.reaction,
+                r.create_at
+            FROM reactionPost AS r
+            LEFT JOIN users AS u 
+                ON u.code = r.code
+            LEFT JOIN userprofiles AS pf 
+                ON pf.code = r.code
+            WHERE r.post_id = ?
+            AND r.reaction != "Unlike"
+        ', [$post_id]);
 
         $grouped = [];
         foreach ($data as $item) {
             $type = $item->reaction;
-    
+
             if (!isset($grouped[$type])) {
                 $grouped[$type] = [
                     'reaction' => $type,
@@ -82,20 +96,22 @@ class ReactionController extends Controller
                     'person' => []
                 ];
             }
+
             $grouped[$type]['count']++;
             $grouped[$type]['person'][] = [
                 "code" => $item->code,
-                "fullname" =>$item->fullname,
-                "photo_pic"=> $item->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png' 
+                "fullname" => $item->fullname,
+                "photo_pic" => $item->photo_pic 
             ];
         }
+
         $react = array_values($grouped);
         $result = [
             'count' => count($data),
             'reaction' => $data,
             'react' => $react
         ];
-    
+
         return response()->json($result);
     }
 
