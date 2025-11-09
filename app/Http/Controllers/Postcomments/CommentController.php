@@ -58,7 +58,7 @@ class CommentController extends Controller
                     $userrep = User::where('code', $rep->code)->first();
                     $replies[] = [
                         "profile_pic" => Userprofile::where('code', $rep->code)->value('photo_pic')
-                            ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                            ?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
                         "fullname" => $userrep->fname . ' ' . $userrep->lname,
                         "id" => $rep->id,
                         "comment_uuid" => $rep->comment_uuid,
@@ -77,7 +77,7 @@ class CommentController extends Controller
                 $result[$i] = [
                     
                     "profile_pic" => Userprofile::where('code', $commentpost[$i]->code)->value('photo_pic')
-                    ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                    ?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
                     "fullname" => $user->fname . ' ' . $user->lname,
                     "comment_uuid" => $commentpost[$i]->comment_uuid,
                     "post_uuidOrUind" => $commentpost[$i]->post_uuidOrUind,
