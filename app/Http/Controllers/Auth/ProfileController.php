@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 
+
+
 class ProfileController extends Controller
 {
     public function uploadCoverPhoto(Request $request)
@@ -565,16 +567,23 @@ class ProfileController extends Controller
         }
     }
 
-  
-    public function userAuthByCode($code) {
+
+    public function userAuthByCode($code)
+    {
         if (Auth::check()) {
-            $user = Resource::where('code', $code)->first();
+            $user = DB::table('resources')
+                ->leftJoin('userprofiles', 'resources.code', '=', 'userprofiles.code')
+                ->select('resources.*', 'userprofiles.photo_pic')
+                ->where('resources.code', $code)
+                ->first();
+
             if ($user) {
                 return response()->json([
                     'success' => true,
                     'message' => $user
                 ]);
             }
+
             return response()->json([
                 'success' => false,
                 'message' => 'User not found'
@@ -586,6 +595,27 @@ class ProfileController extends Controller
             'message' => 'User is not authenticated'
         ]);
     }
+
+    // public function userAuthByCode($code) {
+    //     if (Auth::check()) {
+    //         $user = Resource::where('code', $code)->first();
+    //         if ($user) {
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => $user
+    //             ]);
+    //         }
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'User not found'
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => 'User is not authenticated'
+    //     ]);
+    // }
 
 
 
