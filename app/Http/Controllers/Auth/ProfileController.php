@@ -27,102 +27,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    // public function uploadCoverPhoto(Request $request)
-    // {
-    //     // Ensure the user is authenticated
-    //     if (!Auth::check()) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Unauthorized access.',
-    //         ], 401);
-    //     }
-
-    //     $user = Auth::user();
-    //     $userCode = $user->code;
-    //     $coverPhotoPath = null;
-
-    //     try {
-    //         DB::beginTransaction();
-
-    //         // Validate the uploaded file
-    //         $validator = Validator::make($request->all(), [
-    //             'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
-    //         ]);
-
-    //         if ($validator->fails()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => $validator->errors()->all(),
-    //             ], 422);
-    //         }
-
-    //         // 🔹 Delete the old cover photo folder if exists
-    //         if ($user->coverphoto) {
-    //             // Convert full URL to relative storage path
-    //             $relativePath = str_replace(
-    //                 'https://exploredition.com/storage/app/public/',
-    //                 '',
-    //                 $user->coverphoto
-    //             );
-
-    //             // Get the folder containing the file
-    //             $folderPath = dirname($relativePath);
-
-    //             // Delete entire folder from 'public' disk
-    //             if (Storage::disk('public')->exists($folderPath)) {
-    //                 Storage::disk('public')->deleteDirectory($folderPath);
-    //             }
-    //         }
-
-    //         // 🔹 Handle new file upload
-    //         if ($request->hasFile('coverphoto')) {
-    //             $file = $request->file('coverphoto');
-    //             $uuid = Str::uuid();
-    //             $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
-    //             $fileName = time() . '.' . $file->getClientOriginalExtension();
-
-    //             // Store file in the "public" disk (storage/app/public)
-    //             $file->storeAs($folderPath, $fileName, 'public');
-
-    //             // Build accessible URL
-    //             $coverPhotoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
-    //         }
-
-    //         // 🔹 Update in database
-    //         DB::table('users')
-    //             ->where('code', $userCode)
-    //             ->update([
-    //                 'coverphoto' => $coverPhotoPath,
-    //                 'updated_at' => now(),
-    //             ]);
-
-    //         DB::table('resources')
-    //             ->where('code', $userCode)
-    //             ->update([
-    //                 'coverphoto' => $coverPhotoPath,
-    //                 'updated_at' => now(),
-    //             ]);
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Cover photo uploaded successfully.',
-    //             'coverphoto' => $coverPhotoPath
-    //         ], 201);
-
-    //     } catch (\Throwable $th) {
-    //         DB::rollBack();
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Error occurred: ' . $th->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
     public function uploadCoverPhoto(Request $request)
     {
-        // ✅ Ensure the user is authenticated
+        // Ensure the user is authenticated
         if (!Auth::check()) {
             return response()->json([
                 'success' => false,
@@ -132,51 +39,56 @@ class ProfileController extends Controller
 
         $user = Auth::user();
         $userCode = $user->code;
+        $coverPhotoPath = null;
 
         try {
-            // ✅ Validate uploaded file
+            DB::beginTransaction();
+
+            // Validate the uploaded file
             $validator = Validator::make($request->all(), [
-                'coverphoto' => 'required|image|mimes:jpeg,jpg,png,gif|max:5120', // 5MB
+                'coverphoto' => 'required|file|image|mimes:jpeg,jpg,png,gif|max:5120',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $validator->errors()->first(),
+                    'message' => $validator->errors()->all(),
                 ], 422);
             }
 
-            DB::beginTransaction();
-
-            // ✅ Delete old cover photo folder if exists
-            if (!empty($user->coverphoto)) {
-                // Convert full URL to relative path inside storage/app/public
+            // 🔹 Delete the old cover photo folder if exists
+            if ($user->coverphoto) {
+                // Convert full URL to relative storage path
                 $relativePath = str_replace(
-                    asset('storage') . '/',
+                    'https://exploredition.com/storage/app/public/',
                     '',
                     $user->coverphoto
                 );
 
-                // Get folder path and delete it if exists
+                // Get the folder containing the file
                 $folderPath = dirname($relativePath);
+
+                // Delete entire folder from 'public' disk
                 if (Storage::disk('public')->exists($folderPath)) {
                     Storage::disk('public')->deleteDirectory($folderPath);
                 }
             }
 
-            // ✅ Handle new file upload
-            $file = $request->file('coverphoto');
-            $uuid = Str::uuid();
-            $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
-            $fileName = time() . '.' . $file->getClientOriginalExtension();
+            // 🔹 Handle new file upload
+            if ($request->hasFile('coverphoto')) {
+                $file = $request->file('coverphoto');
+                $uuid = Str::uuid();
+                $folderPath = "uploads/{$userCode}/coverphoto/{$uuid}";
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
 
-            // Store file in public disk
-            $file->storeAs($folderPath, $fileName, 'public');
+                // Store file in the "public" disk (storage/app/public)
+                $file->storeAs($folderPath, $fileName, 'public');
 
-            // Generate public URL via storage symlink
-            $coverPhotoPath = asset("storage/{$folderPath}/{$fileName}");
+                // Build accessible URL
+                $coverPhotoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
+            }
 
-            // ✅ Update in users & resources tables
+            // 🔹 Update in database
             DB::table('users')
                 ->where('code', $userCode)
                 ->update([
@@ -207,7 +119,8 @@ class ProfileController extends Controller
             ], 500);
         }
     }
-    
+
+
     public function index()
     {
          if (Auth::check()) {
