@@ -58,7 +58,7 @@ class ProfileController extends Controller
             if ($user->coverphoto) {
                 // Convert full URL to relative storage path
                 $relativePath = str_replace(
-                    'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/',
+                    'https://exploredition.com/storage/app/public/',
                     '',
                     $user->coverphoto
                 );
@@ -83,7 +83,7 @@ class ProfileController extends Controller
                 $file->storeAs($folderPath, $fileName, 'public');
 
                 // Build accessible URL
-                $coverPhotoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
+                $coverPhotoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
             }
 
             // 🔹 Update in database
@@ -135,7 +135,7 @@ class ProfileController extends Controller
                     "email" => $resources[0]->email,
                     "fname" => $resources[0]->fname,
                     "lname" => $resources[0]->lname,
-                    "photo_pic" =>  $userprofile[$up]->photo_pic?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png'  ,
+                    "photo_pic" =>  $userprofile[$up]->photo_pic?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png'  ,
                     "contact_no" => $userprofile[$up]->contact_no,
                     "contact_visibility" => $userprofile[$up]->contact_visibility,
                     "email_visibility" => $userprofile[$up]->email_visibility,
@@ -415,7 +415,7 @@ class ProfileController extends Controller
                         "email" =>  $userprofile ? ($userprofile->code != Auth::user()->code && $userprofile->email_visibility === 0  ? ' '  : $resource[$r]->email ) : '',
                         "fname" => $resource[$r]->fname,
                         "lname" => $resource[$r]->lname,
-                        "photo_pic" => $userprofile->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                        "photo_pic" => $userprofile->photo_pic ?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
                         "contact_no" => $userprofile ? ($userprofile->code != Auth::user()->code && $userprofile->contact_visibility == 0  ? ' '  : $resource[$r]->contact_no ) : '',
                         "contact_visibility" => $userprofile->contact_visibility ??  null,
                         "email_visibility" => $userprofile->email_visibility ??  null,
@@ -673,7 +673,7 @@ class ProfileController extends Controller
                 $folderPath = "uploads/{$userCode}/cvphoto/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                $photoPath = "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/{$folderPath}/{$fileName}";
+                $photoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
             }
 
             $contactVisibility = isset($data['contact_visibility']) ? (bool) $data['contact_visibility'] : false;
@@ -831,7 +831,7 @@ class ProfileController extends Controller
                 "email" => $resource->email ?? null,
                 "fname" => $resource->fname ?? null,
                 "lname" => $resource->lname ?? null,
-                "photo_pic" => $profile->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                "photo_pic" => $profile->photo_pic ?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
                 "contact_no" => $profile->contact_no,
                 "contact_visibility" => $profile->contact_visibility,
                 "email_visibility" => $profile->email_visibility,

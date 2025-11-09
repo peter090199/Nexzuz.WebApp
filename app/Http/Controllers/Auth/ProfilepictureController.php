@@ -19,7 +19,7 @@ class ProfilepictureController extends Controller
     public function index()
     {
         //
-        $imagePath = "https://lightgreen-pigeon-122992.hostingersite.com/public/storage/app/public/uploads/702/cvphoto/d0bd7bb8-72f5-43ef-9f26-c382181982f9/HjL8tqsDplfNwrImxwf1YqANUilOt2KL5si1AVQ3.png";
+        $imagePath = "https://exploredition/public/storage/app/public/uploads/702/cvphoto/d0bd7bb8-72f5-43ef-9f26-c382181982f9/HjL8tqsDplfNwrImxwf1YqANUilOt2KL5si1AVQ3.png";
         return view('testuploads',compact('imagePath'));
     }
     /**
@@ -78,7 +78,7 @@ class ProfilepictureController extends Controller
 
                    if ($exists) {
                 UserProfile::where('code', $userCode)->update([
-                     'photo_pic' => "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/".$folderPath."/".$fileName,
+                     'photo_pic' => "https://exploredition.com/storage/app/public/".$folderPath."/".$fileName,
                 ]);
             } else {
                 $transNo = UserProfile::max('transNo');
@@ -87,7 +87,7 @@ class ProfilepictureController extends Controller
                 UserProfile::insert([
                     'code' => $folderPath,
                     'transNo' => $newTrans,
-                     'photo_pic' => "https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/".$folderPath."/".$fileName,
+                     'photo_pic' => "https://exploredition.com/storage/app/public/".$folderPath."/".$fileName,
                 ]);
             }
             DB::commit(); // Commit the transaction
