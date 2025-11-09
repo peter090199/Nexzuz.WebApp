@@ -438,7 +438,7 @@ class PostController extends Controller
                         'posts_uuid' => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status' => $data['status'],
-                        'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
+                        'path_url' => 'https://exploredition.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'posts_type' => $postType,
                         'created_by' => Auth::user()->fullname,
                     ]);
@@ -525,7 +525,7 @@ class PostController extends Controller
                             $profilePic = Userprofile::select('photo_pic')->where('code', $requestedCode)->first();
                             $result[] = [
                                 "Fullname" => $post->created_by,
-                                "photo_pic" => $profilePic->photo_pic ?? 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
+                                "photo_pic" => $profilePic->photo_pic ?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png',
                                 "status" => $post->status,
                                 "caption" => $post->caption,
                                 "posts_uuid" => $post->posts_uuid,
@@ -632,7 +632,7 @@ class PostController extends Controller
                         'posts_uuid' => $folderuuid,
                         'posts_uuind' => $uuid,
                         'status' => $data['status'],
-                        'path_url' => 'https://lightgreen-pigeon-122992.hostingersite.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
+                        'path_url' => 'https://exploredition.com/storage/app/public/uploads/posts/' . Auth::user()->code . '/' . $folderuuid . '/' . $filename,
                         'created_by' => Auth::user()->fullname,
                     ]);
 
