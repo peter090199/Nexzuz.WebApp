@@ -427,8 +427,7 @@ class ClientsDAL extends Model
         }
     }
 
-
-    public function getPeopleRecentActivity(): JsonResponse
+    public function getPeopleRecentActivityx1(): JsonResponse
     {
         try {
             $code = Auth::user()->code;
@@ -473,7 +472,7 @@ class ClientsDAL extends Model
                             AND ua.viewed_code = u.code
                         )
                 ) AS recent_activity
-                WHERE recent_activity.activity_type = 'view'
+                WHERE recent_activity.follow_status = 'not_following'
                 ORDER BY recent_activity.fullname ASC
             ", [$code, $code, $code, $code]);
 
