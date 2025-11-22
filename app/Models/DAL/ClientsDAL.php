@@ -473,7 +473,7 @@ class ClientsDAL extends Model
                             AND ua.viewed_code = u.code
                         )
                 ) AS recent_activity
-                WHERE recent_activity.Status = 'Active'
+                WHERE recent_activity.activity_type = 'view'
                 ORDER BY recent_activity.fullname ASC
             ", [$code, $code, $code, $code]);
 
