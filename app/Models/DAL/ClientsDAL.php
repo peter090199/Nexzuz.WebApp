@@ -427,68 +427,64 @@ class ClientsDAL extends Model
         }
     }
 
+    // public function getPeopleRecentActivity(): JsonResponse
+    // {
+    //     try {
+    //         $code = Auth::user()->code;
+
+    //         $results = DB::select("
+    //             SELECT 
+    //                 up.photo_pic,
+    //                 r.fullname,
+    //                 r.profession,
+    //                 r.company,
+    //                 r.role_code,
+    //                 r.industry,
+    //                 u.code,
+    //                 u.is_online,
+    //                 'history' AS source,
+    //                 ua.status AS status, 
+    //                 COALESCE(f1.id, f2.id) AS id,
+    //                 CASE 
+    //                     WHEN f1.follow_status = 'accepted' AND f2.follow_status = 'accepted' THEN 'connected'
+    //                     WHEN f1.follow_status IS NOT NULL THEN f1.follow_status
+    //                     WHEN f2.follow_status IS NOT NULL THEN f2.follow_status
+    //                     ELSE 'not_following'
+    //                 END AS follow_status
+
+    //             FROM users u
+    //             INNER JOIN resources r ON u.code = r.code
+    //             LEFT JOIN userprofiles up ON u.code = up.code
+
+    //             -- ⭐ join user_activity to display its follow_status
+    //             INNER JOIN user_activity ua 
+    //                 ON ua.viewed_code = u.code
+    //                 AND ua.viewer_code = ?
+
+    //             LEFT JOIN follows f1 ON f1.follower_code = ? AND f1.following_code = u.code
+    //             LEFT JOIN follows f2 ON f2.follower_code = u.code AND f2.following_code = ?
+
+    //             WHERE u.status = 'A'
+    //                 AND u.code != ?
+    //             ORDER BY r.fullname ASC
+    //         ", [$code, $code, $code, $code]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'count' => count($results),
+    //             'data' => $results,
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Something went wrong. Please try again later.'
+    //         ], 500);
+    //     }
+    // }
+
+
     public function getPeopleRecentActivity(): JsonResponse
-    {
-        try {
-            $code = Auth::user()->code;
-
-            $results = DB::select("
-                SELECT 
-                    up.photo_pic,
-                    r.fullname,
-                    r.profession,
-                    r.company,
-                    r.role_code,
-                    r.industry,
-                    u.code,
-                    u.is_online,
-                    'history' AS source,
-
-                    ua.status AS status,   -- ⭐ from user_activity table
-
-                    COALESCE(f1.id, f2.id) AS id,
-
-                    -- Original follow status logic
-                    CASE 
-                        WHEN f1.follow_status = 'accepted' AND f2.follow_status = 'accepted' THEN 'connected'
-                        WHEN f1.follow_status IS NOT NULL THEN f1.follow_status
-                        WHEN f2.follow_status IS NOT NULL THEN f2.follow_status
-                        ELSE 'not_following'
-                    END AS follow_status
-
-                FROM users u
-                INNER JOIN resources r ON u.code = r.code
-                LEFT JOIN userprofiles up ON u.code = up.code
-
-                -- ⭐ join user_activity to display its follow_status
-                INNER JOIN user_activity ua 
-                    ON ua.viewed_code = u.code
-                    AND ua.viewer_code = ?
-
-                LEFT JOIN follows f1 ON f1.follower_code = ? AND f1.following_code = u.code
-                LEFT JOIN follows f2 ON f2.follower_code = u.code AND f2.following_code = ?
-
-                WHERE u.status = 'A'
-                    AND u.code != ?
-                ORDER BY r.fullname ASC
-            ", [$code, $code, $code, $code]);
-
-            return response()->json([
-                'success' => true,
-                'count' => count($results),
-                'data' => $results,
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong. Please try again later.'
-            ], 500);
-        }
-    }
-
-
-    public function getPeopleRecentActivityx1x(): JsonResponse
     {
         try {
             $code = Auth::user()->code;
