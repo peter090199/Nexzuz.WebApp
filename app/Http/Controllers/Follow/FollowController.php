@@ -651,7 +651,7 @@ class FollowController extends Controller
                     ->delete();
 
                 $message = 'Unfollowed successfully.';
-                $followStatus = 'none';
+                $followStatus = 'not_following';
             } else {
                 // Follow (insert record)
                 DB::table('follows')->insert([
