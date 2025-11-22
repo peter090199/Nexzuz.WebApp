@@ -427,7 +427,7 @@ class ClientsDAL extends Model
         }
     }
 
-    public function getPeopleRecentActivityx1(): JsonResponse
+    public function getPeopleRecentActivity(): JsonResponse
     {
         try {
             $code = Auth::user()->code;
