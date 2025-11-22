@@ -444,7 +444,7 @@ class ClientsDAL extends Model
                     u.is_online,
                     'history' AS source,
 
-                    ua.follow_status AS activity_follow_status,   -- ⭐ from user_activity table
+                    ua.status AS status,   -- ⭐ from user_activity table
 
                     COALESCE(f1.id, f2.id) AS id,
 
