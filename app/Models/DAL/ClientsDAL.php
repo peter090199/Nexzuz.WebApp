@@ -472,7 +472,7 @@ class ClientsDAL extends Model
                             AND ua.viewed_code = u.code
                         )
                 ) AS recent_activity
-                WHERE recent_activity.follow_status = 'not_following'
+                WHERE recent_activity.follow_status = 'not_following'  OR recent_activity.follow_status IS NULL
                 ORDER BY recent_activity.fullname ASC
             ", [$code, $code, $code, $code]);
 
