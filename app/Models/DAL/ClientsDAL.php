@@ -473,8 +473,7 @@ class ClientsDAL extends Model
                             AND ua.viewed_code = u.code
                         )
                 ) AS recent_activity
-                WHERE recent_activity.follow_status = 'pending'
-                OR recent_activity.follow_status IS NULL
+                WHERE recent_activity.Status = 'Active'
                 ORDER BY recent_activity.fullname ASC
             ", [$code, $code, $code, $code]);
 
