@@ -558,6 +558,86 @@ class FollowController extends Controller
                     f1.follower_code IS NOT NULL
                     OR f2.following_code IS NOT NULL
                     OR p.code = ?
+                    OR u.role_code = 'DEF-MASTERADMIN' 
+                )
+                ORDER BY p.created_at DESC
+            ", [$currentUserCode, $currentUserCode, $currentUserCode]);
+
+            $result = [];
+
+            foreach ($data as $post) {
+
+                $attachments = DB::table('attachmentposts')
+                    ->where('posts_uuid', $post->posts_uuid)
+                    ->where(function($query) use ($currentUserCode) {
+                        $query->where('status', 1)
+                            ->orWhere('code', $currentUserCode);
+                    })
+                    ->get();
+
+                $images = $attachments->where('posts_type', 'image')->values();
+                $videos = $attachments->where('posts_type', 'video')->values();
+
+                $result[] = [
+                    "id" => $post->id,
+                    "transNo" => $post->transNo,
+                    "profile_pic" => $post->profile_pic,
+                    "fullname" => $post->fullname,
+                    "is_online"=> $post->is_online,
+                    "role_code" => $post->role_code,
+                    "code" => $post->code,
+                    "posts_uuid" => $post->posts_uuid,
+                    "caption" => $post->caption,
+                    "status" => $post->status,
+                    "created_at" => $post->created_at,
+                    "updated_at" => $post->updated_at,
+                    "images" => $images,
+                    "videos" => $videos
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $result
+            ]);
+        }
+
+
+        public function getPostx22()
+        {
+            $currentUserCode = Auth::user()->code;
+
+            $data = DB::select("
+                SELECT 
+                    pf.photo_pic AS profile_pic,
+                    CONCAT(u.fname, ' ', u.lname) AS fullname,
+                    u.role_code,
+                    u.is_online,
+                    p.id,
+                    p.code,
+                    p.transNo,
+                    p.posts_uuid,
+                    p.caption,
+                    p.status,
+                    p.created_at,
+                    p.updated_at,
+                    p.code AS post_owner
+                FROM posts AS p
+                LEFT JOIN users AS u ON u.code = p.code
+                LEFT JOIN userprofiles AS pf ON pf.code = u.code
+                LEFT JOIN follows AS f1 
+                    ON f1.following_code = p.code 
+                    AND f1.follower_code = ? 
+                    AND f1.follow_status = 'accepted'
+                LEFT JOIN follows AS f2 
+                    ON f2.follower_code = p.code 
+                    AND f2.following_code = ? 
+                    AND f2.follow_status = 'accepted'
+                WHERE p.status = 1
+                AND (
+                    f1.follower_code IS NOT NULL
+                    OR f2.following_code IS NOT NULL
+                    OR p.code = ?
                 )
                 ORDER BY p.created_at DESC
             ", [$currentUserCode, $currentUserCode, $currentUserCode]);
