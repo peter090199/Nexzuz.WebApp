@@ -22,14 +22,12 @@ class JobListController extends Controller
         ]);
     }
 
-    public function getActiveJobsByCode()
+    public function getActiveJobsByCode($code)
     {
-        $currentUserCode = Auth::user()->code;
-
-        $jobs = DB::table('jobPosting')  
+        $jobs = DB::table('jobPosting')
             ->where('recordstatus', 'active')
-            ->where('code', $currentUserCode)  // FILTER BY OWNER
-            ->orderBy('created_at', 'desc')
+            ->where('code', $code) 
+            ->orderByDesc('created_at') 
             ->get();
 
         return response()->json([

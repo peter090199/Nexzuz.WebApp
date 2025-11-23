@@ -220,7 +220,7 @@
     Route::delete('deleteJobPosting/{id}', [JobPostingController::class, 'deleteJobPosting']);
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
-    Route::get('getActiveJobsByCode', [JobListController::class, 'getActiveJobsByCode']);
+    Route::get('getActiveJobsByCode/{code}', [JobListController::class, 'getActiveJobsByCode']);
     //company profile
     Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
     Route::get('country_codes', function () {
