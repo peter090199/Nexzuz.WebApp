@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Jobs\QuestionController;
 use App\Models\Jobs\Question;
 use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\Storage;
 
 class JobPostingController extends Controller
 {
@@ -262,6 +263,7 @@ class JobPostingController extends Controller
         }
     }
 
+ 
     public function deleteJobPosting($transNo)
     {
         try {
@@ -274,7 +276,7 @@ class JobPostingController extends Controller
                 ], 401);
             }
 
-            // Find the job that belongs to the logged-in user
+            // Find job by transNo + owner code
             $job = JobPosting::where('transNo', $transNo)
                 ->where('code', $user->code)
                 ->first();
@@ -286,14 +288,36 @@ class JobPostingController extends Controller
                 ], 404);
             }
 
+            DB::beginTransaction();
+
+            // Delete job image from storage if exists
+            if ($job->job_image && Storage::exists($job->job_image)) {
+                Storage::delete($job->job_image);
+            }
+
+            // Delete related applied questions
+            DB::table('applied_questions')
+                ->where('transNo', $transNo)
+                ->delete();
+
+            // Delete related applied resumes
+            DB::table('applied_resumes')
+                ->where('transNo', $transNo)
+                ->delete();
+
+            // Delete the job posting
             $job->delete();
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Job deleted successfully.',
+                'message' => 'Job, related data, and image deleted successfully.',
             ], 200);
 
         } catch (\Throwable $e) {
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while deleting the job.',
@@ -301,4 +325,5 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
+
 }
