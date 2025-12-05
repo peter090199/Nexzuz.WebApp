@@ -12,7 +12,7 @@ class JobPosting extends Model
     protected $table = 'jobPosting'; 
 
     protected $fillable = [
-        'id',
+        'job_id',
         'transNo',
         'code',
         'role_code',

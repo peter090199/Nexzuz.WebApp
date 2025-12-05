@@ -274,7 +274,7 @@ class JobPostingController extends Controller
             }
 
             // Get job that belongs to the authenticated user
-            $job = JobPosting::where('id', $id)
+            $job = JobPosting::where('job_id', $id)
                 ->where('code', $user->code)
                 ->first();
 
