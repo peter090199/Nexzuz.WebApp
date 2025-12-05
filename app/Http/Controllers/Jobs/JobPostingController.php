@@ -262,31 +262,45 @@ class JobPostingController extends Controller
         }
     }
 
-    public function deleteJobPosting($job_id)
-    {
-        try {
-            $code = Auth::user()->code;
-
-            $job = JobPosting::where('job_id', $job_id)
-                ->where('code', $code) // ✅ only delete own jobs
-                ->firstOrFail();
-
-            $job->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Job deleted successfully!',
-            ], 200);
-
-        } catch (\Exception $e) {
+public function deleteJobPosting($job_id)
+{
+    try {
+        $user = Auth::user();
+        if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong while deleting the job.',
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => 'Unauthorized.',
+            ], 401);
         }
-    }
 
+        // Get job that belongs to the authenticated user
+        $job = JobPosting::where('job_id', $job_id)
+            ->where('code', $user->code)
+            ->first();
+
+        // If not found or not owned by the user
+        if (!$job) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job not found or you are not authorized to delete it.',
+            ], 404);
+        }
+
+        $job->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Job deleted successfully.',
+        ], 200);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred while deleting the job.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
 
 
 
