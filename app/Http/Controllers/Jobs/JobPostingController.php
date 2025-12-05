@@ -262,10 +262,11 @@ class JobPostingController extends Controller
         }
     }
 
-    public function deleteJobPosting($id)
+    public function deleteJobPosting($job_id)
     {
         try {
             $user = Auth::user();
+
             if (!$user) {
                 return response()->json([
                     'success' => false,
@@ -273,12 +274,11 @@ class JobPostingController extends Controller
                 ], 401);
             }
 
-            // Get job that belongs to the authenticated user
-            $job = JobPosting::where('job_id', $id)
+            // Find the job that belongs to the logged-in user
+            $job = JobPosting::where('job_id', $job_id)
                 ->where('code', $user->code)
                 ->first();
 
-            // If not found or not owned by the user
             if (!$job) {
                 return response()->json([
                     'success' => false,
@@ -301,29 +301,4 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
