@@ -211,7 +211,7 @@ class JobPostingController extends Controller
             $code = Auth::user()->code; 
 
             $jobs = JobPosting::where('code', $code)
-            ->orderBy('job_name', 'asc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
            $questions = Question::where('code', $code)
