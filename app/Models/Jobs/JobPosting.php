@@ -1,15 +1,34 @@
 <?php
+
 namespace App\Models\Jobs;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class JobPosting extends Model
 {
-     use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory;
 
-    protected $table = 'jobPosting'; 
+    protected $table = 'jobPosting';  // your actual table name
+
+    /**
+     * Set primary key to job_id
+     */
+    protected $primaryKey = 'job_id';
+
+    /**
+     * If job_id in your database is AUTO_INCREMENT = YES → use this:
+     */
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    /**
+     * If job_id is NOT auto increment (e.g., generated manually),
+     * change to:
+     *
+     *   public $incrementing = false;
+     *   protected $keyType = 'string';
+     */
 
     protected $fillable = [
         'job_id',
@@ -27,9 +46,6 @@ class JobPosting extends Model
         'fullname',
         'is_online',
         'location',
-        'benefits'
+        'benefits',
     ];
-
-
-
 }
