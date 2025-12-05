@@ -1,5 +1,5 @@
 
-@token = 1782|v6GLdVEkyVtxsIVOTM1HHa1UJsZYkWLQ0pjQUedB5d4734ca
+@token = 1926|TbvOE9otQHpBFVligIFDFmACHd9bwn694MBnlTIl820900fb
 
 ### Login
 POST http://127.0.0.1:8000/api/login
