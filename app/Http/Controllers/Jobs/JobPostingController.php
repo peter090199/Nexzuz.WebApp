@@ -267,7 +267,7 @@ class JobPostingController extends Controller
         try {
             $code = Auth::user()->code;
 
-            $job = JobPosting::where('id', $id)
+            $job = JobPosting::where('job_id', $id)
                 ->where('code', $code) // ✅ only delete own jobs
                 ->firstOrFail();
 
