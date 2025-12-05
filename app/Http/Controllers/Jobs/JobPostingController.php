@@ -214,9 +214,14 @@ class JobPostingController extends Controller
             ->orderBy('job_name', 'asc')
             ->get();
 
+           $questions = Question::where('code', $code)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
             return response()->json([
                 'success' => true,
-                'jobs' => $jobs
+                'jobs' => $jobs,
+                'questions' => $questions
             ], 200);
 
         } catch (\Exception $e) {
