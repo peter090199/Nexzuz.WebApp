@@ -289,7 +289,6 @@ class JobPostingController extends Controller
             }
 
             DB::beginTransaction();
-
             // Delete job image from storage if exists
             if ($job->job_image && Storage::exists($job->job_image)) {
                 Storage::delete($job->job_image);
@@ -300,19 +299,13 @@ class JobPostingController extends Controller
                 ->where('transNo', $transNo)
                 ->delete();
 
-            // Delete related applied resumes
-            DB::table('applied_resumes')
-                ->where('transNo', $transNo)
-                ->delete();
-
-            // Delete the job posting
-            $job->delete();
+                $job->delete();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Job, related data, and image deleted successfully.',
+                'message' => 'Job deleted successfully.',
             ], 200);
 
         } catch (\Throwable $e) {
