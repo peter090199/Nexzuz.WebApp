@@ -217,7 +217,7 @@
     Route::put('saveOrUpdateJobPosting/{id}', [JobPostingController::class, 'saveOrUpdateJobPosting']); 
     Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
     Route::get('getJobPostingByTransNo/{transNo}', [JobPostingController::class, 'getJobPostingByTransNo']);
-    Route::delete('deleteJobPosting/{job_id}', [JobPostingController::class, 'deleteJobPosting']);
+    Route::delete('deleteJobPosting/{transNo}', [JobPostingController::class, 'deleteJobPosting']);
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
     Route::get('getActiveJobsByCode/{code}', [JobListController::class, 'getActiveJobsByCode']);

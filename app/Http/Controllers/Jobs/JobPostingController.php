@@ -262,7 +262,7 @@ class JobPostingController extends Controller
         }
     }
 
-    public function deleteJobPosting($job_id)
+    public function deleteJobPosting($transNo)
     {
         try {
             $user = Auth::user();
@@ -275,7 +275,7 @@ class JobPostingController extends Controller
             }
 
             // Find the job that belongs to the logged-in user
-            $job = JobPosting::where('job_id', $job_id)
+            $job = JobPosting::where('transNo', $transNo)
                 ->where('code', $user->code)
                 ->first();
 
