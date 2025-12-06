@@ -201,10 +201,9 @@ class AppliedJobController extends Controller
         ]);
     }
 
-
     public function getAppliedStatus($transNo)
     {
-        $user = Auth::user(); // get logged-in user
+        $user = Auth::user();
 
         if (!$user) {
             return response()->json([
@@ -213,25 +212,72 @@ class AppliedJobController extends Controller
             ], 401);
         }
 
-        // Fetch applied job by transNo and user code
+        // 1. Check if there is a record for this transNo and user code
         $job = DB::table('applied_jobs')
             ->where('transNo', $transNo)
             ->where('code', $user->code)
             ->select('applied_status')
             ->first();
 
-        if (!$job) {
+        if ($job) {
+            // Return actual applied_status
             return response()->json([
-                'success' => false,
-                'message' => 'default',
-            ], 200);
+                'success' => true,
+                'applied_status' => $job->applied_status,
+            ]);
         }
 
+        // 2. If no record found with transNo, check if user has ANY applied_jobs at all
+        $anyJob = DB::table('applied_jobs')
+            ->where('code', $user->code)
+            ->select('applied_status')
+            ->first();
+
+        if (!$anyJob) {
+            // User has no applied jobs → return default
+            return response()->json([
+                'success' => true,
+                'applied_status' => 'default',
+            ]);
+        }
+
+        // 3. If user has applied jobs but not this transNo → still return default
         return response()->json([
             'success' => true,
-            'applied_status' => $job->applied_status,
+            'applied_status' => 'default',
         ]);
     }
+
+    // public function getAppliedStatus($transNo)
+    // {
+    //     $user = Auth::user(); // get logged-in user
+
+    //     if (!$user) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Unauthorized',
+    //         ], 401);
+    //     }
+
+    //     // Fetch applied job by transNo and user code
+    //     $job = DB::table('applied_jobs')
+    //         ->where('transNo', $transNo)
+    //         ->where('code', $user->code)
+    //         ->select('applied_status')
+    //         ->first();
+
+    //     if (!$job) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'default',
+    //         ], 200);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'applied_status' => $job->applied_status,
+    //     ]);
+    // }
 
     public function updateAppliedStatusx(Request $request, $transNo)
     {
