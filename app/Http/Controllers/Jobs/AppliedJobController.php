@@ -173,7 +173,7 @@ class AppliedJobController extends Controller
         $job = DB::table('applied_jobs')->where('transNo', $transNo)->first();
 
         if ($job) {
-          DB::table('job_postings') // make sure the table name is correct
+          DB::table('jobPosting') // make sure the table name is correct
             ->where('code', $job->code)
             ->where('transNo', $job->transNo)
             ->update(['applied_status' => $status]);
