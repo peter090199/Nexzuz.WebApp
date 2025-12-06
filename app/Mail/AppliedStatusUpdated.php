@@ -25,11 +25,10 @@ class AppliedStatusUpdated extends Mailable
     {
        return $this->subject('Job Application Status Updated')
             ->view('email.applied_status_updated') // <-- must match file path
-            ->with([
-                'jobName' => $this->job->job_name,
-                'status' => $this->status,
-                'fullname' => $this->job->fullname,
-            ]);
+             ->with([
+                    'subject' => 'Application Status Update',
+                    'messageText' => "Your application for '{$this->job->job_name}' has been updated to '{$this->status}'."
+                ]);
 
     }
 }
