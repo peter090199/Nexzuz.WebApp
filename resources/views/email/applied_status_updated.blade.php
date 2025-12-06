@@ -1,7 +1,89 @@
-<h3>Hello {{ $fullname }},</h3>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Application Status Updated</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
 
-<p>Your application for the job <strong>{{ $jobName }}</strong> has been updated.</p>
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
 
-<p>Current Status: <strong>{{ $status }}</strong></p>
+        h3 {
+            color: #2a3f54;
+            margin-bottom: 10px;
+        }
 
-<p>Thank you for using our platform!</p>
+        p {
+            font-size: 15px;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        strong {
+            color: #2c7be5;
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 13px;
+            color: #777;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #2c7be5;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        @media screen and (max-width: 480px) {
+            .email-container {
+                padding: 15px;
+            }
+
+            h3 {
+                font-size: 20px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h3>Dear {{ $fullname }},</h3>
+
+        <p>Your application for the position <strong>{{ $jobName }}</strong> has been updated.</p>
+
+        <p>
+            Current Status: 
+            <span class="status-badge">{{ $status }}</span>
+        </p>
+
+        <p>Thank you for your interest in joining our team.  
+        We appreciate the time and effort you invested in the application process.</p>
+
+        <div class="footer">
+            &copy; {{ date('Y') }} {{ config('app.name') }} – All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

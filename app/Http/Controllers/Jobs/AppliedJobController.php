@@ -190,7 +190,7 @@ class AppliedJobController extends Controller
                 'receiver_id' => $receiver->id,
                 'message'     => $messageText
             ]);
-
+            //notify app
             $chatController->sendMessage($requestMessage);
         }
 
