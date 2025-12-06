@@ -8,7 +8,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: Verdana;
+            font-family: Verdana, sans-serif;
             background-color: #f5f7fa;
         }
 
@@ -86,11 +86,21 @@
                 @elseif(strtolower($status) == 'rejected') status-rejected
                 @endif
             ">
-                {{ $status }}
+                {{ ucfirst($status) }}
             </span>
         </p>
 
-        <p>Thank you for your interest in joining our team. We appreciate your time and effort in the application process.</p>
+        <p>
+            @if(strtolower($status) == 'review')
+                Your application is currently under review. We will notify you once the evaluation is complete.
+            @elseif(strtolower($status) == 'approved')
+                Congratulations! Your application has been approved. Our team will contact you with the next steps.
+            @elseif(strtolower($status) == 'rejected')
+                We regret to inform you that your application has not been successful. We encourage you to apply for future opportunities.
+            @else
+                Your application status has been updated to <strong>{{ $status }}</strong>.
+            @endif
+        </p>
 
         <div class="footer">
             &copy; {{ date('Y') }} {{ config('app.name') }} – All rights reserved.
