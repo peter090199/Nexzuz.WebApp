@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Application Status Update</title>
     <style>
+        /* General styles */
         body {
-            font-family: Verdana;
-            background-color: #f5f7fa;
             margin: 0;
             padding: 0;
+            font-family: Verdana;
+            background-color: #f5f7fa;
         }
 
         .email-container {
             max-width: 600px;
             margin: 20px auto;
-            background: #ffffff;
+            background-color: #ffffff;
             padding: 25px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -34,23 +35,17 @@
 
         .status-badge {
             display: inline-block;
-            padding: 6px 12px;
-            color: white;
+            padding: 8px 15px;
             border-radius: 4px;
             font-weight: bold;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
         }
 
-        .status-review {
-            background-color: #f0ad4e; /* orange for review */
-        }
-
-        .status-approved {
-            background-color: #28a745; /* green for approved */
-        }
-
-        .status-rejected {
-            background-color: #dc3545; /* red for rejected */
-        }
+        .status-review { background-color: #f0ad4e; }   /* Orange */
+        .status-approved { background-color: #28a745; } /* Green */
+        .status-rejected { background-color: #dc3545; } /* Red */
 
         .footer {
             margin-top: 25px;
@@ -59,10 +54,21 @@
             text-align: center;
         }
 
+        /* Responsive styles */
         @media screen and (max-width: 480px) {
-            .email-container { padding: 15px; }
-            h3 { font-size: 20px; }
-            p { font-size: 14px; }
+            .email-container {
+                padding: 15px;
+            }
+            h3 {
+                font-size: 18px;
+            }
+            p {
+                font-size: 14px;
+            }
+            .status-badge {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
