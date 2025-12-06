@@ -5,7 +5,7 @@
     <title>Application Status Updated</title>
     <style>
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Verdana;
             background-color: #f5f7fa;
             margin: 0;
             padding: 0;
