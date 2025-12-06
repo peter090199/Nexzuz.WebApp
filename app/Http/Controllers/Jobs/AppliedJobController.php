@@ -223,7 +223,7 @@ class AppliedJobController extends Controller
         if (!$job) {
             return response()->json([
                 'success' => false,
-                'message' => 'Job application not found.',
+                'message' => 'default',
             ], 404);
         }
 
