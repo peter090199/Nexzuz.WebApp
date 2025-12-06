@@ -211,7 +211,13 @@ class AppliedJobController extends Controller
                 'message' => 'Unauthorized',
             ], 401);
         }
-
+        // ❗ Check if transNo is empty or not provided
+            if (!$transNo || $transNo == "" || $transNo == null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'transNo is required',
+                ], 400);
+            }
         // 1. Check if there is a record for this transNo and user code
         $job = DB::table('applied_jobs')
             ->where('transNo', $transNo)
