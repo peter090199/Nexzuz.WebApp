@@ -211,14 +211,29 @@ class AppliedJobController extends Controller
                 'message' => 'Unauthorized',
             ], 401);
         }
-        // ❗ Check if transNo is empty or not provided
-            if (!$transNo || $transNo == "" || $transNo == null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'transNo is required',
-                ], 400);
-            }
-        // 1. Check if there is a record for this transNo and user code
+
+        // ❗ Check if transNo is empty
+        if (!$transNo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'transNo is required',
+            ], 400);
+        }
+
+        // ❗ Check if transNo exists in the entire applied_jobs table
+        $transNoExists = DB::table('applied_jobs')
+            ->where('transNo', $transNo)
+            ->exists();
+
+        if (!$transNoExists) {
+            // ❌ transNo DOES NOT exist in the database
+            return response()->json([
+                'success' => false,
+                'message' => 'transNo does not exist in the database',
+            ], 404);
+        }
+
+        // ✔ Check if this user applied to this specific transNo
         $job = DB::table('applied_jobs')
             ->where('transNo', $transNo)
             ->where('code', $user->code)
@@ -226,28 +241,26 @@ class AppliedJobController extends Controller
             ->first();
 
         if ($job) {
-            // Return actual applied_status
+            // ✔ Return actual applied_status
             return response()->json([
                 'success' => true,
                 'applied_status' => $job->applied_status,
             ]);
         }
 
-        // 2. If no record found with transNo, check if user has ANY applied_jobs at all
+        // ✔ If user has no applied jobs at all → return default
         $anyJob = DB::table('applied_jobs')
             ->where('code', $user->code)
-            ->select('applied_status')
             ->first();
 
         if (!$anyJob) {
-            // User has no applied jobs → return default
             return response()->json([
                 'success' => true,
                 'applied_status' => 'default',
             ]);
         }
 
-        // 3. If user has applied jobs but not this transNo → still return default
+        // ✔ User applied to other jobs but not this transNo → return default
         return response()->json([
             'success' => true,
             'applied_status' => 'default',
