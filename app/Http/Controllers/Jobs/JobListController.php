@@ -13,7 +13,7 @@ class JobListController extends Controller
     {
             $jobs = DB::table('jobPosting')
             ->where('recordstatus', 'active')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json([

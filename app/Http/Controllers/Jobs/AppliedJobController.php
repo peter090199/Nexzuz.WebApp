@@ -146,8 +146,70 @@ class AppliedJobController extends Controller
         ]);
     }
 
-
     public function updateAppliedStatus(Request $request, $transNo)
+    {
+        $user = Auth::user();
+
+        // Validate request
+        $request->validate([
+            'status' => 'required|string|max:50',
+        ]);
+
+        $status = $request->input('status');
+
+        // Update applied_jobs table
+        $updated = DB::table('applied_jobs')
+            ->where('transNo', $transNo)
+            ->update(['applied_status' => $status]);
+
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update applied status. Record may not exist or unauthorized.'
+            ]);
+        }
+
+        // Fetch updated applied job details
+        $job = DB::table('applied_jobs')->where('transNo', $transNo)->first();
+
+        if ($job) {
+            DB::table('jobPosting')
+                ->where('code', $job->code)
+                ->update(['applied_status' => $status]);
+
+            // --- Send email notification ---
+            if ($job->email) {
+                Mail::to($job->email)->send(new AppliedStatusUpdated($job, $status));
+            }
+
+            // --- Notify user via chat ---
+            $receiver = DB::table('users')
+                ->where('code', $job->code)
+                ->select('id')
+                ->first();
+
+            if ($receiver) {
+                $chatController = new ChatController();
+                $messageText =
+                    "Subject: Application Status Update " .
+                    "Your application for '{$job->job_name}' has been updated to '{$status}'.";
+
+                $requestMessage = new Request([
+                    'receiver_id' => $receiver->id,
+                    'message'     => $messageText
+                ]);
+
+                $chatController->sendMessage($requestMessage);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Applied status updated to '{$status}' in applied_jobs and job_postings, email sent, and message notification sent."
+        ]);
+    }
+
+    public function updateAppliedStatusx(Request $request, $transNo)
     {
         $user = Auth::user();
         $request->validate([
@@ -193,24 +255,6 @@ class AppliedJobController extends Controller
             //notify app
             $chatController->sendMessage($requestMessage);
         }
-
-
-        //  if ($receiver) {
-        //     $subject = "Application Status Update";
-        //     $messageText = "Your application for '{$job->job_name}' has been updated to '{$status}'.";
-
-        //     // Prepare message for ChatController
-        //     $requestMessage = new Request([
-        //         'receiver_id' => $receiver->id,
-        //         'message' => "Subject: {$subject}\n{$messageText}"
-        //     ]);
-
-        //     // Send chat message
-        //     $chatController = new ChatController();
-        //     $response = $chatController->sendMessage($requestMessage);
-        // }
-
-
         return response()->json([
             'success' => true,
             'message' => "Applied status updated to '{$status}', email sent, and message notification sent."
