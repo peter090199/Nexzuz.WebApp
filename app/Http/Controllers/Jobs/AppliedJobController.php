@@ -181,11 +181,14 @@ class AppliedJobController extends Controller
             ->first();
 
         if ($receiver) {
-            // --- Send in-app message via ChatController ---
-            $this->sendMessage(
-                $receiver->id,
-                "Your application for '{$job->job_name}' has been updated to '{$status}'."
-            );
+            $chatController = new ChatController();
+
+            $requestMessage = new Request([
+                'receiver_id' => $receiver->id,
+                'message' => "Your application for '{$job->job_name}' has been updated to '{$status}'."
+            ]);
+
+            $response = $chatController->sendMessage($requestMessage);
         }
 
         return response()->json([

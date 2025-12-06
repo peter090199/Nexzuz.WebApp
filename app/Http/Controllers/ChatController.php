@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Events\MessageSent;
 use App\Models\Message;
 use App\Events\NotificationCountUpdated;
+use App\Http\Controllers\Jobs\AppliedJobController;
 
 class ChatController extends Controller
 {
