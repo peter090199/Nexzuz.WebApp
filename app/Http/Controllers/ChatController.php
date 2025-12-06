@@ -35,8 +35,6 @@ class ChatController extends Controller
             ->count();
         
             broadcast(new NotificationCountUpdated($request->receiver_id, $unreadCount))->toOthers();
-  
-       // broadcast(new MessageSent($message));
         
         return response()->json([
             'success' => true,

@@ -183,7 +183,7 @@ class AppliedJobController extends Controller
         if ($receiver) {
             $chatController = new ChatController();
             $messageText =
-                "Subject: Application Status Update\n" .
+                "Subject: Application Status Update " .
                 "Your application for '{$job->job_name}' has been updated to '{$status}'.";
 
             $requestMessage = new Request([
