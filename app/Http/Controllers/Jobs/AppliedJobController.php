@@ -14,6 +14,7 @@ use App\Models\Jobs\AppliedJobs;
 use App\Models\Jobs\AppliedResumes;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppliedStatusUpdated;
+use App\Http\Controllers\ChatController;
 
 
 
@@ -156,7 +157,6 @@ class AppliedJobController extends Controller
         $status = $request->input('status');
         $updated = DB::table('applied_jobs')
             ->where('transNo', $transNo)
-          //  ->where('code', $user->code) // restrict to user's own records
             ->update(['applied_status' => $status]);
 
         if (!$updated) {
@@ -174,9 +174,23 @@ class AppliedJobController extends Controller
             Mail::to($job->email)->send(new AppliedStatusUpdated($job, $status));
         }
 
+        // --- Get user ID from users table using code ---
+        $receiver = DB::table('users')
+            ->where('code', $job->code)
+            ->select('id')
+            ->first();
+
+        if ($receiver) {
+            // --- Send in-app message via ChatController ---
+            $this->sendMessage(
+                $receiver->id,
+                "Your application for '{$job->job_name}' has been updated to '{$status}'."
+            );
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "Applied status updated to '{$status}' and email notification sent."
+            'message' => "Applied status updated to '{$status}', email sent, and message notification sent."
         ]);
     }
 
