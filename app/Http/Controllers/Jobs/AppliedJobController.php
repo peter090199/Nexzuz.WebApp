@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB; 
 use App\Models\Jobs\AppliedJobs;
 use App\Models\Jobs\AppliedResumes;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AppliedStatusUpdated;
 
 
 
@@ -140,6 +142,45 @@ class AppliedJobController extends Controller
         return response()->json([
             'success' => true,
             'data' => $results
+        ]);
+    }
+
+
+    public function updateAppliedStatus(Request $request, $transNo)
+    {
+        $user = Auth::user();
+
+        // Validate request
+        $request->validate([
+            'status' => 'required|string|max:50',
+        ]);
+
+        $status = $request->input('status');
+
+        // Update applied_status
+        $updated = DB::table('applied_jobs')
+            ->where('transNo', $transNo)
+            ->where('code', $user->code) // restrict to user's own records
+            ->update(['applied_status' => $status]);
+
+        if (!$updated) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update applied status. Record may not exist or unauthorized.'
+            ]);
+        }
+
+        // Fetch updated job details
+        $job = DB::table('applied_jobs')->where('transNo', $transNo)->first();
+
+        // --- Send email notification ---
+        if ($job && $job->email) {
+            Mail::to($job->email)->send(new AppliedStatusUpdated($job, $status));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Applied status updated to '{$status}' and email notification sent."
         ]);
     }
 
