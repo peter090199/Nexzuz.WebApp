@@ -185,7 +185,7 @@ class AppliedJobController extends Controller
 
            $requestMessage = new Request([
                 'receiver_id' => $receiver->id,
-                'message' => "Subject: Application Status Update\n\n Your application for '{$job->job_name}' has been updated to '{$status}'."
+                'message' => "Subject: Application Status Update\nYour application for '{$job->job_name}' has been updated to '{$status}'."
             ]);
 
 
