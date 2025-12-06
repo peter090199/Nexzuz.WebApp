@@ -149,18 +149,14 @@ class AppliedJobController extends Controller
     public function updateAppliedStatus(Request $request, $transNo)
     {
         $user = Auth::user();
-
-        // Validate request
         $request->validate([
             'status' => 'required|string|max:50',
         ]);
 
         $status = $request->input('status');
-
-        // Update applied_status
         $updated = DB::table('applied_jobs')
             ->where('transNo', $transNo)
-            ->where('code', $user->code) // restrict to user's own records
+          //  ->where('code', $user->code) // restrict to user's own records
             ->update(['applied_status' => $status]);
 
         if (!$updated) {
