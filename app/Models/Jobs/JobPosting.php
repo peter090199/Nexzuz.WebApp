@@ -47,5 +47,6 @@ class JobPosting extends Model
         'is_online',
         'location',
         'benefits',
+        'applied_status'
     ];
 }

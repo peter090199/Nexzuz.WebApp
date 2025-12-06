@@ -15,7 +15,7 @@ use App\Models\Jobs\AppliedResumes;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppliedStatusUpdated;
 use App\Http\Controllers\ChatController;
-
+use App\Models\Jobs\JobPosting;
 
 
 class AppliedJobController extends Controller
