@@ -172,7 +172,6 @@ class AppliedJobController extends Controller
             
             DB::table('jobPosting') 
             ->where('transNo', $job->transNo)
-            ->where('code', $job->code)
             ->update(['applied_status' => $status]);
 
             // --- Send email notification ---
