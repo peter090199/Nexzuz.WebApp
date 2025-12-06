@@ -83,7 +83,7 @@
             <span class="status-badge
                 @if(strtolower($status) == 'review') status-review
                 @elseif(strtolower($status) == 'approved') status-approved
-                @elseif(strtolower($status) == 'rejected') status-rejected
+                @elseif(strtolower($status) == 'reject') status-rejected
                 @endif
             ">
                 {{ ucfirst($status) }}
@@ -95,7 +95,7 @@
                 Your application is currently under review. We will notify you once the evaluation is complete.
             @elseif(strtolower($status) == 'approved')
                 Congratulations! Your application has been approved. Our team will contact you with the next steps.
-            @elseif(strtolower($status) == 'rejected')
+            @elseif(strtolower($status) == 'reject')
                 We regret to inform you that your application has not been successful. We encourage you to apply for future opportunities.
             @else
                 Your application status has been updated to <strong>{{ $status }}</strong>.
