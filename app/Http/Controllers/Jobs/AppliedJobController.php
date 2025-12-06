@@ -149,15 +149,11 @@ class AppliedJobController extends Controller
     public function updateAppliedStatus(Request $request, $transNo)
     {
         $user = Auth::user();
-
-        // Validate request
         $request->validate([
             'status' => 'required|string|max:50',
         ]);
-
         $status = $request->input('status');
-
-        // Update applied_jobs table
+       
         $updated = DB::table('applied_jobs')
             ->where('transNo', $transNo)
             ->update(['applied_status' => $status]);
@@ -176,6 +172,7 @@ class AppliedJobController extends Controller
             
             DB::table('jobPosting') 
             ->where('transNo', $job->transNo)
+            ->where('code', $job->code)
             ->update(['applied_status' => $status]);
 
             // --- Send email notification ---
