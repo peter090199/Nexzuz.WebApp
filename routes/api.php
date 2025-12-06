@@ -214,7 +214,7 @@
     Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
     //JobPosting
     Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
-    Route::put('saveOrUpdateJobPosting/{id}', [JobPostingController::class, 'saveOrUpdateJobPosting']); 
+    Route::put('updateJobPosting/{transNo}', [JobPostingController::class, 'updateJobPosting']); 
     Route::get('getJobPostingsByCode', [JobPostingController::class, 'getJobPostingsByCode']);
     Route::get('getJobPostingByTransNo/{transNo}', [JobPostingController::class, 'getJobPostingByTransNo']);
     Route::delete('deleteJobPosting/{transNo}', [JobPostingController::class, 'deleteJobPosting']);

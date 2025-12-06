@@ -93,7 +93,7 @@ class JobPostingController extends Controller
 
             return response()->json([
                 'success'  => true,
-                'message'  => 'Job and Questions saved successfully',
+                'message'  => 'Job saved successfully',
                 'transNo' => $transNo,
             ], 201);
 
@@ -117,7 +117,7 @@ class JobPostingController extends Controller
     }
 
 
-    public function updateJobPosting(Request $request, $id)
+    public function updateJobPosting(Request $request, $transNo)
     {
         if (!Auth::check()) {
             return response()->json([
@@ -152,7 +152,7 @@ class JobPostingController extends Controller
 
         try {
             // ✅ Find only if belongs to current user
-            $job = JobPosting::where('id', $id)
+            $job = JobPosting::where('transNo', $transNo)
                 ->where('code', $currentUserCode)
                 ->first();
 
@@ -192,7 +192,7 @@ class JobPostingController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Job posting updated successfully.',
+                'message' => 'Jobs updated successfully.',
             ], 200);
 
         } catch (\Exception $e) {
