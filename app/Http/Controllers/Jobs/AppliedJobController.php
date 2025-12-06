@@ -187,6 +187,8 @@ class AppliedJobController extends Controller
                 'receiver_id' => $receiver->id,
                 'message' => "Subject: Application Status Update\n\n Your application for '{$job->job_name}' has been updated to '{$status}'."
             ]);
+
+
             $response = $chatController->sendMessage($requestMessage);
         }
 
