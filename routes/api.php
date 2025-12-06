@@ -231,6 +231,7 @@
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
     Route::get('getActiveJobsByCode/{code}', [JobListController::class, 'getActiveJobsByCode']);
+    Route::get('getAppliedStatus/{transNo}', [JobListController::class, 'getAppliedStatus']);
     //company profile
     Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
     Route::get('country_codes', function () {
