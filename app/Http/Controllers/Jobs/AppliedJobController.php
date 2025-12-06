@@ -187,10 +187,25 @@ class AppliedJobController extends Controller
                 'receiver_id' => $receiver->id,
                 'message' => "Subject: Application Status Update\nYour application for '{$job->job_name}' has been updated to '{$status}'."
             ]);
-
-
+            return view('messages.applied_status_notification', compact('subject', 'messageText'));
             $response = $chatController->sendMessage($requestMessage);
         }
+
+        //  if ($receiver) {
+        //     $subject = "Application Status Update";
+        //     $messageText = "Your application for '{$job->job_name}' has been updated to '{$status}'.";
+
+        //     // Prepare message for ChatController
+        //     $requestMessage = new Request([
+        //         'receiver_id' => $receiver->id,
+        //         'message' => "Subject: {$subject}\n{$messageText}"
+        //     ]);
+
+        //     // Send chat message
+        //     $chatController = new ChatController();
+        //     $response = $chatController->sendMessage($requestMessage);
+        // }
+
 
         return response()->json([
             'success' => true,
