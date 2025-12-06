@@ -247,7 +247,7 @@
 
     Route::get('testmail', function() {
         Mail::raw('Test email from Laravel', function($message) {
-            $message->to('pedroyorpo17@gmail.com')
+            $message->to('nexsuz.official13@gmail.com')
                     ->subject('Test Mail');
         });
         return 'Email sent';
