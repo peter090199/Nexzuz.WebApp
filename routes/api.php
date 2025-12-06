@@ -245,6 +245,13 @@
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
     Route::post('updateAppliedStatus/{transNo}', [AppliedJobController::class, 'updateAppliedStatus']);
 
+    Route::get('testmail', function() {
+        Mail::raw('Test email from Laravel', function($message) {
+            $message->to('pedroyorpo17@gmail.com')
+                    ->subject('Test Mail');
+        });
+        return 'Email sent';
+    });
 
     //Post Reactions
     // Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
