@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Application Status Updated</title>
+    <title>Application Status Update</title>
     <style>
         body {
             font-family: Verdana;
@@ -32,8 +32,24 @@
             margin-bottom: 12px;
         }
 
-        strong {
-            color: #2c7be5;
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status-review {
+            background-color: #f0ad4e; /* orange for review */
+        }
+
+        .status-approved {
+            background-color: #28a745; /* green for approved */
+        }
+
+        .status-rejected {
+            background-color: #dc3545; /* red for rejected */
         }
 
         .footer {
@@ -43,27 +59,10 @@
             text-align: center;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            background: #2c7be5;
-            color: white;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
         @media screen and (max-width: 480px) {
-            .email-container {
-                padding: 15px;
-            }
-
-            h3 {
-                font-size: 20px;
-            }
-
-            p {
-                font-size: 14px;
-            }
+            .email-container { padding: 15px; }
+            h3 { font-size: 20px; }
+            p { font-size: 14px; }
         }
     </style>
 </head>
@@ -74,12 +73,18 @@
         <p>Your application for the position <strong>{{ $jobName }}</strong> has been updated.</p>
 
         <p>
-            Current Status: 
-            <span class="status-badge">{{ $status }}</span>
+            Current Status:
+            <span class="status-badge
+                @if(strtolower($status) == 'review') status-review
+                @elseif(strtolower($status) == 'approved') status-approved
+                @elseif(strtolower($status) == 'rejected') status-rejected
+                @endif
+            ">
+                {{ $status }}
+            </span>
         </p>
 
-        <p>Thank you for your interest in joining our team.  
-        We appreciate the time and effort you invested in the application process.</p>
+        <p>Thank you for your interest in joining our team. We appreciate your time and effort in the application process.</p>
 
         <div class="footer">
             &copy; {{ date('Y') }} {{ config('app.name') }} – All rights reserved.
