@@ -69,6 +69,13 @@
     return response()->json(['success' => true, 'message' => $message]);
     });
 
+    Route::get('testmail', function() {
+        Mail::raw('Test email from Laravel', function($message) {
+            $message->to('nexsuz.official13@gmail.com')
+                    ->subject('Test Mail');
+        });
+        return 'Email sent';
+    });
 
     Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
     return Broadcast::auth(request());
@@ -244,18 +251,12 @@
     Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
     Route::post('updateAppliedStatus/{transNo}', [AppliedJobController::class, 'updateAppliedStatus']);
-
-    Route::get('testmail', function() {
-        Mail::raw('Test email from Laravel', function($message) {
-            $message->to('nexsuz.official13@gmail.com')
-                    ->subject('Test Mail');
-        });
-        return 'Email sent';
-    });
-
     //Post Reactions
     // Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
     Route::get('react/{postId}', [ReactionController::class, 'getReactions']);
-    });
-
     Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
+
+
+});
+
+  

@@ -11,7 +11,7 @@
 
         <!-- Nexsuz Logo -->
         <div style="margin-bottom: 5px;">
-            <img src="https://exploredition.com/public/nexsuzlogo.png" alt="Nexsuz Logo" style="max-width: 50px; height: 25px;">
+            <img src="https://exploredition.com/public/nexsuzlogo.jpg" alt="Nexsuz Logo" style="max-width: 50px; height: 25px;">
         </div>
     
         <!-- Greeting -->
