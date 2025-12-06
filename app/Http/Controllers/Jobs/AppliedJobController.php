@@ -224,7 +224,7 @@ class AppliedJobController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'default',
-            ], 404);
+            ], 200);
         }
 
         return response()->json([
