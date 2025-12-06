@@ -23,12 +23,13 @@ class AppliedStatusUpdated extends Mailable
     // Use build() to define subject, view, and data
     public function build()
     {
-        return $this->subject('Job Application Status Updated')
-                    ->view('emails.applied_status_updated')
-                    ->with([
-                        'jobName' => $this->job->job_name,
-                        'status' => $this->status,
-                        'fullname' => $this->job->fullname,
-                    ]);
+       return $this->subject('Job Application Status Updated')
+            ->view('email.applied_status_updated') // <-- must match file path
+            ->with([
+                'jobName' => $this->job->job_name,
+                'status' => $this->status,
+                'fullname' => $this->job->fullname,
+            ]);
+
     }
 }
