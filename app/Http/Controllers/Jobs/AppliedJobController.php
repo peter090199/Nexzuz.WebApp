@@ -169,11 +169,6 @@ class AppliedJobController extends Controller
         $job = DB::table('applied_jobs')->where('transNo', $transNo)->first();
 
         if ($job) {
-           DB::table('jobPosting') // correct table name
-            ->where('code', $user->code)   // only update jobs owned by this user
-            ->where('transNo', $job->transNo) // match specific job posting
-            ->update(['applied_status' => $status]);
-
             // --- Send email notification ---
             if ($job->email) {
                 Mail::to($job->email)->send(new AppliedStatusUpdated($job, $status));
@@ -203,6 +198,38 @@ class AppliedJobController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Applied status updated to '{$status}' in applied_jobs and job_postings, email sent, and message notification sent."
+        ]);
+    }
+
+
+    public function getAppliedStatus($transNo)
+    {
+        $user = Auth::user(); // get logged-in user
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Fetch applied job by transNo and user code
+        $job = DB::table('applied_jobs')
+            ->where('transNo', $transNo)
+            ->where('code', $user->code)
+            ->select('applied_status')
+            ->first();
+
+        if (!$job) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job application not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'applied_status' => $job->applied_status,
         ]);
     }
 
