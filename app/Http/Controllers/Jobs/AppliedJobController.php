@@ -142,12 +142,13 @@ class AppliedJobController extends Controller
         }
 
         // Attach applied_resumes to each job
-        $results->transform(function ($job) {
+        $results->transform(function ($job) use ($user) {
             $job->resumes = DB::table('applied_resumes')
                 ->where('transNo', $job->transNo)
-                ->where('code', $user->code)
-                ->select('resume_pdf', 'filename') // select columns you want
+                ->where('code', $job->code) // use $job->code, not $user->code
+                ->select('resume_pdf as url', 'filename') // map resume_pdf to url
                 ->get();
+
             return $job;
         });
 
@@ -156,6 +157,7 @@ class AppliedJobController extends Controller
             'data' => $results
         ]);
     }
+
 
     // public function getAppliedJob()
     // {
