@@ -115,6 +115,7 @@ class AppliedJobController extends Controller
     {
         $user = Auth::user();
 
+        // Get applied jobs
         $results = DB::table('applied_jobs as aj')
             ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->select(
@@ -129,7 +130,7 @@ class AppliedJobController extends Controller
                 'aj.phone_number',
                 'aj.applied_status'
             )
-            ->where('jp.code', $user->code) // or use email if your table doesn't have user_id
+            ->where('jp.code', $user->code)
             ->get();
 
         if ($results->isEmpty()) {
@@ -140,11 +141,56 @@ class AppliedJobController extends Controller
             ]);
         }
 
+        // Attach applied_resumes to each job
+        $results->transform(function ($job) {
+            $job->resumes = DB::table('applied_resumes')
+                ->where('transNo', $job->transNo)
+                ->where('code', $user->code)
+                ->select('resume_pdf', 'filename') // select columns you want
+                ->get();
+            return $job;
+        });
+
         return response()->json([
             'success' => true,
             'data' => $results
         ]);
     }
+
+    // public function getAppliedJob()
+    // {
+    //     $user = Auth::user();
+
+    //     $results = DB::table('applied_jobs as aj')
+    //         ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+    //         ->select(
+    //             'jp.transNo',
+    //             'aj.code',
+    //             'aj.role_code',
+    //             'aj.applied_id',
+    //             'aj.fullname',
+    //             'aj.job_name',
+    //             'aj.email',
+    //             'aj.country_code',
+    //             'aj.phone_number',
+    //             'aj.applied_status'
+    //         )
+    //         ->where('jp.code', $user->code) // or use email if your table doesn't have user_id
+    //         ->get();
+
+    //     if ($results->isEmpty()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'No applied jobs found for this user.',
+    //             'data' => []
+    //         ]);
+    //     }
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $results
+    //     ]);
+    // }
 
     public function updateAppliedStatus(Request $request, $transNo)
     {
