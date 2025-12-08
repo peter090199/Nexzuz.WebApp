@@ -145,7 +145,7 @@ class AppliedJobController extends Controller
         $results->transform(function ($job) use ($user) {
             $job->resumes = DB::table('applied_resumes')
                 ->where('transNo', $job->transNo)
-                ->where('code', $job->code) // use $job->code, not $user->code
+                ->where('code', $job->code) // use job's code
                 ->select('resume_pdf as url', 'filename') // map resume_pdf to url
                 ->get();
 
