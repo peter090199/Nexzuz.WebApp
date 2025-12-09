@@ -50,23 +50,6 @@ class AppliedJobController extends Controller
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
                 $resumePath = "/storage/app/public/" . $filePath;
             }
-
-            // $resumePath = null;
-            // if ($request->hasFile('resume_pdf')) {
-            //     $file = $request->file('resume_pdf');
-            //     $uuid = Str::uuid();
-            //     $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
-            //     $fileName = time() . '.' . $file->getClientOriginalExtension();
-                
-            //     // Store file in storage/app/public/...
-            //     $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                
-            //     // Get full filesystem path
-            //     $resumePath = storage_path('app/public/' . $filePath);
-            // }
-
-
-            // ✅ Save Applied Job
             $job = AppliedJobs::create([
                 'transNo'       => $validated['transNo'],
                 'job_name'      => $validated['job_name'],
@@ -77,7 +60,6 @@ class AppliedJobController extends Controller
                 'role_code'     => $user->role_code,
                 'fullname'      => $user->fullname,
             ]);
-
             // ✅ Save related Resume record
             AppliedResumes::create([
                 'transNo'       => $validated['transNo'],
