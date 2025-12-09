@@ -251,7 +251,7 @@
     //AppliedJobs
     Route::post('saveAppliedJob', [AppliedJobController::class, 'saveAppliedJob']);
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
-    Route::post('updateAppliedStatus/{transNo}', [AppliedJobController::class, 'updateAppliedStatus']);
+    Route::post('updateAppliedStatus/{applied_id}', [AppliedJobController::class, 'updateAppliedStatus']);
     //Post Reactions
     // Route::post('saveReaction', [ReactionController::class, 'saveReaction']);
     Route::get('react/{postId}', [ReactionController::class, 'getReactions']);

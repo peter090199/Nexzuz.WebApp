@@ -191,7 +191,7 @@ class AppliedJobController extends Controller
     //     ]);
     // }
 
-    public function updateAppliedStatus(Request $request, $transNo)
+    public function updateAppliedStatus(Request $request, $applied_id)
     {
         $user = Auth::user();
         $request->validate([
@@ -200,7 +200,7 @@ class AppliedJobController extends Controller
         $status = $request->input('status');
        
         $updated = DB::table('applied_jobs')
-            ->where('transNo', $transNo)
+            ->where('applied_id', $applied_id)
             ->update(['applied_status' => $status]);
 
         if (!$updated) {
@@ -211,7 +211,7 @@ class AppliedJobController extends Controller
         }
 
         // Fetch updated applied job details
-        $job = DB::table('applied_jobs')->where('transNo', $transNo)->first();
+        $job = DB::table('applied_jobs')->where('applied_id', $applied_id)->first();
 
         if ($job) {
             // --- Send email notification ---
