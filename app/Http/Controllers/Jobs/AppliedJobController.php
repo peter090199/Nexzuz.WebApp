@@ -41,28 +41,30 @@ class AppliedJobController extends Controller
             DB::beginTransaction();
 
             // ✅ Save file
-            // $resumePath = null;
-            // if ($request->hasFile('resume_pdf')) {
-            //     $file = $request->file('resume_pdf');
-            //     $uuid = Str::uuid();
-            //     $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
-            //     $fileName = time() . '.' . $file->getClientOriginalExtension();
-            //     $filePath = $file->storeAs($folderPath, $fileName, 'public');
-            //     $resumePath = "/storage/" . $filePath;
-            // }
             $resumePath = null;
             if ($request->hasFile('resume_pdf')) {
                 $file = $request->file('resume_pdf');
                 $uuid = Str::uuid();
                 $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
-                
-                // Store file in storage/app/public/...
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                
-                // Get full filesystem path
-                $resumePath = storage_path('app/public/' . $filePath);
+                $resumePath = "/storage/app/public" . $filePath;
             }
+
+            
+            // $resumePath = null;
+            // if ($request->hasFile('resume_pdf')) {
+            //     $file = $request->file('resume_pdf');
+            //     $uuid = Str::uuid();
+            //     $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
+            //     $fileName = time() . '.' . $file->getClientOriginalExtension();
+                
+            //     // Store file in storage/app/public/...
+            //     $filePath = $file->storeAs($folderPath, $fileName, 'public');
+                
+            //     // Get full filesystem path
+            //     $resumePath = storage_path('app/public/' . $filePath);
+            // }
 
 
             // ✅ Save Applied Job
