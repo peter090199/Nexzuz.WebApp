@@ -56,10 +56,8 @@ class LoginController extends Controller
 
             $userprofileexist = Userprofile::where('code', $user->code)->count();
 
-            if (
-                $user->role_code === 'DEF-CLIENT' ||   $user->role_code === 'DEF-ADMIN' ||
-                $user->role_code === 'DEF-MASTERADMIN' ||
-                ($userprofileexist > 0 && $user->role_code === 'DEF-USERS')
+            if ($user->role_code === 'DEF-CLIENT' ||   $user->role_code === 'DEF-ADMIN' || $user->role_code === 'DEF-MASTERADMIN' || 
+            ($userprofileexist > 0 && $user->role_code === 'DEF-USERS')
             ) {
                 // DEF-CLIENT DIRECT TO HOME 0
                 return response()->json([
