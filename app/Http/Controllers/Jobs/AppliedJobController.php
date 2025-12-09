@@ -218,7 +218,6 @@ class AppliedJobController extends Controller
             if ($job->email) {
                 Mail::to($job->email)->send(new AppliedStatusUpdated($job, $status));
             }
-
             // --- Notify user via chat ---
             $receiver = DB::table('users')
                 ->where('code', $job->code)
