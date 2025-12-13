@@ -127,6 +127,7 @@ class AppliedJobController extends Controller
                 'aj.applied_status'
             )
             ->where('jp.code', $user->code)
+              ->where('jp.transNo', $job->transNo)
             ->get();
 
         if ($results->isEmpty()) {
@@ -154,6 +155,51 @@ class AppliedJobController extends Controller
         ]);
     }
 
+    public function getAppliedJobByTransNo($transNo)
+    {
+        $user = Auth::user();
+
+        $results = DB::table('applied_jobs as aj')
+            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->select(
+                'jp.transNo',
+                'aj.code',
+                'aj.role_code',
+                'aj.applied_id',
+                'aj.fullname',
+                'aj.job_name',
+                'aj.email',
+                'aj.country_code',
+                'aj.phone_number',
+                'aj.applied_status'
+            )
+            ->where('jp.code', $user->code)
+            ->where('jp.transNo', $transNo)
+            ->get();
+
+        if ($results->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No applied jobs found for this user.',
+                'data' => []
+            ]);
+        }
+
+        $results->transform(function ($job) {
+            $job->resumes = DB::table('applied_resumes')
+                ->where('transNo', $job->transNo)
+                ->where('code', $job->code)
+                ->select('resume_pdf as url')
+                ->get();
+
+            return $job;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $results
+        ]);
+    }
 
 
     // public function getAppliedJob()
