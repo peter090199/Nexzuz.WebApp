@@ -64,6 +64,7 @@ class LoginController extends Controller
                     'success'   => true,
                     'token'     => $token,
                     'message'   => 0,
+                    'role' => $user->role_code,
                     'is_online' => true
                 ]);
             } else {
@@ -71,6 +72,7 @@ class LoginController extends Controller
                     'success'   => true,
                     'token'     => $token,
                     'message'   => 1,
+                    'role' => $user->role_code,
                     'is_online' => true
                 ]);
             }
