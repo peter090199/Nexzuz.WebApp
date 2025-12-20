@@ -88,7 +88,7 @@ class AccessrolemenuController extends Controller
             return response()->json($result);
         });
     }
-
+    
     public function index(Request $request)
     {
         if (!Auth::check()) {
@@ -99,59 +99,103 @@ class AccessrolemenuController extends Controller
         $descCode = $request->desc_code;
 
         /* ===============================
-        GET ROLE MENUS
+        GET ROLE MENUS (WITH TRANSNO)
         =============================== */
-        $menus = Menu::query()
-            ->where('status', 'A')
-            ->where('desc_code', $descCode)
-            ->whereIn('id', function ($q) use ($rolecode) {
-                $q->select('menus_id')
-                ->from('roleaccessmenus')
-                ->where('rolecode', $rolecode);
-            })
-            ->orderBy('sort')
-            ->get();
+        $roleMenus = Roleaccessmenu::where('rolecode', $rolecode)->get();
+
+        if ($roleMenus->isEmpty()) {
+            return response()->json([]);
+        }
+
+        $menuIds = $roleMenus->pluck('menus_id')->unique();
+        $transNos = $roleMenus->pluck('transNo')->unique();
 
         /* ===============================
-        GET ROLE SUBMENUS
+        GET MENUS
         =============================== */
-        $submenus = Submenu::query()
+        $menus = Menu::whereIn('id', $menuIds)
             ->where('status', 'A')
             ->where('desc_code', $descCode)
-            ->whereIn('id', function ($q) use ($rolecode) {
-                $q->select('submenus_id')
-                ->from('roleaccesssubmenus')
-                ->where('rolecode', $rolecode);
-            })
             ->orderBy('sort')
             ->get()
-            ->groupBy('menus_id'); // IMPORTANT: submenu must have menus_id column
+            ->keyBy('id');
+
+        /* ===============================
+        GET ROLE SUBMENUS (USING TRANSNO)
+        =============================== */
+        $roleSubmenus = Roleaccesssubmenu::where('rolecode', $rolecode)
+            ->whereIn('transNo', $transNos)
+            ->get();
+
+        if ($roleSubmenus->isEmpty()) {
+            // Menus with no submenus are valid
+            return response()->json(
+                $menus->values()->map(fn($menu) => [
+                    'description' => $menu->description,
+                    'icon' => $menu->icon,
+                    'route' => $menu->routes,
+                    'sort' => $menu->sort,
+                    'submenus' => []
+                ])
+            );
+        }
+
+        $submenuIds = $roleSubmenus->pluck('submenus_id')->unique();
+
+        /* ===============================
+        GET SUBMENU DETAILS
+        =============================== */
+        $submenus = Submenu::whereIn('id', $submenuIds)
+            ->where('status', 'A')
+            ->where('desc_code', $descCode)
+            ->orderBy('sort')
+            ->get()
+            ->keyBy('id');
 
         /* ===============================
         BUILD RESPONSE
         =============================== */
         $result = [];
 
-        foreach ($menus as $menu) {
+        foreach ($roleMenus as $rm) {
+
+            if (!isset($menus[$rm->menus_id])) {
+                continue;
+            }
+
+            $menu = $menus[$rm->menus_id];
+
+            $subs = [];
+
+            foreach ($roleSubmenus as $rs) {
+                if ($rs->transNo === $rm->transNo && isset($submenus[$rs->submenus_id])) {
+                    $sub = $submenus[$rs->submenus_id];
+                    $subs[] = [
+                        'description' => $sub->description,
+                        'icon' => $sub->icon,
+                        'route' => $sub->routes,
+                        'sort' => $sub->sort
+                    ];
+                }
+            }
 
             $result[] = [
                 'description' => $menu->description,
-                'icon'        => $menu->icon,
-                'route'       => $menu->routes,
-                'sort'        => $menu->sort,
-                'submenus'    => ($submenus[$menu->id] ?? collect())->map(function ($sub) {
-                    return [
-                        'description' => $sub->description,
-                        'icon'        => $sub->icon,
-                        'route'       => $sub->routes,
-                        'sort'        => $sub->sort,
-                    ];
-                })->values()
+                'icon' => $menu->icon,
+                'route' => $menu->routes,
+                'sort' => $menu->sort,
+                'submenus' => $subs
             ];
         }
 
+        /* ===============================
+        SORT MENUS
+        =============================== */
+        usort($result, fn($a, $b) => $a['sort'] <=> $b['sort']);
+
         return response()->json($result);
     }
+
 
     // public function index(Request $request)
     // {
