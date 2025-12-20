@@ -158,14 +158,6 @@ class AccessrolemenuController extends Controller
 
     public function index(Request $request)
     {
-        // Access check
-        if ($this->accessmenu($request) !== 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
         $request->validate([
             'rolecode' => 'required|string'
         ]);
