@@ -243,8 +243,7 @@ class AccessrolemenuController extends Controller
     //         }
     // }
 
-    
-public function index(Request $request)
+   public function index(Request $request)
 {
     if (!Auth::check()) {
         return response("authenticated", 401);
@@ -260,7 +259,8 @@ public function index(Request $request)
                   ->orderBy('sort');
         },
         'submodules.submenu' => function($query) use ($descCode) {
-            $query->where('desc_code', $descCode)
+            $query->where('status', 'A')
+                  ->where('desc_code', $descCode)
                   ->orderBy('sort');
         }
     ])
@@ -273,13 +273,16 @@ public function index(Request $request)
         if (!$module->menu) continue; // skip if menu is missing
 
         $submenus = $module->submodules->map(function($sm) {
-            return $sm->submenu ? [
-                "description" => $sm->submenu->description,
-                "icon" => $sm->submenu->icon,
-                "route" => $sm->submenu->routes,
-                "sort" => $sm->submenu->sort
-            ] : null;
-        })->filter()->values()->toArray(); // filter out nulls
+            if ($sm->submenu) {
+                return [
+                    "description" => $sm->submenu->description,
+                    "icon" => $sm->submenu->icon,
+                    "route" => $sm->submenu->routes,
+                    "sort" => $sm->submenu->sort
+                ];
+            }
+            return null;
+        })->filter()->values()->toArray(); // remove nulls
 
         $result[] = [
             "description" => $module->menu->description,
@@ -290,6 +293,7 @@ public function index(Request $request)
         ];
     }
 
+    // Sort menus by 'sort'
     usort($result, fn($a, $b) => $a['sort'] <=> $b['sort']);
 
     return response()->json($result);
