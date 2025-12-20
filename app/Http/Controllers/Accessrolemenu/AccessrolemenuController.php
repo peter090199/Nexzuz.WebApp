@@ -89,40 +89,126 @@ class AccessrolemenuController extends Controller
         });
     }
 
-   public function index(Request $request)
+    public function index(Request $request)
 {
-    $roleCode = $request->user()->role_code;
-
-    // Get main menus for this role
-    $menus = DB::table('roleaccessmenus')
-        ->where('rolecode', $roleCode)
-        ->get();
-
-    $result = [];
-
-    foreach ($menus as $menu) {
-        // Get submenus linked to this menu
-        $submenus = DB::table('roleaccesssubmenus')
-            ->where('rolecode', $roleCode)
-            ->where('menus_id', $menu->menus_id) // link submenu to main menu
-            ->get();
-
-        // Map submenus to 'lines' array
-        $lines = $submenus->map(function ($sub) {
-            return [
-                'submenus_id' => $sub->submenus_id, // submenu identifier
-            ];
-        })->toArray(); // convert collection to array
-
-        $result[] = [
-            'rolecode' => $roleCode,
-            'menus_id' => $menu->menus_id, // main menu identifier
-            'lines' => $lines,
-        ];
+    if (!Auth::check()) {
+        return response("unauthenticated", 401);
     }
 
-    return response()->json($result);
+    $roleCode = Auth::user()->role_code;
+    $descCode = $request->desc_code;
+
+    $resultDetailed = []; // For full menu with description, icon, route
+    $resultSimple = [];   // For rolecode → menus_id → lines → submenus_id
+
+    // Fetch all role-access menus for the role
+    $modules = Roleaccessmenu::where('rolecode', $roleCode)->get();
+
+    foreach ($modules as $module) {
+
+        // Fetch main menu(s) for this module
+        $menus = Menu::where('id', $module->menus_id)
+            ->where('status', 'A')
+            ->where('desc_code', $descCode)
+            ->orderBy('sort')
+            ->get();
+
+        foreach ($menus as $menu) {
+
+            // Fetch submodules for this module
+            $submodules = Roleaccesssubmenu::where('rolecode', $roleCode)
+                ->where('transNo', $module->transNo)
+                ->get();
+
+            $subDetailed = [];
+            $lines = [];
+
+            foreach ($submodules as $submodule) {
+
+                $submenus = Submenu::where('id', $submodule->submenus_id)
+                    ->where('status', 'A')
+                    ->where('desc_code', $descCode)
+                    ->orderBy('sort')
+                    ->get();
+
+                foreach ($submenus as $sm) {
+                    // Detailed structure
+                    $subDetailed[] = [
+                        "description" => $sm->description,
+                        "icon" => $sm->icon,
+                        "route" => $sm->routes,
+                        "sort" => $sm->sort
+                    ];
+
+                    // Simple structure for lines
+                    $lines[] = [
+                        "submenus_id" => $sm->id
+                    ];
+                }
+            }
+
+            // Full menu structure
+            $resultDetailed[] = [
+                "description" => $menu->description,
+                "icon" => $menu->icon,
+                "route" => $menu->routes,
+                "sort" => $menu->sort,
+                "submenus" => $subDetailed
+            ];
+
+            // Simplified structure
+            $resultSimple[] = [
+                "rolecode" => $roleCode,
+                "menus_id" => $menu->id,
+                "lines" => $lines
+            ];
+        }
+    }
+
+    // Optional: sort main menus by 'sort' for detailed output
+    usort($resultDetailed, fn($a, $b) => $a['sort'] <=> $b['sort']);
+
+    // Return both outputs
+    return response()->json([
+        "detailed" => $resultDetailed,
+        "simple" => $resultSimple
+    ]);
 }
+
+//    public function index(Request $request)
+// {
+//     $roleCode = $request->user()->role_code;
+
+//     // Get main menus for this role
+//     $menus = DB::table('roleaccessmenus')
+//         ->where('rolecode', $roleCode)
+//         ->get();
+
+//     $result = [];
+
+//     foreach ($menus as $menu) {
+//         // Get submenus linked to this menu
+//         $submenus = DB::table('roleaccesssubmenus')
+//             ->where('rolecode', $roleCode)
+//             ->where('menus_id', $menu->menus_id) // link submenu to main menu
+//             ->get();
+
+//         // Map submenus to 'lines' array
+//         $lines = $submenus->map(function ($sub) {
+//             return [
+//                 'submenus_id' => $sub->submenus_id, // submenu identifier
+//             ];
+//         })->toArray(); // convert collection to array
+
+//         $result[] = [
+//             'rolecode' => $roleCode,
+//             'menus_id' => $menu->menus_id, // main menu identifier
+//             'lines' => $lines,
+//         ];
+//     }
+
+//     return response()->json($result);
+// }
 
     // public function index(Request $request)
     // {
