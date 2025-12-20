@@ -88,7 +88,7 @@ class AccessrolemenuController extends Controller
             return response()->json($result);
         });
     }
-    
+
     public function index(Request $request)
     {
         if (!Auth::check()) {
@@ -96,11 +96,9 @@ class AccessrolemenuController extends Controller
         }
 
         $rolecode = Auth::user()->role_code;
-        $descCode = $request->desc_code;
+        $descCode = $request->desc_code ?? null;
 
-        /* ===============================
-        GET ROLE MENUS (WITH TRANSNO)
-        =============================== */
+        // 1️⃣ Get all menus for this role
         $roleMenus = Roleaccessmenu::where('rolecode', $rolecode)->get();
 
         if ($roleMenus->isEmpty()) {
@@ -110,58 +108,34 @@ class AccessrolemenuController extends Controller
         $menuIds = $roleMenus->pluck('menus_id')->unique();
         $transNos = $roleMenus->pluck('transNo')->unique();
 
-        /* ===============================
-        GET MENUS
-        =============================== */
+        // 2️⃣ Get menu details
         $menus = Menu::whereIn('id', $menuIds)
+            ->when($descCode, fn($q) => $q->where('desc_code', $descCode))
             ->where('status', 'A')
-            ->where('desc_code', $descCode)
             ->orderBy('sort')
             ->get()
             ->keyBy('id');
 
-        /* ===============================
-        GET ROLE SUBMENUS (USING TRANSNO)
-        =============================== */
+        // 3️⃣ Get submenus linked by transNo
         $roleSubmenus = Roleaccesssubmenu::where('rolecode', $rolecode)
             ->whereIn('transNo', $transNos)
             ->get();
 
-        if ($roleSubmenus->isEmpty()) {
-            // Menus with no submenus are valid
-            return response()->json(
-                $menus->values()->map(fn($menu) => [
-                    'description' => $menu->description,
-                    'icon' => $menu->icon,
-                    'route' => $menu->routes,
-                    'sort' => $menu->sort,
-                    'submenus' => []
-                ])
-            );
-        }
-
         $submenuIds = $roleSubmenus->pluck('submenus_id')->unique();
 
-        /* ===============================
-        GET SUBMENU DETAILS
-        =============================== */
         $submenus = Submenu::whereIn('id', $submenuIds)
+            ->when($descCode, fn($q) => $q->where('desc_code', $descCode))
             ->where('status', 'A')
-            ->where('desc_code', $descCode)
             ->orderBy('sort')
             ->get()
             ->keyBy('id');
 
-        /* ===============================
-        BUILD RESPONSE
-        =============================== */
+        // 4️⃣ Build response grouped by transNo
         $result = [];
 
         foreach ($roleMenus as $rm) {
 
-            if (!isset($menus[$rm->menus_id])) {
-                continue;
-            }
+            if (!isset($menus[$rm->menus_id])) continue;
 
             $menu = $menus[$rm->menus_id];
 
@@ -172,30 +146,27 @@ class AccessrolemenuController extends Controller
                     $sub = $submenus[$rs->submenus_id];
                     $subs[] = [
                         'description' => $sub->description,
-                        'icon' => $sub->icon,
-                        'route' => $sub->routes,
-                        'sort' => $sub->sort
+                        'icon'        => $sub->icon,
+                        'route'       => $sub->routes,
+                        'sort'        => $sub->sort
                     ];
                 }
             }
 
             $result[] = [
                 'description' => $menu->description,
-                'icon' => $menu->icon,
-                'route' => $menu->routes,
-                'sort' => $menu->sort,
-                'submenus' => $subs
+                'icon'        => $menu->icon,
+                'route'       => $menu->routes,
+                'sort'        => $menu->sort,
+                'submenus'    => $subs
             ];
         }
 
-        /* ===============================
-        SORT MENUS
-        =============================== */
+        // 5️⃣ Sort menus by sort
         usort($result, fn($a, $b) => $a['sort'] <=> $b['sort']);
 
         return response()->json($result);
     }
-
 
     // public function index(Request $request)
     // {
