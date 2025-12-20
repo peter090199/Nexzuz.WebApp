@@ -92,22 +92,17 @@ class AccessrolemenuController extends Controller
     public function index(Request $request)
     {
         $roleCode = $request->user()->role_code; // assuming user is authenticated
-
-        // Get main menus for this role
         $menus = DB::table('roleaccessmenus')
-            ->where('rolecode', $roleCode)
-            ->orderBy('sort', 'asc')
-            ->get();
+        ->where('rolecode', $roleCode)
+        ->get();
 
         $result = [];
 
         foreach ($menus as $menu) {
-            // Get submenus for each menu
-            $submenus = DB::table('roleaccesssubmenus')
-                ->where('rolecode', $roleCode)
-                ->where('menus_id', $menu->transNo) // assuming menus_id references main menu
-                ->orderBy('sort', 'asc')
-                ->get();
+          $submenus = DB::table('roleaccesssubmenus')
+            ->where('rolecode', $roleCode)
+            ->where('menus_id', $menu->transNo)
+            ->get();
 
             $submenuArray = $submenus->map(function ($sub) {
                 return [
