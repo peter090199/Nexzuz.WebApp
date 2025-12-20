@@ -256,7 +256,6 @@ class AccessrolemenuController extends Controller
         foreach ($modules as $module) {
             $menus = Menu::where('id', $module->menus_id)
                 ->where('desc_code', $request->desc_code)
-                ->orderBy('id') 
                 ->get();
 
             foreach ($menus as $menu) {
@@ -268,7 +267,6 @@ class AccessrolemenuController extends Controller
                 $sub = [];
                 foreach ($submodule as $sm) {
                     $submenus = Roleaccesssubmenu::where('submenus_id', $sm->submenus_id)
-                        ->orderBy('sort')
                         ->get();
 
                     foreach ($submenus as $s) {
