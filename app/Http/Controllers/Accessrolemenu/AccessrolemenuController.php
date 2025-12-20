@@ -91,79 +91,41 @@ class AccessrolemenuController extends Controller
 
     public function index(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
-        }
+        $roleCode = $request->user()->role_code; // assuming user is authenticated
 
-        $rolecode = Auth::user()->role_code;
-        $descCode = $request->desc_code ?? null;
-
-        // 1️⃣ Get all menus for this role
-        $roleMenus = Roleaccessmenu::where('rolecode', $rolecode)->get();
-
-        if ($roleMenus->isEmpty()) {
-            return response()->json([]);
-        }
-
-        $menuIds = $roleMenus->pluck('menus_id')->unique();
-        $transNos = $roleMenus->pluck('transNo')->unique();
-
-        // 2️⃣ Get menu details
-        $menus = Menu::whereIn('id', $menuIds)
-            ->when($descCode, fn($q) => $q->where('desc_code', $descCode))
-            ->where('status', 'A')
-            ->orderBy('sort')
-            ->get()
-            ->keyBy('id');
-
-        // 3️⃣ Get submenus linked by transNo
-        $roleSubmenus = Roleaccesssubmenu::where('rolecode', $rolecode)
-            ->whereIn('transNo', $transNos)
+        // Get main menus for this role
+        $menus = DB::table('roleaccessmenus')
+            ->where('rolecode', $roleCode)
+            ->orderBy('sort', 'asc')
             ->get();
 
-        $submenuIds = $roleSubmenus->pluck('submenus_id')->unique();
-
-        $submenus = Submenu::whereIn('id', $submenuIds)
-            ->when($descCode, fn($q) => $q->where('desc_code', $descCode))
-            ->where('status', 'A')
-            ->orderBy('sort')
-            ->get()
-            ->keyBy('id');
-
-        // 4️⃣ Build response grouped by transNo
         $result = [];
 
-        foreach ($roleMenus as $rm) {
+        foreach ($menus as $menu) {
+            // Get submenus for each menu
+            $submenus = DB::table('roleaccesssubmenus')
+                ->where('rolecode', $roleCode)
+                ->where('menus_id', $menu->transNo) // assuming menus_id references main menu
+                ->orderBy('sort', 'asc')
+                ->get();
 
-            if (!isset($menus[$rm->menus_id])) continue;
-
-            $menu = $menus[$rm->menus_id];
-
-            $subs = [];
-
-            foreach ($roleSubmenus as $rs) {
-                if ($rs->transNo === $rm->transNo && isset($submenus[$rs->submenus_id])) {
-                    $sub = $submenus[$rs->submenus_id];
-                    $subs[] = [
-                        'description' => $sub->description,
-                        'icon'        => $sub->icon,
-                        'route'       => $sub->routes,
-                        'sort'        => $sub->sort
-                    ];
-                }
-            }
+            $submenuArray = $submenus->map(function ($sub) {
+                return [
+                    'description' => $sub->description,
+                    'icon' => $sub->icon,
+                    'route' => $sub->route,
+                    'sort' => $sub->sort,
+                ];
+            });
 
             $result[] = [
                 'description' => $menu->description,
-                'icon'        => $menu->icon,
-                'route'       => $menu->routes,
-                'sort'        => $menu->sort,
-                'submenus'    => $subs
+                'icon' => $menu->icon,
+                'route' => $menu->route,
+                'sort' => $menu->sort,
+                'submenus' => $submenuArray,
             ];
         }
-
-        // 5️⃣ Sort menus by sort
-        usort($result, fn($a, $b) => $a['sort'] <=> $b['sort']);
 
         return response()->json($result);
     }
