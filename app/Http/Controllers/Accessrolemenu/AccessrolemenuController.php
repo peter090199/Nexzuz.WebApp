@@ -268,7 +268,6 @@ class AccessrolemenuController extends Controller
                 $sub = [];
                 foreach ($submodule as $sm) {
                     $submenus = Roleaccesssubmenu::where('submenus_id', $sm->submenus_id)
-                        ->where('desc_code', $request->desc_code)
                         ->orderBy('sort')
                         ->get();
 
