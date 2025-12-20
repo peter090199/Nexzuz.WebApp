@@ -242,6 +242,8 @@ class AccessrolemenuController extends Controller
     //             return response("authenticated");
     //         }
     // }
+
+    
 public function index(Request $request)
 {
     if (!Auth::check()) {
