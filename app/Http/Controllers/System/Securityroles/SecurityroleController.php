@@ -84,8 +84,8 @@ class SecurityroleController extends Controller
             /* ===============================
             DELETE OLD DATA ONCE
             =============================== */
-            // Roleaccessmenu::where('rolecode', $rolecode)->delete();
-            // Roleaccesssubmenu::where('rolecode', $rolecode)->delete();
+            Roleaccessmenu::where('rolecode', $rolecode)->delete();
+            Roleaccesssubmenu::where('rolecode', $rolecode)->delete();
 
             /* ===============================
             INSERT MENUS & SUBMENUS
