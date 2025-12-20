@@ -242,8 +242,7 @@ class AccessrolemenuController extends Controller
     //             return response("authenticated");
     //         }
     // }
-
-    public function index(Request $request)
+public function index(Request $request)
 {
     if (!Auth::check()) {
         return response("authenticated", 401);
@@ -265,32 +264,33 @@ class AccessrolemenuController extends Controller
 
         foreach ($menus as $menu) {
 
-            // Get role-access submenus for this module
             $submodule = Roleaccesssubmenu::where([
                 ['rolecode', $roleCode],
                 ['transNo', $module->transNo]
             ])->get();
 
-            $sub = []; // default empty array
+            $sub = []; // always start as empty
 
-            foreach ($submodule as $sm) {
-                $submenus = Submenu::where('id', $sm->submenus_id)
-                    ->where('status', 'A')
-                    ->where('desc_code', $descCode)
-                    ->orderBy('sort')
-                    ->get();
+            if ($submodule->isNotEmpty()) {
+                foreach ($submodule as $sm) {
+                    $submenu = Submenu::where('id', $sm->submenus_id)
+                        ->where('status', 'A')
+                        ->where('desc_code', $descCode)
+                        ->orderBy('sort')
+                        ->first(); // only one submenu expected
 
-                foreach ($submenus as $submenu) {
-                    $sub = [
-                        "description" => $submenu->description,
-                        "icon" => $submenu->icon,
-                        "route" => $submenu->routes,
-                        "sort" => $submenu->sort
-                    ];
+                    if ($submenu) {
+                        $sub[] = [
+                            "description" => $submenu->description,
+                            "icon" => $submenu->icon,
+                            "route" => $submenu->routes,
+                            "sort" => $submenu->sort
+                        ];
+                    }
                 }
             }
 
-            // Even if no submenus exist, $sub stays as []
+            // if no submenu exists, $sub remains empty
             $result[] = [
                 "description" => $menu->description,
                 "icon" => $menu->icon,
