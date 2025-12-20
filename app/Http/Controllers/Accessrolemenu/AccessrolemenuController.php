@@ -88,7 +88,7 @@ class AccessrolemenuController extends Controller
         });
     }
 
-    public function index(Request $request)
+    public function indexxx(Request $request)
     {
 
             if (Auth::check()) {
@@ -155,6 +155,77 @@ class AccessrolemenuController extends Controller
 
             
     }
+
+    public function index(Request $request)
+    {
+        // Access check
+        if ($this->accessmenu($request) !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $request->validate([
+            'rolecode' => 'required|string'
+        ]);
+
+        try {
+
+            $rolecode = $request->rolecode;
+
+            /* ===============================
+            GET MENUS
+            =============================== */
+            $menus = Roleaccessmenu::where('rolecode', $rolecode)
+                ->with('menu') // optional if you have relation
+                ->get();
+
+            /* ===============================
+            GET SUBMENUS
+            =============================== */
+            $submenus = Roleaccesssubmenu::where('rolecode', $rolecode)
+                ->with('submenu') // optional if you have relation
+                ->get()
+                ->groupBy('transNo');
+
+            /* ===============================
+            BUILD RESPONSE STRUCTURE
+            =============================== */
+            $result = [];
+
+            foreach ($menus as $menu) {
+
+                $lines = [];
+
+                if (isset($submenus[$menu->transNo])) {
+                    foreach ($submenus[$menu->transNo] as $sub) {
+                        $lines[] = [
+                            'submenus_id' => $sub->submenus_id
+                        ];
+                    }
+                }
+
+                $result[] = [
+                    'rolecode' => $menu->rolecode,
+                    'menus_id' => $menu->menus_id,
+                    'lines'    => $lines
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'header'  => $result
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Show the form for creating a new resource.
      */

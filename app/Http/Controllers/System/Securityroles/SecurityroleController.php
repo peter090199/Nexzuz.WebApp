@@ -161,8 +161,8 @@ class SecurityroleController extends Controller
                 }
     
                  // Delete existing records for the given rolecode
-                //  Roleaccessmenu::where('rolecode', $header['rolecode'])->delete();
-                //  Roleaccesssubmenu::where('rolecode', $header['rolecode'])->delete();
+                 Roleaccessmenu::where('rolecode', $header['rolecode'])->delete();
+                 Roleaccesssubmenu::where('rolecode', $header['rolecode'])->delete();
 
                 // Insert new role access menu
                 Roleaccessmenu::insert([
