@@ -251,60 +251,48 @@ public function index(Request $request)
     $roleCode = Auth::user()->role_code;
     $descCode = $request->desc_code;
 
-    $modules = Roleaccessmenu::where('rolecode', $roleCode)->get();
+    $modules = Roleaccessmenu::with([
+        'menu' => function($query) use ($descCode) {
+            $query->where('status', 'A')
+                  ->where('desc_code', $descCode)
+                  ->orderBy('sort');
+        },
+        'submodules.submenu' => function($query) use ($descCode) {
+            $query->where('desc_code', $descCode)
+                  ->orderBy('sort');
+        }
+    ])
+    ->where('rolecode', $roleCode)
+    ->get();
+
     $result = [];
 
     foreach ($modules as $module) {
+        if (!$module->menu) continue; // skip if menu is missing
 
-        $menus = Menu::where('id', $module->menus_id)
-            ->where('status', 'A')
-            ->where('desc_code', $descCode)
-            ->orderBy('sort')
-            ->get();
+        $submenus = $module->submodules->map(function($sm) {
+            return $sm->submenu ? [
+                "description" => $sm->submenu->description,
+                "icon" => $sm->submenu->icon,
+                "route" => $sm->submenu->routes,
+                "sort" => $sm->submenu->sort
+            ] : null;
+        })->filter()->values()->toArray(); // filter out nulls
 
-        foreach ($menus as $menu) {
-
-            $submodule = Roleaccesssubmenu::where([
-                ['rolecode', $roleCode],
-                ['transNo', $module->transNo]
-            ])->get();
-
-            $sub = []; // always start as empty
-
-            if ($submodule->isNotEmpty()) {
-                foreach ($submodule as $sm) {
-                    $submenu = Submenu::where('id', $sm->submenus_id)
-                        ->where('status', 'A')
-                        ->where('desc_code', $descCode)
-                        ->orderBy('sort')
-                        ->first(); // only one submenu expected
-
-                    if ($submenu) {
-                        $sub[] = [
-                            "description" => $submenu->description,
-                            "icon" => $submenu->icon,
-                            "route" => $submenu->routes,
-                            "sort" => $submenu->sort
-                        ];
-                    }
-                }
-            }
-
-            // if no submenu exists, $sub remains empty
-            $result[] = [
-                "description" => $menu->description,
-                "icon" => $menu->icon,
-                "route" => $menu->routes,
-                "sort" => $menu->sort,
-                "submenus" => $sub
-            ];
-        }
+        $result[] = [
+            "description" => $module->menu->description,
+            "icon" => $module->menu->icon,
+            "route" => $module->menu->routes,
+            "sort" => $module->menu->sort,
+            "submenus" => $submenus // empty array if none
+        ];
     }
 
     usort($result, fn($a, $b) => $a['sort'] <=> $b['sort']);
 
     return response()->json($result);
 }
+
 
    
     public function create()

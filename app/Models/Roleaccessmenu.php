@@ -19,5 +19,13 @@ class Roleaccessmenu extends Model
         'created_by',
         'updated_by'
     ];
+  public function menu()
+    {
+        return $this->belongsTo(Menu::class, 'menus_id', 'id');
+    }
 
+    public function submodules()
+    {
+        return $this->hasMany(Roleaccesssubmenu::class, 'transNo', 'transNo');
+    }
 }
