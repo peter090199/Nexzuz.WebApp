@@ -281,7 +281,7 @@ class AccessrolemenuController extends Controller
                     ->get();
 
                 foreach ($submenus as $submenu) {
-                    $sub[] = [
+                    $sub = [
                         "description" => $submenu->description,
                         "icon" => $submenu->icon,
                         "route" => $submenu->routes,
