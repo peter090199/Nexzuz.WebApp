@@ -20,9 +20,5 @@ class Roleaccesssubmenu extends Model
         'updated_by',
     ];
 
-     public function submenu()
-    {
-        return $this->belongsTo(Submenu::class, 'submenus_id', 'id')
-                    ->where('status', 'A');
-    }
+    
 }

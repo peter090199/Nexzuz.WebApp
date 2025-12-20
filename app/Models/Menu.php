@@ -39,11 +39,7 @@ class Menu extends Model
     }
 
 
-    public function submenus()
-    {
-        return $this->hasMany(Submenu::class, 'menu_id', 'id')
-                    ->where('status', 'A');
-    }
+    
 
     
 }
