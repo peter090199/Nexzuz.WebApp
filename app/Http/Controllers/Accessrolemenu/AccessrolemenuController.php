@@ -88,7 +88,7 @@ class AccessrolemenuController extends Controller
         });
     }
 
-    public function indexxx(Request $request)
+    public function index(Request $request)
     {
 
             if (Auth::check()) {
@@ -156,7 +156,7 @@ class AccessrolemenuController extends Controller
             
     }
 
-    public function index(Request $request)
+    public function indexxxxx(Request $request)
     {
         $request->validate([
             'rolecode' => 'required|string'
@@ -181,9 +181,7 @@ class AccessrolemenuController extends Controller
                 ->get()
                 ->groupBy('transNo');
 
-            /* ===============================
-            BUILD RESPONSE STRUCTURE
-            =============================== */
+       
             $result = [];
 
             foreach ($menus as $menu) {
