@@ -129,13 +129,14 @@ class AccessrolemenuController extends Controller
           $roleCode = 'DEF-ADMIN';
 
         // Get all menus with their submenus
-        $menus = DB::table('roleaccessmenus as m')
+        $menus = DB::table('menus as m')
             ->leftJoin('roleaccesssubmenus as s', function($join) use ($roleCode) {
                 $join->on('s.menus_id', '=', 'm.menus_id')
                      ->where('s.rolecode', '=', $roleCode);
             })
             ->select(
                 'm.menus_id',
+                'm.description as menu_description',
                 'm.icon as menu_icon',
                 'm.route as menu_route',
                 'm.sort as menu_sort',
