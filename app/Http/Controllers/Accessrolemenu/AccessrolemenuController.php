@@ -109,7 +109,7 @@ class AccessrolemenuController extends Controller
 
         $lines = $submenus->map(function ($sub) {
             return [
-                'submenus_id' => $sub->transNo, // submenu identifier
+                'submenus_id' => $sub->submenus_id, // submenu identifier
             ];
         });
 
