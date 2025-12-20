@@ -136,7 +136,6 @@ class AccessrolemenuController extends Controller
             })
             ->select(
                 'm.menus_id',
-                'm.description as menu_description',
                 'm.icon as menu_icon',
                 'm.route as menu_route',
                 'm.sort as menu_sort',
