@@ -52,7 +52,87 @@ class SecurityroleController extends Controller
         //
     }
     
-   public function store(Request $request)
+    public function store(Request $request)
+    {
+        $request->merge(['description' => $this->description]);
+
+        // Access check
+        if ($this->accessmenu($request) !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $request->validate([
+            'header' => 'required|array',
+            'header.*.rolecode' => 'required|string',
+            'header.*.menus_id' => 'required|numeric',
+            'header.*.lines' => 'nullable|array',
+            'header.*.lines.*.submenus_id' => 'required|numeric'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // ONE transNo for entire request
+            $transNo = (Roleaccessmenu::max('transNo') ?? 0) + 1;
+
+            // 🔑 GET ROLECODE ONCE
+            $rolecode = $request->header[0]['rolecode'];
+
+            /* ===============================
+            DELETE OLD DATA ONCE
+            =============================== */
+            Roleaccessmenu::where('rolecode', $rolecode)->delete();
+            Roleaccesssubmenu::where('rolecode', $rolecode)->delete();
+
+            /* ===============================
+            INSERT MENUS & SUBMENUS
+            =============================== */
+            foreach ($request->header as $header) {
+
+                // Insert MENU access
+                Roleaccessmenu::create([
+                    'rolecode'   => $header['rolecode'],
+                    'menus_id'   => $header['menus_id'],
+                    'transNo'    => $transNo,
+                    'created_by'=> Auth::user()->fullname,
+                    'updated_by'=> Auth::user()->fullname
+                ]);
+
+                // Insert SUBMENU access (if any)
+                if (!empty($header['lines'])) {
+                    foreach ($header['lines'] as $line) {
+                        Roleaccesssubmenu::create([
+                            'rolecode'     => $header['rolecode'],
+                            'submenus_id'  => $line['submenus_id'],
+                            'transNo'      => $transNo,
+                            'created_by'  => Auth::user()->fullname,
+                            'updated_by'  => Auth::user()->fullname
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role access saved successfully'
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+   public function storex(Request $request)
     {
         $request->merge(['description' => $this->description]);
         $accessResponse = $this->accessmenu($request);
