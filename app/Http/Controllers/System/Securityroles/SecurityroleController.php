@@ -68,51 +68,48 @@ class SecurityroleController extends Controller
             'header' => 'required|array',
             'header.*.rolecode' => 'required|string',
             'header.*.menus_id' => 'required|numeric',
+            'header.*.lines' => 'nullable|array',
+            'header.*.lines.*.submenus_id' => 'required|numeric'
         ]);
 
         try {
             DB::beginTransaction();
 
-            // ONE transNo for this save
-            $transNo = Roleaccessmenu::max('transNo') ?? 0;
-            $transNo++;
+            // ONE transNo for entire request
+            $transNo = (Roleaccessmenu::max('transNo') ?? 0) + 1;
 
+            // 🔑 GET ROLECODE ONCE
+            $rolecode = $request->header[0]['rolecode'];
+
+            /* ===============================
+            DELETE OLD DATA ONCE
+            =============================== */
+            // Roleaccessmenu::where('rolecode', $rolecode)->delete();
+            // Roleaccesssubmenu::where('rolecode', $rolecode)->delete();
+
+            /* ===============================
+            INSERT MENUS & SUBMENUS
+            =============================== */
             foreach ($request->header as $header) {
 
-                /* ===============================
-                DELETE OLD DATA (NO DUPLICATES)
-                =============================== */
-                Roleaccessmenu::where('rolecode', $header['rolecode'])->delete();
-                Roleaccesssubmenu::where('rolecode', $header['rolecode'])->delete();
-
-                /* ===============================
-                INSERT MENU ACCESS
-                =============================== */
+                // Insert MENU access
                 Roleaccessmenu::create([
                     'rolecode'   => $header['rolecode'],
-                    'transNo'    => $transNo,
                     'menus_id'   => $header['menus_id'],
+                    'transNo'    => $transNo,
                     'created_by'=> Auth::user()->fullname,
                     'updated_by'=> Auth::user()->fullname
                 ]);
 
-                /* ===============================
-                INSERT SUBMENU ACCESS
-                =============================== */
-                if (!empty($header['lines']) && is_array($header['lines'])) {
-
+                // Insert SUBMENU access (if any)
+                if (!empty($header['lines'])) {
                     foreach ($header['lines'] as $line) {
-
-                        if (empty($line['submenus_id'])) {
-                            continue;
-                        }
-
                         Roleaccesssubmenu::create([
-                            'rolecode'    => $header['rolecode'],
-                            'transNo'     => $transNo,
-                            'submenus_id'=> $line['submenus_id'],
-                            'created_by' => Auth::user()->fullname,
-                            'updated_by' => Auth::user()->fullname
+                            'rolecode'     => $header['rolecode'],
+                            'submenus_id'  => $line['submenus_id'],
+                            'transNo'      => $transNo,
+                            'created_by'  => Auth::user()->fullname,
+                            'updated_by'  => Auth::user()->fullname
                         ]);
                     }
                 }
@@ -134,6 +131,7 @@ class SecurityroleController extends Controller
             ], 500);
         }
     }
+
 
 //    public function store(Request $request)
 //     {
