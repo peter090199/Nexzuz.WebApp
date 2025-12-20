@@ -178,7 +178,6 @@ class AccessrolemenuController extends Controller
         // Reset keys and return as JSON
         return response()->json(array_values($result));
     }
-    }
     // public function index(Request $request)
     // {
 
