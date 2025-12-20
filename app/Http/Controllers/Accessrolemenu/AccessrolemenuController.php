@@ -256,7 +256,7 @@ class AccessrolemenuController extends Controller
         foreach ($modules as $module) {
             $menus = Menu::where('id', $module->menus_id)
                 ->where('desc_code', $request->desc_code)
-                ->orderBy('sort')
+                ->orderBy('id') 
                 ->get();
 
             foreach ($menus as $menu) {
