@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 
 class AccessrolemenuController extends Controller
 {
+    
   public function getModule(Request $request)
     {
         // ✅ Check authentication
