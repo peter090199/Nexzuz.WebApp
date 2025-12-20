@@ -52,162 +52,81 @@ class SecurityroleController extends Controller
         //
     }
     
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $request->merge(['description' => $this->description]);
-
-        // Access check
-        if ($this->accessmenu($request) !== 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 403);
+        $accessResponse = $this->accessmenu($request);
+    
+        if ($accessResponse !== 1) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
-
-        $request->validate([
-            'header' => 'required|array',
-            'header.*.rolecode' => 'required|string',
-            'header.*.menus_id' => 'required|numeric',
-            'header.*.lines' => 'nullable|array',
-            'header.*.lines.*.submenus_id' => 'required|numeric'
-        ]);
-
+    
         try {
             DB::beginTransaction();
-
-            // ONE transNo for entire request
-            $transNo = (Roleaccessmenu::max('transNo') ?? 0) + 1;
-
-            // 🔑 GET ROLECODE ONCE
-            $rolecode = $request->header[0]['rolecode'];
-
-            /* ===============================
-            DELETE OLD DATA ONCE
-            =============================== */
-            Roleaccessmenu::where('rolecode', $rolecode)->delete();
-            Roleaccesssubmenu::where('rolecode', $rolecode)->delete();
-
-            /* ===============================
-            INSERT MENUS & SUBMENUS
-            =============================== */
-            foreach ($request->header as $header) {
-
-                // Insert MENU access
-                Roleaccessmenu::create([
-                    'rolecode'   => $header['rolecode'],
-                    'menus_id'   => $header['menus_id'],
-                    'transNo'    => $transNo,
-                    'created_by'=> Auth::user()->fullname,
-                    'updated_by'=> Auth::user()->fullname
+            $data = $request->all();
+    
+            foreach ($data['header'] as $header) {
+                $trans = Roleaccessmenu::max('transNo');
+                $transNo = empty($trans) ? 1 : $trans + 1;
+    
+                $head = Validator::make($header, [
+                    'rolecode' => 'required|string',
+                    'menus_id' => 'required|numeric'
                 ]);
 
-                // Insert SUBMENU access (if any)
-                if (!empty($header['lines'])) {
+    
+                if ($head->fails()) {
+                    DB::rollBack();
+                    return response()->json(['success' => false, 'message' => $head->errors()], 422);
+                }
+    
+                 // Delete existing records for the given rolecode
+                //  Roleaccessmenu::where('rolecode', $header['rolecode'])->delete();
+                //  Roleaccesssubmenu::where('rolecode', $header['rolecode'])->delete();
+
+                // Insert new role access menu
+                Roleaccessmenu::insert([
+                    "rolecode" => $header['rolecode'],
+                    "transNo" => $transNo,
+                    "menus_id" => $header['menus_id'],
+                    "created_by" => Auth::user()->fullname,
+                    "updated_by" => Auth::user()->fullname
+                ]);
+    
+                // Insert role access submenus if provided
+                if (!empty($header['lines']) && is_array($header['lines'])) {
                     foreach ($header['lines'] as $line) {
-                        Roleaccesssubmenu::create([
-                            'rolecode'     => $header['rolecode'],
-                            'submenus_id'  => $line['submenus_id'],
-                            'transNo'      => $transNo,
-                            'created_by'  => Auth::user()->fullname,
-                            'updated_by'  => Auth::user()->fullname
-                        ]);
+                        if (!empty($line['submenus_id'])) {
+                            $line['rolecode'] = $line['rolecode'] ?? $header['rolecode'];
+    
+                            $l = Validator::make((array) $line, [
+                                "submenus_id" => 'required|numeric'
+                            ]);
+    
+                            if ($l->fails()) {
+                                DB::rollBack();
+                                return response()->json(['success' => false, 'message' => $l->errors()], 422);
+                            }
+    
+                            Roleaccesssubmenu::insert([
+                                "rolecode" => $line['rolecode'],
+                                "transNo" => $transNo,
+                                "submenus_id" => $line['submenus_id'],
+                                "created_by" => Auth::user()->fullname,
+                                "updated_by" => Auth::user()->fullname
+                            ]);
+                        }
                     }
                 }
             }
-
+    
             DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Role access saved successfully'
-            ]);
-
-        } catch (\Throwable $e) {
+            return response()->json(['success' => true, 'message' => 'Data inserted successfully']);
+        } catch (\Throwable $th) {
             DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $th->getMessage()]);
         }
     }
-
-
-//    public function store(Request $request)
-//     {
-//         $request->merge(['description' => $this->description]);
-//         $accessResponse = $this->accessmenu($request);
-    
-//         if ($accessResponse !== 1) {
-//             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-//         }
-    
-//         try {
-//             DB::beginTransaction();
-//             $data = $request->all();
-    
-//             foreach ($data['header'] as $header) {
-//                 $trans = Roleaccessmenu::max('transNo');
-//                 $transNo = empty($trans) ? 1 : $trans + 1;
-    
-//                 $head = Validator::make($header, [
-//                     'rolecode' => 'required|string',
-//                     'menus_id' => 'required|numeric'
-//                 ]);
-
-    
-//                 if ($head->fails()) {
-//                     DB::rollBack();
-//                     return response()->json(['success' => false, 'message' => $head->errors()], 422);
-//                 }
-    
-//                  // Delete existing records for the given rolecode
-//                 //  Roleaccessmenu::where('rolecode', $header['rolecode'])->delete();
-//                 //  Roleaccesssubmenu::where('rolecode', $header['rolecode'])->delete();
-
-//                 // Insert new role access menu
-//                 Roleaccessmenu::insert([
-//                     "rolecode" => $header['rolecode'],
-//                     "transNo" => $transNo,
-//                     "menus_id" => $header['menus_id'],
-//                     "created_by" => Auth::user()->fullname,
-//                     "updated_by" => Auth::user()->fullname
-//                 ]);
-    
-//                 // Insert role access submenus if provided
-//                 if (!empty($header['lines']) && is_array($header['lines'])) {
-//                     foreach ($header['lines'] as $line) {
-//                         if (!empty($line['submenus_id'])) {
-//                             $line['rolecode'] = $line['rolecode'] ?? $header['rolecode'];
-    
-//                             $l = Validator::make((array) $line, [
-//                                 "submenus_id" => 'required|numeric'
-//                             ]);
-    
-//                             if ($l->fails()) {
-//                                 DB::rollBack();
-//                                 return response()->json(['success' => false, 'message' => $l->errors()], 422);
-//                             }
-    
-//                             Roleaccesssubmenu::insert([
-//                                 "rolecode" => $line['rolecode'],
-//                                 "transNo" => $transNo,
-//                                 "submenus_id" => $line['submenus_id'],
-//                                 "created_by" => Auth::user()->fullname,
-//                                 "updated_by" => Auth::user()->fullname
-//                             ]);
-//                         }
-//                     }
-//                 }
-//             }
-    
-//             DB::commit();
-//             return response()->json(['success' => true, 'message' => 'Data inserted successfully']);
-//         } catch (\Throwable $th) {
-//             DB::rollBack();
-//             return response()->json(['success' => false, 'message' => $th->getMessage()]);
-//         }
-//     }
 
      
 
