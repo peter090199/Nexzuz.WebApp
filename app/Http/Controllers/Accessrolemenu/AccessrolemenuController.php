@@ -107,11 +107,12 @@ class AccessrolemenuController extends Controller
             ->where('menus_id', $menu->menus_id) // link submenu to main menu
             ->get();
 
+        // Map submenus to 'lines' array
         $lines = $submenus->map(function ($sub) {
             return [
                 'submenus_id' => $sub->submenus_id, // submenu identifier
             ];
-        });
+        })->toArray(); // convert collection to array
 
         $result[] = [
             'rolecode' => $roleCode,
