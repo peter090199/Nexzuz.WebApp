@@ -104,7 +104,6 @@ class AccessrolemenuController extends Controller
         // Get submenus linked to this menu
         $submenus = DB::table('roleaccesssubmenus')
             ->where('rolecode', $roleCode)
-            ->where('submenus_id', $menu->submenus_id) // link submenu to main menu
             ->get();
 
         $lines = $submenus->map(function ($sub) {
