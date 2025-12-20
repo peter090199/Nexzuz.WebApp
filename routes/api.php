@@ -87,7 +87,7 @@
 
     //accessmenu
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
-    Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
+    // Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
     // PROFILE resource
     Route::Resource('profile',ProfileController::class)->names('profile');
