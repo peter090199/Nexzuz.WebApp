@@ -91,39 +91,43 @@ class AccessrolemenuController extends Controller
 
     public function index(Request $request)
     {
-        $roleCode = $request->user()->role_code; // assuming user is authenticated
+        $roleCode = $request->user()->role_code; // authenticated user's role
+
+        // Get main menus
         $menus = DB::table('roleaccessmenus')
-        ->where('rolecode', $roleCode)
-        ->get();
+            ->where('rolecode', $roleCode)
+            ->get();
 
         $result = [];
 
         foreach ($menus as $menu) {
-          $submenus = DB::table('roleaccesssubmenus')
-            ->where('rolecode', $roleCode)
-            ->where('menus_id', $menu->transNo)
-            ->get();
+            // Get submenus linked to this main menu
+            $submenus = DB::table('roleaccesssubmenus')
+                ->where('rolecode', $roleCode)
+                ->where('submenus_id', $menu->transNo) // corrected column
+                ->get();
 
             $submenuArray = $submenus->map(function ($sub) {
                 return [
-                    'description' => $sub->description,
-                    'icon' => $sub->icon,
-                    'route' => $sub->route,
-                    'sort' => $sub->sort,
+                    'description' => $sub->description ?? '',
+                    'icon' => $sub->icon ?? '',
+                    'route' => $sub->route ?? '',
+                    // 'sort' removed if column doesn't exist
                 ];
             });
 
             $result[] = [
-                'description' => $menu->description,
-                'icon' => $menu->icon,
-                'route' => $menu->route,
-                'sort' => $menu->sort,
+                'description' => $menu->description ?? '',
+                'icon' => $menu->icon ?? '',
+                'route' => $menu->route ?? '',
+                // 'sort' removed if column doesn't exist
                 'submenus' => $submenuArray,
             ];
         }
 
         return response()->json($result);
     }
+
 
     // public function index(Request $request)
     // {
