@@ -310,15 +310,16 @@ class SecurityroleController extends Controller
  public function saveAccessMenu(Request $request)
     {
         // Validate input
-        $request->validate([
-            'header' => 'required|array',
-            'header.*.rolecode' => 'required|string',
-            'header.*.menus_id' => 'required|integer',
-            'header.*.checked' => 'required|boolean',
-            'header.*.lines' => 'array',
-            'header.*.lines.*.submenus_id' => 'required|integer',
-            'header.*.lines.*.checked' => 'required|boolean',
-        ]);
+      $request->validate([
+        'header' => 'required|array',
+        'header.*.rolecode' => 'required|string',
+        'header.*.menus_id' => 'required|integer',
+        'header.*.checked' => 'required|boolean',
+        'header.*.lines' => 'nullable|array',           // optional array
+        'header.*.lines.*.submenus_id' => 'required|integer',
+        'header.*.lines.*.checked' => 'required|boolean',
+    ]);
+
 
         if (!Auth::check()) {
             return response()->json([
@@ -405,7 +406,7 @@ class SecurityroleController extends Controller
             ], 500);
         }
     }
-    
+
 public function saveAccessMenu11(Request $request)
 {
     // Validate the request
