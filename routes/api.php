@@ -88,7 +88,7 @@
     //accessmenu
     Route::Resource('accessmenu',AccessrolemenuController::class)->names('accessmenu');
     Route::post('saveAccessMenu', [SecurityroleController::class, 'saveAccessMenu']);
-    Route::delete('deleteMenu', [MenuController::class, 'deleteMenu']);
+    Route::delete('deleteMenu', [SecurityroleController::class, 'deleteMenu']);
     // Route::get('getModule', [AccessrolemenuController::class, 'getModule']);
     Route::post('logout',[LoginController::class,'logout'])->name('logout');
     // PROFILE resource
