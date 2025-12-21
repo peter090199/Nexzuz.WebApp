@@ -283,6 +283,8 @@ class SecurityroleController extends Controller
             ], 500);
         }
     }
+
+    
     public function saveAccessMenuxx(Request $request)
     {
         $request->validate([
