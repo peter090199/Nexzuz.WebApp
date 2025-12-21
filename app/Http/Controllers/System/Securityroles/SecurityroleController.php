@@ -311,7 +311,7 @@ class SecurityroleController extends Controller
     {
         // Validate input
       $request->validate([
-        'header' => 'nullable|array',
+        'header' => 'required|array',
         'header.*.rolecode' => 'required|string',
         'header.*.menus_id' => 'required|integer',
         'header.*.checked' => 'required|boolean',
