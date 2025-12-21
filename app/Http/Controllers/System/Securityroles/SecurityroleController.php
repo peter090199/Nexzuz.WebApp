@@ -208,8 +208,82 @@ class SecurityroleController extends Controller
         }
     }
 
-     
     public function saveAccessMenu(Request $request)
+    {
+        // Validate the request
+        $request->validate([
+            'header' => 'required|array',
+            'header.*.rolecode' => 'required|string',
+            'header.*.menus_id' => 'required|integer',
+            'header.*.lines' => 'array',
+            'header.*.lines.*.submenus_id' => 'required|integer',
+        ]);
+
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $header = $request->input('header');
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($header as $menuData) {
+                // Check if role-menu exists
+                $roleMenu = Roleaccessmenu::where('rolecode', $menuData['rolecode'])
+                    ->where('menus_id', $menuData['menus_id'])
+                    ->first();
+
+                if (!$roleMenu) {
+                    // Generate a new transNo
+                    $newTransNo = Roleaccessmenu::max('transNo') + 1;
+
+                    // Create new role-menu
+                    $roleMenu = Roleaccessmenu::create([
+                        'rolecode' => $menuData['rolecode'],
+                        'menus_id' => $menuData['menus_id'],
+                        'transNo' => $newTransNo,
+                        'status' => 'A'
+                    ]);
+                }
+
+                // Delete old submenus for this transNo
+                Roleaccesssubmenu::where('rolecode', $menuData['rolecode'])
+                    ->where('transNo', $roleMenu->transNo)
+                    ->delete();
+
+                // Save new submenus
+                if (!empty($menuData['lines'])) {
+                    foreach ($menuData['lines'] as $line) {
+                        Roleaccesssubmenu::create([
+                            'rolecode' => $menuData['rolecode'],
+                            'transNo' => $roleMenu->transNo,
+                            'submenus_id' => $line['submenus_id'],
+                            'status' => 'A'
+                        ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions saved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Save failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function saveAccessMenuxx(Request $request)
     {
         $request->validate([
             'header' => 'required|array',
