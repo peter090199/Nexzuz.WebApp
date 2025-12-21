@@ -208,7 +208,105 @@ class SecurityroleController extends Controller
         }
     }
 
-public function saveAccessMenu(Request $request)
+    public function saveAccessMenu(Request $request)
+{
+    $request->validate([
+        'header' => 'required|array',
+        'header.*.rolecode' => 'required|string',
+        'header.*.menus_id' => 'required|integer',
+        'header.*.checked' => 'required|boolean',
+        'header.*.lines' => 'array',
+        'header.*.lines.*.submenus_id' => 'required|integer',
+        'header.*.lines.*.checked' => 'required|boolean',
+    ]);
+
+    if (!Auth::check()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $header = $request->input('header');
+
+    DB::beginTransaction();
+    try {
+        $maxTransNo = Roleaccessmenu::max('transNo') ?? 0;
+
+        foreach ($header as $menuData) {
+            $rolecode = $menuData['rolecode'];
+            $menus_id = $menuData['menus_id'];
+            $menuChecked = $menuData['checked'];
+            $lines = $menuData['lines'] ?? [];
+
+            // Find existing role-menu
+            $roleMenu = Roleaccessmenu::where('rolecode', $rolecode)
+                ->where('menus_id', $menus_id)
+                ->first();
+
+            if (!$menuChecked) {
+                // Menu unchecked → delete menu and its submenus
+                if ($roleMenu) {
+                    Roleaccesssubmenu::where('rolecode', $rolecode)
+                        ->where('transNo', $roleMenu->transNo)
+                        ->delete();
+                    $roleMenu->delete();
+                }
+                continue;
+            }
+
+            // Menu checked → create menu if it doesn't exist
+            if (!$roleMenu) {
+                $maxTransNo++;
+                $roleMenu = Roleaccessmenu::create([
+                    'rolecode' => $rolecode,
+                    'menus_id' => $menus_id,
+                    'transNo' => $maxTransNo,
+                    'status' => 'A'
+                ]);
+            }
+
+            // Process submenus
+            foreach ($lines as $line) {
+                $submenuChecked = $line['checked'];
+                $submenus_id = $line['submenus_id'];
+
+                if ($submenuChecked) {
+                    // Save submenu if checked
+                    Roleaccesssubmenu::updateOrCreate(
+                        [
+                            'rolecode' => $rolecode,
+                            'transNo' => $roleMenu->transNo,
+                            'submenus_id' => $submenus_id
+                        ],
+                        ['status' => 'A']
+                    );
+                } else {
+                    // Delete submenu if unchecked
+                    Roleaccesssubmenu::where('rolecode', $rolecode)
+                        ->where('transNo', $roleMenu->transNo)
+                        ->where('submenus_id', $submenus_id)
+                        ->delete();
+                }
+            }
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Permissions updated successfully'
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'message' => 'Save failed: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+public function saveAccessMenu11(Request $request)
 {
     // Validate the request
     $request->validate([
