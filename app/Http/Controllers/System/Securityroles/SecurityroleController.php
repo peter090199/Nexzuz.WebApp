@@ -52,7 +52,7 @@ class SecurityroleController extends Controller
         //
     }
     
-    public function store(Request $request)
+    public function storex(Request $request)
     {
         $request->merge(['description' => $this->description]);
 
@@ -132,7 +132,7 @@ class SecurityroleController extends Controller
         }
     }
 
-   public function storex(Request $request)
+   public function store(Request $request)
     {
         $request->merge(['description' => $this->description]);
         $accessResponse = $this->accessmenu($request);
