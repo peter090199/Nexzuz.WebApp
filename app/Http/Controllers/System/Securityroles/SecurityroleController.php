@@ -293,6 +293,65 @@ class SecurityroleController extends Controller
             ], 500);
         }
     }
+
+     public function deleteMenu(Request $request)
+    {
+        $request->validate([
+            'rolecode' => 'required|string',
+            'menus_id' => 'required|integer',
+            'submenus_id' => 'nullable|integer'
+        ]);
+
+        if (!Auth::check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $rolecode = $request->rolecode;
+        $menus_id = $request->menus_id;
+        $submenus_id = $request->submenus_id;
+
+        // Find role-menu
+        $roleMenu = Roleaccessmenu::where('rolecode', $rolecode)
+            ->where('menus_id', $menus_id)
+            ->first();
+
+        if (!$roleMenu) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Role menu not found'
+            ], 404);
+        }
+
+        if ($submenus_id) {
+            // Delete specific submenu
+            Roleaccesssubmenu::where('rolecode', $rolecode)
+                ->where('transNo', $roleMenu->transNo)
+                ->where('submenus_id', $submenus_id)
+                ->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Submenu deleted successfully'
+            ]);
+        } else {
+            // Delete all submenus and the menu itself
+            Roleaccesssubmenu::where('rolecode', $rolecode)
+                ->where('transNo', $roleMenu->transNo)
+                ->delete();
+
+            $roleMenu->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role menu and all submenus deleted successfully'
+            ]);
+        }
+    }
+
+    
     public function saveAccessMenuxx(Request $request)
     {
         // Validate the request
