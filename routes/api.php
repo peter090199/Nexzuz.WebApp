@@ -255,6 +255,7 @@
     Route::get('getAppliedJob', [AppliedJobController::class, 'getAppliedJob']);
     Route::get('getAppliedJobByTransNo/{transNo}', [AppliedJobController::class, 'getAppliedJobByTransNo']);
     Route::get('getInterviewAppliedJobs', [AppliedJobController::class, 'getInterviewAppliedJobs']);
+    Route::get('getAllAppliedJobsByCode', [AppliedJobController::class, 'getAllAppliedJobsByCode']);
     Route::get('getAppliedJobByUsers/{transNo}', [AppliedJobController::class, 'getAppliedJobByUsers']);
     
     Route::post('updateAppliedStatus/{applied_id}', [AppliedJobController::class, 'updateAppliedStatus']);
