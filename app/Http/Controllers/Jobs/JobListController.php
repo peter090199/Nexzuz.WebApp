@@ -37,5 +37,22 @@ class JobListController extends Controller
     }
 
 
+    
+    public function getJobVacanciesByCode()
+    {
+        $user = Auth::user();
+        
+        $jobs = DB::table('jobPosting')
+            ->where('recordstatus', 'active')
+            ->where('code',$user->code) 
+            ->orderByDesc('created_at') 
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $jobs
+        ]);
+    }
+
 
 }

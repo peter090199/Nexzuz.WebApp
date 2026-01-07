@@ -233,6 +233,7 @@
     //JobList
     Route::get('getActiveJobs', [JobListController::class, 'getActiveJobs']);
     Route::get('getActiveJobsByCode/{code}', [JobListController::class, 'getActiveJobsByCode']);
+    Route::get('getJobVacanciesByCode', [JobListController::class, 'getJobVacanciesByCode']);
     Route::get('getAppliedStatus/{transNo}', [AppliedJobController::class, 'getAppliedStatus']);
     //company profile
     Route::get('company/profile/{code}', [ProfileController::class, 'userAuthByCode']);
