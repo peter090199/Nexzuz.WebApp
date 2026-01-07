@@ -22,6 +22,22 @@ class JobListController extends Controller
         ]);
     }
 
+    public function getAppliedJobCount()
+    {
+        $user = Auth::user();
+
+        $count = DB::table('applied_jobs as aj')
+            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->where('jp.code', $user->code)
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'total' => $count
+        ]);
+    }
+
+
     public function getActiveJobsByCode($code)
     {
         $jobs = DB::table('jobPosting')

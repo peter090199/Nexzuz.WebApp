@@ -155,6 +155,8 @@ class AppliedJobController extends Controller
         ]);
     }
 
+
+
      public function getAppliedJobByUsers($transNo)
     {
         $user = Auth::user();
