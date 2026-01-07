@@ -36,8 +36,21 @@ class JobListController extends Controller
             'total' => $count
         ]);
     }
+    public function getPendingReviews()
+    {
+        $user = Auth::user();
 
+        $count = DB::table('applied_jobs as aj')
+            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->where('jp.code', $user->code)
+            ->where('aj.applied_status', 'review') // ✅ FIXED
+            ->count();
 
+        return response()->json([
+            'success' => true,
+            'total' => $count
+        ]);
+    }
     public function getActiveJobsByCode($code)
     {
         $jobs = DB::table('jobPosting')

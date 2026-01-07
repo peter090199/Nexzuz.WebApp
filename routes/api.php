@@ -268,6 +268,10 @@
     //CLIENT DASHBOARD
     Route::get('getJobVacanciesCountByCode', [JobListController::class, 'getJobVacanciesCountByCode']);
     Route::get('getAppliedJobCount', [JobListController::class, 'getAppliedJobCount']);
+    Route::get('getPendingReviews', [JobListController::class, 'getPendingReviews']);
+
+
+
 });
 
   
