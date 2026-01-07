@@ -41,7 +41,7 @@ class JobListController extends Controller
         $user = Auth::user();
 
         $count = DB::table('applied_jobs as aj')
-            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->join('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->where('jp.code', $user->code)
             ->where('aj.applied_status', 'review') // ✅ FIXED
             ->count();
