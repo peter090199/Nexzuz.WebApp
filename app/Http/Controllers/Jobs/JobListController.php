@@ -37,20 +37,18 @@ class JobListController extends Controller
     }
 
 
-    
-    public function getJobVacanciesByCode()
+    public function getJobVacanciesCountByCode()
     {
         $user = Auth::user();
-        
-        $jobs = DB::table('jobPosting')
+
+        $count = DB::table('jobPosting')
             ->where('recordstatus', 'active')
-            ->where('code',$user->code) 
-            ->orderByDesc('created_at') 
-            ->get();
+            ->where('code', $user->code)
+            ->count();
 
         return response()->json([
             'success' => true,
-            'data' => $jobs
+            'total' => $count
         ]);
     }
 
