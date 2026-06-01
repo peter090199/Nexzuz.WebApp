@@ -38,7 +38,7 @@
     use App\Events\NotificationCountUpdated;
     use App\Http\Controllers\System\Submenu\Submenus;
     use App\Http\Controllers\System\Users\AppUsersController;
-
+    USE App\Http\Controllers\AccountPlan\UserPlanController;
     /*
     |--------------------------------------------------------------------------
     | API Routes
@@ -69,13 +69,13 @@
     return response()->json(['success' => true, 'message' => $message]);
     });
 
-    Route::get('testmail', function() {
-        Mail::raw('Test email from Laravel', function($message) {
-            $message->to('nexsuz.official13@gmail.com')
-                    ->subject('Test Mail');
-        });
-        return 'Email sent';
-    });
+    // Route::get('testmail', function() {
+    //     Mail::raw('Test email from Laravel', function($message) {
+    //         $message->to('nexsuz.official13@gmail.com')
+    //                 ->subject('Test Mail');
+    //     });
+    //     return 'Email sent';
+    // });
 
     Route::middleware('auth:api')->post('/profile/broadcasting/auth', function () {
     return Broadcast::auth(request());
@@ -271,8 +271,13 @@
     Route::get('getPendingReviews', [JobListController::class, 'getPendingReviews']);
     Route::get('getHired', [JobListController::class, 'getHired']);
 
+    //scoring applied job
+    Route::get('getApplicationScore', [JobPostingController::class, 'getApplicationScore']);
 
+    //ACCOUNT PLAN
+    Route::post('account-plan/save', [UserPlanController::class, 'save']);
 
+    
 });
 
   

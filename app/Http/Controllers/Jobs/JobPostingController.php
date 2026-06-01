@@ -36,11 +36,26 @@ class JobPostingController extends Controller
                 'benefits'        => 'required|string|max:255',
                 'question_text'   => 'required|array|min:1',
                 'question_text.*' => 'required|string|max:255',
+
+                 // ✅ ADD THIS
+                'answer_type'          => 'required|array',
+                'answer_type.*'        => 'required|in:yes,no,general',
             ]);
 
             DB::beginTransaction();
 
-            // Handle file upload
+            // if ($request->hasFile('job_image')) {
+            //     $file = $request->file('job_image');
+            //     $uuid = Str::uuid();
+
+            //     $folderPath = "uploads/{$user->code}/JobPosting/{$uuid}";
+            //     $fileName = time() . '.' . $file->getClientOriginalExtension();
+
+            //     $filePath = $file->storeAs($folderPath, $fileName, 'public');
+
+            //     // ✅ FIX: proper public URL
+            //     $validated['job_image'] = Storage::disk('public')->url($filePath);
+            // }
             if ($request->hasFile('job_image')) {
                 $file = $request->file('job_image');
                 $uuid = Str::uuid();
@@ -78,6 +93,8 @@ class JobPostingController extends Controller
                 foreach ($validated['question_text'] as $questionText) {
                     Question::create([
                         'question_text' => $questionText,
+                        'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
+
                         'job_name'      => $validated['job_name'],
                         'role_code'     => $user->role_code,
                         'code'          => $user->code,
@@ -109,9 +126,10 @@ class JobPostingController extends Controller
                 Question::where('transNo', $transNo)->delete();
 
                 // Insert new/updated questions
-                foreach ($validated['question_text'] as $questionText) {
+                foreach ($validated['question_text'] as $index => $questionText) {
                     Question::create([
                         'question_text' => $questionText,
+                        'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
                         'job_name'      => $validated['job_name'],
                         'role_code'     => $user->role_code,
                         'code'          => $user->code,
@@ -146,6 +164,94 @@ class JobPostingController extends Controller
                 'error'   => $e->getMessage(),
             ], 500);
         }
+    }
+
+   public function getApplicationScore($transNo)
+    {
+        $rows = Question::where('transNo', $transNo)->get();
+
+        if ($rows->isEmpty()) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $answers = $rows->map(function ($item) {
+            $ansText = strtolower($item->answer_text);
+            $ansType = strtolower($item->answer_type);
+            
+            // --- SCORING LOGIC ---
+            $scoreValue = 0;
+            
+            if ($ansText === 'yes') {
+                $scoreValue = 1.0;
+            } elseif ($ansText === 'general' || $ansType === 'general') {
+                $scoreValue = 0.5; // "Medium" Score
+            } else {
+                $scoreValue = 0.0;
+            }
+
+            return [
+                'question_text' => $item->question_text,
+                'answer_text'   => $item->answer_text ?? 'N/A',
+                'numeric_score' => $scoreValue,
+                'is_correct'    => $ansText === 'yes'
+            ];
+        });
+
+        $totalScore = $answers->sum('numeric_score');
+        $totalQuestions = $answers->count();
+
+        return response()->json([
+            'answers' => $answers,
+            'summary' => [
+                'total_score'    => $totalScore,
+                'total_possible' => $totalQuestions,
+                'percentage'     => $totalQuestions > 0 ? round(($totalScore / $totalQuestions) * 100) : 0
+            ]
+        ], 200);
+    }
+
+
+    public function getApplicationScorexx($transNo)
+    {
+        // 1. Fetch all rows for this specific transaction
+        $rows = Question::where('transNo', $transNo)->get();
+
+        if ($rows->isEmpty()) {
+            return response()->json(['message' => 'No data found'], 404);
+        }
+
+        // 2. Map data to the format your Angular Component expects
+        $answers = $rows->map(function ($item) {
+            // Logic: 'yes' is correct, everything else (no, null, general) is false
+            $isCorrect = strtolower($item->answer_text) === 'yes';
+
+            return [
+                'question_text' => $item->question_text,
+                'answer_text'   => $item->answer_text ?? 'N/A',
+                'correct'       => $isCorrect, // This drives your Angular this.score
+                'answer_type'   => $item->answer_type
+            ];
+        });
+
+        // 3. Calculate Summary for the Header
+        $total = $answers->count();
+        $correctCount = $answers->where('correct', true)->count();
+        $percentage = $total > 0 ? round(($correctCount / $total) * 100) : 0;
+
+        return response()->json([
+            'user' => [
+                'job_name' => $rows->first()->job_name,
+                'company'  => $rows->first()->company,
+                'status'   => $rows->first()->status,
+            ],
+            'scoring' => [
+                'totalQuestions' => $total,
+                'score' => $correctCount,
+                'percentage' => $percentage
+            ],
+            'answers' => $answers,
+            'resumes' => [] // Add logic to fetch resume URLs here if needed
+        ], 200);
     }
 
     public function saveJobPostingss(Request $request)
@@ -207,9 +313,10 @@ class JobPostingController extends Controller
             ]);
 
             // ✅ Save multiple Questions
-            foreach ($validated['question_text'] as $questionText) {
+            foreach ($validated['question_text'] as $index => $questionText) {
                 Question::create([
                     'question_text' => $questionText,
+                    'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
                    // 'job_id'        => $job->id,
                     'job_name'      => $validated['job_name'],
                     'role_code'     => $user->role_code,

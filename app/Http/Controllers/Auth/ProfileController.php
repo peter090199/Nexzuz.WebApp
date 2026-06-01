@@ -60,7 +60,7 @@ class ProfileController extends Controller
             if ($user->coverphoto) {
                 // Convert full URL to relative storage path
                 $relativePath = str_replace(
-                    'https://exploredition.com/storage/app/public/',
+                    'https://api.nexsuz.com/storage/app/public/',
                     '',
                     $user->coverphoto
                 );
@@ -85,7 +85,7 @@ class ProfileController extends Controller
                 $file->storeAs($folderPath, $fileName, 'public');
 
                 // Build accessible URL
-                $coverPhotoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
+                $coverPhotoPath = "https://api.nexsuz.com/storage/{$folderPath}/{$fileName}";
             }
 
             // 🔹 Update in database
@@ -137,7 +137,7 @@ class ProfileController extends Controller
                     "email" => $resources[0]->email,
                     "fname" => $resources[0]->fname,
                     "lname" => $resources[0]->lname,
-                    "photo_pic" =>  $userprofile[$up]->photo_pic?? 'https://exploredition.com/storage/app/public/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png'  ,
+                    "photo_pic" =>  $userprofile[$up]->photo_pic?? 'https://api.nexsuz.com/storage/uploads/DEFAULTPROFILE/DEFAULTPROFILE.png'  ,
                     "contact_no" => $userprofile[$up]->contact_no,
                     "contact_visibility" => $userprofile[$up]->contact_visibility,
                     "email_visibility" => $userprofile[$up]->email_visibility,
@@ -703,7 +703,7 @@ class ProfileController extends Controller
                 $folderPath = "uploads/{$userCode}/cvphoto/{$uuid}";
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                $photoPath = "https://exploredition.com/storage/app/public/{$folderPath}/{$fileName}";
+                $photoPath = "https://api.nexsuz.com/storage/{$folderPath}/{$fileName}";
             }
 
             $contactVisibility = isset($data['contact_visibility']) ? (bool) $data['contact_visibility'] : false;
