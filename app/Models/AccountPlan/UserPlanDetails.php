@@ -5,22 +5,23 @@ namespace App\Models\AccountPlan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserPlan extends Model
+class UserPlanDetails extends Model
 {
     use HasFactory;
 
-    protected $table = 'userplanheader';
+    protected $table = 'userplandetails';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'planId',
-        'button_name',
-        'sort_number',
         'plan_name',
-        'price',
-        'tagmonthYear',
-        'tag',
-        'button_color',
-        'description',
+        'fid',
+        'feature_name',
         'recordStatus'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 }
