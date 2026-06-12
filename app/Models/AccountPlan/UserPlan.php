@@ -23,4 +23,13 @@ class UserPlan extends Model
         'description',
         'recordStatus'
     ];
+
+    public function features()
+    {
+        return $this->hasMany(
+            UserPlanDetails::class,
+            'planId',
+            'planId'
+        );
+    }
 }

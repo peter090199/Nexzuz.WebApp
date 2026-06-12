@@ -24,4 +24,13 @@ class UserPlanDetails extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    public function plan()
+    {
+        return $this->belongsTo(
+            UserPlan::class,
+            'planId',
+            'planId'
+        );
+    }
 }

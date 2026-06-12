@@ -5,20 +5,44 @@ namespace App\Http\Controllers\AccountPlan;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AccountPlan\UserPlan;
+use App\Services\PlanService;
+use Illuminate\Support\Facades\Auth;
 
 class UserPlanController extends Controller
 {
+    public function myFeatures(Request $request)
+    {
+        if (!Auth::check()) {
+            return response("authenticated", 401);
+        }
+        $code = Auth::user()->code;
+        return response()->json([
+            'success' => true,
+            'plan_code' => $code,
+            'features' => PlanService::getAllFeatures($code)
+        ]);
+    }
+
+    public function myFeaturesx()
+    {
+        if (!Auth::check()) {
+            return response("authenticated", 401);
+        }
+        $code = Auth::user()->code;
+        return response()->json([
+            'success' => true,
+            'plan_code' => $code,
+            'features' => PlanService::getAllFeatures($code)
+        ]);
+    }
+
     private function generatePlanId()
     {
         $lastPlan = UserPlan::latest('id')->first();
         $nextNumber = $lastPlan ? $lastPlan->id + 1 : 1;
-
         return 'PLN' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * CREATE
-     */
     public function save(Request $request)
     {
         $request->validate([
