@@ -17,6 +17,8 @@ class UserPlanDetails extends Model
         'plan_name',
         'fid',
         'feature_name',
+        'feature_code',
+        'feature_value',
         'recordStatus'
     ];
 

@@ -21,24 +21,29 @@ class UserPlanDetailsController extends Controller
     public function save(Request $request)
     {
         $request->validate([
-            'planId' => 'required',
-            'feature_name' => 'required'
+            'plan_id'       => 'required',
+            'feature_name'  => 'required',
+            'feature_code'  => 'required',
+            'feature_value' => 'required'
         ]);
 
         $feature = UserPlanDetails::create([
-            'planId' => $request->planId,
-            'plan_name' => $request->plan_name,
-            'fid' => $this->generateFeatureId(),
-            'feature_name' => $request->feature_name,
-            'recordStatus' => 'active'
+            'fid'           => $this->generateFeatureId(),
+            'planId'        => $request->plan_id,
+            'plan_name'     => $request->plan_name,
+            'feature_name'  => $request->feature_name,
+            'feature_code'  => strtoupper($request->feature_code),
+            'feature_value' => $request->feature_value,
+            'recordStatus'  => 'active'
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Feature added successfully.',
             'data' => $feature
-        ]);
+        ], 201);
     }
+
 
     /**
      * GET BY PLAN
@@ -62,22 +67,28 @@ class UserPlanDetailsController extends Controller
             'data' => $data
         ]);
     }
-    
+
     /**
      * UPDATE
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $fid)
     {
-        $feature = UserPlanDetails::findOrFail($id);
+        $feature = UserPlanDetails::where('fid', $fid)->firstOrFail();
 
-        $feature->update([
-            'feature_name' => $request->feature_name,
-            'recordStatus' => $request->recordStatus
-        ]);
+        $feature->feature_name = $request->feature_name;
+        $feature->feature_code = strtoupper($request->feature_code);
+        $feature->feature_value = $request->feature_value;
+
+        if ($request->has('recordStatus')) {
+            $feature->recordStatus = $request->recordStatus;
+        }
+
+        $feature->save(); // <-- Missing
 
         return response()->json([
             'success' => true,
-            'message' => 'Feature updated successfully.'
+            'message' => 'Feature updated successfully',
+            'data' => $feature
         ]);
     }
 

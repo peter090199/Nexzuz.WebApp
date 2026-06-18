@@ -18,24 +18,24 @@ class PlanService
     public static function getFeatureValue($code, $featureCode)
     {
         return Cache::remember(
-            "plan_feature_{$code}_{$featureCode}",
-            60, // cache 60 minutes
+            "feature_{$code}_{$featureCode}",
+            now()->addHours(1),
             function () use ($code, $featureCode) {
 
-                $subscription = self::getCurrentPlan($code);
-
-                if (!$subscription) {
-                    return null;
-                }
-
-                return UserPlanDetails::where('planId', $subscription->planId)
-                    ->where('feature_code', $featureCode)
-                    ->where('recordStatus', 'active')
-                    ->value('feature_value');
+                return UserSubscriptions::join(
+                    'user_plan_details',
+                    'user_subscriptions.planId',
+                    '=',
+                    'user_plan_details.planId'
+                )
+                    ->where('user_subscriptions.code', $code)
+                    ->where('user_subscriptions.is_active', 'active')
+                    ->where('user_plan_details.recordStatus', 'active')
+                    ->where('user_plan_details.feature_code', $featureCode)
+                    ->value('user_plan_details.feature_value');
             }
         );
     }
-
     /**
      * YES / NO FEATURES
      */
@@ -104,7 +104,8 @@ class PlanService
     public static function getAllFeatures($code)
     {
         return Cache::remember(
-            "plan_features_all_{$code}",60,
+            "plan_features_all_{$code}",
+            60,
             function () use ($code) {
                 $subscription = self::getCurrentPlan($code);
                 if (!$subscription) {
