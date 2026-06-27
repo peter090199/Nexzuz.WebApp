@@ -140,9 +140,9 @@ class UserPlanController extends Controller
     /**
      * READ SINGLE
      */
-    public function show($id)
+    public function show($planId)
     {
-        $plan = UserPlan::find($id);
+        $plan = UserPlan::find($planId);
 
         if (!$plan) {
             return response()->json([

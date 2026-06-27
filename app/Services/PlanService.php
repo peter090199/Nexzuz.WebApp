@@ -101,7 +101,31 @@ class PlanService
     /**
      * GET ALL FEATURES (ARRAY)
      */
+    public static function getAllFeaturesxxx($code)
+    {
+        $subscription = self::getCurrentPlan($code);
+        if (!$subscription) {
+            return collect();
+        }
+        return UserPlanDetails::where('planId', $subscription->planId)
+            ->where('recordStatus', 'active')
+            ->pluck('feature_value', 'feature_code');
+    }
+
     public static function getAllFeatures($code)
+    {
+        $subscription = self::getCurrentPlan($code);
+
+        if (!$subscription) {
+            return collect();
+        }
+
+        return UserPlanDetails::where('planId', $subscription->planId)
+            ->where('recordStatus', 'active')
+            ->get();
+    }
+
+    public static function getAllFeaturesxx($code)
     {
         return Cache::remember(
             "plan_features_all_{$code}",

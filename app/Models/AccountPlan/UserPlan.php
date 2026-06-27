@@ -11,6 +11,13 @@ class UserPlan extends Model
 
     protected $table = 'userplanheader';
 
+    // Primary Key
+    protected $primaryKey = 'planId';
+
+    // Set these based on your column type
+    public $incrementing = false;   // true if planId is AUTO_INCREMENT
+    protected $keyType = 'string';  // change to 'int' if planId is integer
+
     protected $fillable = [
         'planId',
         'button_name',

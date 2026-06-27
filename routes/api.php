@@ -88,8 +88,6 @@
         Route::get('user', function (Request $request) {
             return $request->user();
         });
-        //plan features
-        Route::get('my-plan-features', [UserPlanController::class, 'myFeatures']);
 
         //accessmenu
         Route::Resource('accessmenu', AccessrolemenuController::class)->names('accessmenu');
@@ -284,7 +282,7 @@
         Route::prefix('account-plan')->group(function () {
             Route::post('/save', [UserPlanController::class, 'save']);
             Route::get('/list', [UserPlanController::class, 'index']);
-            Route::get('/show/{id}', [UserPlanController::class, 'show']);
+            Route::get('/show/{planId}', [UserPlanController::class, 'show']);
             Route::put('/update/{id}', [UserPlanController::class, 'update']);
             Route::delete('/delete/{id}', [UserPlanController::class, 'destroy']);
             Route::patch('/deactivate/{id}', [UserPlanController::class, 'deactivate']);
@@ -295,7 +293,9 @@
             Route::get('/getByPlan/{planId}', [UserPlanDetailsController::class, 'getByPlan']);
             Route::put('/update/{id}', [UserPlanDetailsController::class, 'update']);
             Route::delete('/delete/{id}', [UserPlanDetailsController::class, 'delete']);
+            Route::get('/my-plan-features', [UserPlanController::class, 'myFeatures']);
         });
+
     });
 
 
