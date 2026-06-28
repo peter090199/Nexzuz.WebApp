@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Resource;
 use App\Mail\Registeractivation;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use App\Services\PlanService;
 
 
 
@@ -65,7 +65,8 @@ class RegisterController extends Controller
                 'code' => $newCode,
                 'role_code' => $request->statuscode == 0 ? 'DEF-USERS' : 'DEF-CLIENT',
             ]);
-
+            // ✅ Automatically assign Free Plan
+            PlanService::activateFreePlan();
             // ✅ Create Resource (add default coverphoto)
             Resource::create([
                 'code' => $newCode,
@@ -135,8 +136,8 @@ class RegisterController extends Controller
                 'designation' => 'nullable|string|max:255',
                 'age' => 'nullable|integer|min:1|max:150',
                 'profession' => 'nullable|string|max:255',
-                'statuscode' => 'required|integer|in:0,1', 
-                'coverphoto' => $request->coverphoto ?? 'default.jpg', 
+                'statuscode' => 'required|integer|in:0,1',
+                'coverphoto' => $request->coverphoto ?? 'default.jpg',
             ]);
 
             // Check for validation errors
@@ -242,9 +243,9 @@ class RegisterController extends Controller
 
             // Check if the record exists
             $exists = DB::table('email_codes')
-                        ->where('email', $request->email)
-                        ->where('code', $request->code)
-                        ->exists();
+                ->where('email', $request->email)
+                ->where('code', $request->code)
+                ->exists();
 
             if ($exists) {
                 // Activate the user account
@@ -313,5 +314,3 @@ class RegisterController extends Controller
 //    "designation": "Software Engineer",
 //     "statuscode": 1
 // }
-
-

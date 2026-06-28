@@ -41,6 +41,9 @@
     use App\Http\Controllers\System\Users\AppUsersController;
     use App\Http\Controllers\AccountPlan\UserPlanController;
     use App\Http\Controllers\AccountPlan\UserPlanDetailsController;
+    use App\Http\Controllers\AccountPlan\UserSubscriptionController;
+    use App\Services\PlanService;
+
     /*
     |--------------------------------------------------------------------------
     | API Routes
@@ -286,7 +289,10 @@
             Route::put('/update/{id}', [UserPlanController::class, 'update']);
             Route::delete('/delete/{id}', [UserPlanController::class, 'destroy']);
             Route::patch('/deactivate/{id}', [UserPlanController::class, 'deactivate']);
+            Route::post('/upgrade', [UserPlanController::class, 'upgrade']);
+            Route::post('/free-plan', [PlanService::class, 'activateFreePlan']);
         });
+
         //ACCOUNT PLAN  FEATURES
         Route::prefix('account-plan-details')->group(function () {
             Route::post('/save', [UserPlanDetailsController::class, 'save']);
@@ -296,6 +302,8 @@
             Route::get('/my-plan-features', [UserPlanController::class, 'myFeatures']);
         });
 
+
+      
     });
 
 

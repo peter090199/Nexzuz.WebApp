@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use App\Models\Userprofile;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\AccountPlan\UserSubscriptions;
 
 
 class LoginController extends Controller
@@ -55,9 +55,14 @@ class LoginController extends Controller
             $token = $user->createToken('Personal Access Token')->plainTextToken;
 
             $userprofileexist = Userprofile::where('code', $user->code)->count();
+            $hasSubscription = UserSubscriptions::where('code', $user->code)
+                ->where('is_active', 'active')
+                ->exists();
 
-            if ($user->role_code === 'DEF-CLIENT' ||   $user->role_code === 'DEF-ADMIN' || $user->role_code === 'DEF-MASTERADMIN' || 
-            ($userprofileexist > 0 && $user->role_code === 'DEF-USERS')
+
+            if (
+                $user->role_code === 'DEF-CLIENT' ||   $user->role_code === 'DEF-ADMIN' || $user->role_code === 'DEF-MASTERADMIN' ||
+                ($userprofileexist > 0 && $user->role_code === 'DEF-USERS')
             ) {
                 // DEF-CLIENT DIRECT TO HOME 0
                 return response()->json([
@@ -65,7 +70,8 @@ class LoginController extends Controller
                     'token'     => $token,
                     'message'   => 0,
                     'role' => $user->role_code,
-                    'is_online' => true
+                    'is_online' => true,
+                    'has_subscription' => $hasSubscription
                 ]);
             } else {
                 return response()->json([
@@ -73,7 +79,8 @@ class LoginController extends Controller
                     'token'     => $token,
                     'message'   => 1,
                     'role' => $user->role_code,
-                    'is_online' => true
+                    'is_online' => true,
+                    'has_subscription' => $hasSubscription
                 ]);
             }
         }
@@ -84,7 +91,7 @@ class LoginController extends Controller
         ]);
     }
 
-    
+
     public function loginxx1(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -120,8 +127,8 @@ class LoginController extends Controller
         // 🧩 Check if profile exists or specific role logic
         $userProfileExists = Userprofile::where('code', $user->code)->exists();
 
-        $redirectFlag = ($user->role_code === 'DEF-CLIENT' 
-            || $user->role_code === 'DEF-MASTERADMIN' 
+        $redirectFlag = ($user->role_code === 'DEF-CLIENT'
+            || $user->role_code === 'DEF-MASTERADMIN'
             || ($userProfileExists && $user->role_code === 'DEF-USERS')) ? 0 : 1;
 
         return response()->json([
@@ -132,115 +139,112 @@ class LoginController extends Controller
         ], 200);
     }
 
-      public function loginxx2(Request $request)
-      {
-            // Validate the request
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
-        
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $validator->errors()
-                ]);
-            }
-            // Attempt to authenticate the user
-            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                $user = Auth::user();
-        
-                // Check if the user's status is "I" (inactive)
-                if ($user->status === 'I') {
-                    // Log out the user
-                    Auth::logout();
-                    return response()->json(['success' => false, 'message' => "Your account is inactive. Please activate your account through the email we sent to your Gmail."]);
-               
-                }
-                // Update user's online status
-                $user->is_online = true;
-                $user->save();
-                
-                // If the account is active, create a token
-                $token = $user->createToken('Personal Access Token')->plainTextToken;
-    
-                $userprofileexist = Userprofile::where('code', Auth::user()->code)->count();
-                 if(Auth::user()->role_code === 'DEF-CLIENT' || Auth::user()->role_code === 'DEF-MASTERADMIN'  || $userprofileexist > 0 && Auth::user()->role_code === 'DEF-USERS'){
-               // if ($userprofileexist > 0 && Auth::user()->role_code === 'DEF-USERS' || Auth::user()->role_code === 'DEF-CLIENT') {
-                    // DEF-CLIENT DIRECT TO HOME 0
-                    return response()->json([
-                        'success'   => true,
-                        'token'     => $token,
-                        'message'   => 0,
-                        'is_online' => true
-                    ]);
-                }
-                else {
-                    return response()->json([
-                        'success'   => true,
-                        'token'     => $token,
-                        'message'   => 1,
-                        'is_online' => true
-                    ]);
-                }
-
-            }
-        return response()->json(['success' => false, 'message' => 'The email or password is incorrect. Please check your credentials.']);
-    }
-        
-        
-    public function loginxx(Request $request)
+    public function loginxx2(Request $request)
     {
-    
+        // Validate the request
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => $validator->errors()
             ]);
         }
-    
         // Attempt to authenticate the user
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            // Authentication passed
             $user = Auth::user();
-    
+
             // Check if the user's status is "I" (inactive)
             if ($user->status === 'I') {
                 // Log out the user
                 Auth::logout();
                 return response()->json(['success' => false, 'message' => "Your account is inactive. Please activate your account through the email we sent to your Gmail."]);
             }
-    
+            // Update user's online status
+            $user->is_online = true;
+            $user->save();
+
+            // If the account is active, create a token
+            $token = $user->createToken('Personal Access Token')->plainTextToken;
+
+            $userprofileexist = Userprofile::where('code', Auth::user()->code)->count();
+            if (Auth::user()->role_code === 'DEF-CLIENT' || Auth::user()->role_code === 'DEF-MASTERADMIN'  || $userprofileexist > 0 && Auth::user()->role_code === 'DEF-USERS') {
+                // if ($userprofileexist > 0 && Auth::user()->role_code === 'DEF-USERS' || Auth::user()->role_code === 'DEF-CLIENT') {
+                // DEF-CLIENT DIRECT TO HOME 0
+                return response()->json([
+                    'success'   => true,
+                    'token'     => $token,
+                    'message'   => 0,
+                    'is_online' => true
+                ]);
+            } else {
+                return response()->json([
+                    'success'   => true,
+                    'token'     => $token,
+                    'message'   => 1,
+                    'is_online' => true
+                ]);
+            }
+        }
+        return response()->json(['success' => false, 'message' => 'The email or password is incorrect. Please check your credentials.']);
+    }
+
+
+    public function loginxx(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()
+            ]);
+        }
+
+        // Attempt to authenticate the user
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            // Authentication passed
+            $user = Auth::user();
+
+            // Check if the user's status is "I" (inactive)
+            if ($user->status === 'I') {
+                // Log out the user
+                Auth::logout();
+                return response()->json(['success' => false, 'message' => "Your account is inactive. Please activate your account through the email we sent to your Gmail."]);
+            }
+
             // If the account is active, create a token
             $token = $user->createToken('Personal Access Token')->plainTextToken;
 
             $userprofileexist = Userprofile::where('code', Auth::user()->code)->count();
 
-           
-            if(Auth::user()->role_code === 'DEF-CLIENT' || Auth::user()->role_code === 'DEF-MASTERADMIN'  || $userprofileexist > 0){
+
+            if (Auth::user()->role_code === 'DEF-CLIENT' || Auth::user()->role_code === 'DEF-MASTERADMIN'  || $userprofileexist > 0) {
                 // DEF-CLIENT DIRECT TO HOME 0
                 return response()->json([
                     'success' => true,
                     'token' => $token,
                     'message' => 0,
                 ]);
-            }else{
-                    return response()->json([
-                        'success' => true,
-                        'token' => $token,
-                        'message' => 1,
-                    ]);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'token' => $token,
+                    'message' => 1,
+                ]);
             }
 
 
 
 
-    
+
             // return response()->json([
             //     'success' => true,
             //     'token' => $token,
@@ -250,7 +254,7 @@ class LoginController extends Controller
         }
         return response()->json(['success' => false, 'message' => 'The email or password is incorrect. Please check your credentials.']);
     }
-        
+
     public function logout(Request $request)
     {
         $user = $request->user();
@@ -285,10 +289,9 @@ class LoginController extends Controller
     {
         // Revoke the token that was used to authenticate the request
         $request->user()->currentAccessToken()->delete();
-    
-        return response()->json(['success' => true , 'message' => 'You have been logged out successfully.']);
-    }
 
+        return response()->json(['success' => true, 'message' => 'You have been logged out successfully.']);
+    }
 }
 
 

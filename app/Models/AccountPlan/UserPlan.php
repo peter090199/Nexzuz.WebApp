@@ -28,7 +28,8 @@ class UserPlan extends Model
         'tag',
         'button_color',
         'description',
-        'recordStatus'
+        'recordStatus',
+        'plan_level'
     ];
 
     public function features()
