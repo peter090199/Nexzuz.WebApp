@@ -5,52 +5,173 @@ namespace App\Http\Controllers\Jobs;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 use App\Models\Jobs\AppliedJobs;
 use App\Models\Jobs\AppliedResumes;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AppliedStatusUpdated;
 use App\Http\Controllers\ChatController;
 use App\Models\Jobs\JobPosting;
-
+use App\Services\PlanService;
 
 class AppliedJobController extends Controller
 {
+    protected $planService;
+    public function __construct(PlanService $planService)
+    {
+        $this->planService = $planService;
+    }
+
+    // public function saveAppliedJob(Request $request)
+    // {
+    //     try {
+    //         $user = Auth::user();
+
+    //         // ✅ Validate request
+    //         $validated = $request->validate([
+    //             'job_name'      => 'required|string|max:255',
+    //             'email'         => 'required|string|email|max:255',
+    //             'country_code'  => 'required|string|max:10',
+    //             'phone_number'  => 'required|string|max:20',
+    //             'transNo'       => 'required|string|max:50',
+    //             'resume_pdf'    => 'required|file|mimes:pdf|max:2048', // PDF only
+    //             'answers'       => 'required|array',                   // expect multiple answers
+    //             'answers.*.question_id' => 'required|integer',
+    //             'answers.*.answer_text' => 'required|string',
+    //         ]);
+
+    //         DB::beginTransaction();
+
+    //         // ✅ Save file
+    //         $resumePath = null;
+    //         if ($request->hasFile('resume_pdf')) {
+    //             $file = $request->file('resume_pdf');
+    //             $uuid = Str::uuid();
+    //             $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
+    //             $fileName = time() . '.' . $file->getClientOriginalExtension();
+    //             $filePath = $file->storeAs($folderPath, $fileName, 'public');
+    //             $resumePath = "/storage/app/public/" . $filePath;
+    //         }
+    //         $job = AppliedJobs::create([
+    //             'transNo'       => $validated['transNo'],
+    //             'job_name'      => $validated['job_name'],
+    //             'email'         => $validated['email'],
+    //             'country_code'  => $validated['country_code'],
+    //             'phone_number'  => $validated['phone_number'],
+    //             'code'          => $user->code,
+    //             'role_code'     => $user->role_code,
+    //             'fullname'      => $user->fullname,
+    //         ]);
+    //         // ✅ Save related Resume record
+    //         AppliedResumes::create([
+    //             'transNo'       => $validated['transNo'],
+    //             'resume_pdf'    => $resumePath,
+    //             'job_name'      => $validated['job_name'],
+    //             'role_code'     => $user->role_code,
+    //             'code'          => $user->code,
+    //             'fullname'      => $user->fullname,
+    //             'company'       => $user->company,
+    //         ]);
+
+    //         // ✅ Update multiple answers
+    //         foreach ($validated['answers'] as $answer) {
+    //             DB::table('applied_questions')
+    //                 ->where('transNo', $validated['transNo'])
+    //                 ->where('question_id', $answer['question_id'])
+    //                 ->update([
+    //                     'answer_text' => $answer['answer_text'],
+    //                     'updated_at'  => now(),
+    //                 ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Applied Job saved successfully',
+    //             'transNo' => $validated['transNo'],
+    //         ], 201);
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Validation failed.',
+    //             'success' => false,
+    //             'errors'  => $e->errors(),
+    //         ], 422);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'Something went wrong while saving the job application.',
+    //             'success' => false,
+    //             'error'   => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
     public function saveAppliedJob(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = Auth::user();
-
-            // ✅ Validate request
             $validated = $request->validate([
                 'job_name'      => 'required|string|max:255',
-                'email'         => 'required|string|email|max:255',
+                'email'         => 'required|email|max:255',
                 'country_code'  => 'required|string|max:10',
                 'phone_number'  => 'required|string|max:20',
                 'transNo'       => 'required|string|max:50',
-                'resume_pdf'    => 'required|file|mimes:pdf|max:2048', // PDF only
-                'answers'       => 'required|array',                   // expect multiple answers
+                'resume_pdf'    => 'required|file|mimes:pdf|max:5120',
+                'answers'       => 'required|array',
                 'answers.*.question_id' => 'required|integer',
                 'answers.*.answer_text' => 'required|string',
             ]);
 
-            DB::beginTransaction();
+            // Prevent duplicate application
+            $exists = AppliedJobs::where('transNo', $validated['transNo'])
+                ->where('code', $user->code)
+                ->exists();
 
-            // ✅ Save file
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You have already applied for this job.'
+                ], 409);
+            }
+
+            $hasUnlimited = $this->planService->hasUnlimitedJobApplications($user->code);
+            if (!$hasUnlimited) {
+                // Example: Free = 10, Basic = 25
+                $limit = $this->planService->getApplicationLimit($user->code);
+                $totalApplied = AppliedJobs::where('code', $user->code)->count();
+                if ($totalApplied >= $limit) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You have reached your job application limit. Upgrade your plan to apply for unlimited jobs.',
+                        'current' => $totalApplied,
+                        'limit'   => $limit
+                    ], 403);
+                }
+            }
+
             $resumePath = null;
             if ($request->hasFile('resume_pdf')) {
                 $file = $request->file('resume_pdf');
-                $uuid = Str::uuid();
-                $folderPath = "uploads/{$user->code}/AppliedJobsResume/{$uuid}";
-                $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs($folderPath, $fileName, 'public');
-                $resumePath = "/storage/app/public/" . $filePath;
+                $folder = "uploads/{$user->code}/AppliedJobsResume";
+                $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                // Uses config/filesystems.php default disk
+                $resumePath = $file->storeAs($folder, $filename, 'public');
             }
-            $job = AppliedJobs::create([
+
+            /*
+        |--------------------------------------------------------------------------
+        | Save Applied Job
+        |--------------------------------------------------------------------------
+        */
+
+            AppliedJobs::create([
                 'transNo'       => $validated['transNo'],
                 'job_name'      => $validated['job_name'],
                 'email'         => $validated['email'],
@@ -60,10 +181,16 @@ class AppliedJobController extends Controller
                 'role_code'     => $user->role_code,
                 'fullname'      => $user->fullname,
             ]);
-            // ✅ Save related Resume record
+
+            /*
+        |--------------------------------------------------------------------------
+        | Save Resume
+        |--------------------------------------------------------------------------
+        */
+
             AppliedResumes::create([
                 'transNo'       => $validated['transNo'],
-                'resume_pdf'    => $resumePath,
+                'resume_pdf'    => $resumePath, // save relative path only
                 'job_name'      => $validated['job_name'],
                 'role_code'     => $user->role_code,
                 'code'          => $user->code,
@@ -71,14 +198,20 @@ class AppliedJobController extends Controller
                 'company'       => $user->company,
             ]);
 
-            // ✅ Update multiple answers
+            /*
+        |--------------------------------------------------------------------------
+        | Save Answers
+        |--------------------------------------------------------------------------
+        */
+
             foreach ($validated['answers'] as $answer) {
+
                 DB::table('applied_questions')
                     ->where('transNo', $validated['transNo'])
                     ->where('question_id', $answer['question_id'])
                     ->update([
                         'answer_text' => $answer['answer_text'],
-                        'updated_at'  => now(),
+                        'updated_at' => now()
                     ]);
             }
 
@@ -86,34 +219,35 @@ class AppliedJobController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Applied Job saved successfully',
-                'transNo' => $validated['transNo'],
+                'message' => 'Job application submitted successfully.'
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Validation failed.',
-                'success' => false,
-                'errors'  => $e->errors(),
-            ], 422);
 
-        } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
-                'message' => 'Something went wrong while saving the job application.',
                 'success' => false,
-                'error'   => $e->getMessage(),
+                'message' => 'Validation failed.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
+
     public function getAppliedJob()
     {
         $user = Auth::user();
 
-        // Get applied jobs
         $results = DB::table('applied_jobs as aj')
-            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->join('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->select(
                 'jp.transNo',
                 'aj.code',
@@ -127,23 +261,22 @@ class AppliedJobController extends Controller
                 'aj.applied_status'
             )
             ->where('jp.code', $user->code)
-              ->where('jp.transNo', $job->transNo)
             ->get();
 
         if ($results->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No applied jobs found for this user.',
+                'message' => 'No applied jobs found.',
                 'data' => []
-            ]);
+            ], 404);
         }
 
-        // Attach applied_resumes to each job
         $results->transform(function ($job) {
+
             $job->resumes = DB::table('applied_resumes')
                 ->where('transNo', $job->transNo)
-                ->where('code', $job->code) // applicant code
-                ->select('resume_pdf as url') // only select columns that exist
+                ->where('code', $job->code)
+                ->select('resume_pdf as url')
                 ->get();
 
             return $job;
@@ -155,9 +288,7 @@ class AppliedJobController extends Controller
         ]);
     }
 
-
-
-     public function getAppliedJobByUsers($transNo)
+    public function getAppliedJobByUsers($transNo)
     {
         $user = Auth::user();
 
@@ -300,7 +431,7 @@ class AppliedJobController extends Controller
 
     public function getAllAppliedJobsByCode()
     {
-        $user = Auth::user(); 
+        $user = Auth::user();
 
         $results = DB::table('applied_jobs as aj')
             ->join('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
@@ -386,7 +517,7 @@ class AppliedJobController extends Controller
             'status' => 'required|string|max:50',
         ]);
         $status = $request->input('status');
-       
+
         $updated = DB::table('applied_jobs')
             ->where('applied_id', $applied_id)
             ->update(['applied_status' => $status]);
@@ -581,7 +712,4 @@ class AppliedJobController extends Controller
             'message' => "Applied status updated to '{$status}', email sent, and message notification sent."
         ]);
     }
-
-
-
 }

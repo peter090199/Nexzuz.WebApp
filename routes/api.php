@@ -57,20 +57,17 @@
 
     // PUBLIC
     Route::post('login', [LoginController::class, 'login'])->name('login');
-
     Route::post('resetpassword', [ForgetpasswordController::class, 'resetpassword'])->name('resetpassword');
-
     Route::post('forgetpassword', [ForgetpasswordController::class, 'forgetpassword'])->name('forgetpassword');
-
     Route::post('register', [RegisterController::class, 'register'])->name('register');
-
     Route::post('accountactivation', [RegisterController::class, 'accountactivation'])->name('accountactivation');
+    
+    Route::get('getPlanpublic', [UserPlanController::class, 'getPlanpublic']);
+    Route::get('getByPlanpublic/{planId}', [UserPlanDetailsController::class, 'getByPlanPublic']);
 
     Route::post('send-message', function (Request $request) {
         $message = $request->input('message');
-
         event(new MessageSent($message)); // ✅ Corrected event class name
-
         return response()->json(['success' => true, 'message' => $message]);
     });
 
@@ -86,12 +83,10 @@
         return Broadcast::auth(request());
     });
 
-
     Route::middleware(['auth:sanctum', 'checkstatus'])->group(function () {
         Route::get('user', function (Request $request) {
             return $request->user();
         });
-
         //accessmenu
         Route::Resource('accessmenu', AccessrolemenuController::class)->names('accessmenu');
         Route::post('saveAccessMenu', [SecurityroleController::class, 'saveAccessMenu']);
@@ -285,6 +280,7 @@
         Route::prefix('account-plan')->group(function () {
             Route::post('/save', [UserPlanController::class, 'save']);
             Route::get('/list', [UserPlanController::class, 'index']);
+            // Route::get('/getPlanpublic', [UserPlanController::class, 'getPlanpublic']);
             Route::get('/show/{planId}', [UserPlanController::class, 'show']);
             Route::put('/update/{id}', [UserPlanController::class, 'update']);
             Route::delete('/delete/{id}', [UserPlanController::class, 'destroy']);
@@ -301,9 +297,6 @@
             Route::delete('/delete/{id}', [UserPlanDetailsController::class, 'delete']);
             Route::get('/my-plan-features', [UserPlanController::class, 'myFeatures']);
         });
-
-
-      
     });
 
 

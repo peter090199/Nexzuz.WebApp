@@ -4,13 +4,13 @@ namespace App\Models\AccountPlan;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\AccountPlan\UserPlan;
 
 class UserPlanDetails extends Model
 {
     use HasFactory;
 
     protected $table = 'userplandetails';
-    protected $primaryKey = 'id';
 
     protected $fillable = [
         'planId',
@@ -33,6 +33,15 @@ class UserPlanDetails extends Model
             UserPlan::class,
             'planId',
             'planId'
+        );
+    }
+
+    public function feature()
+    {
+        return $this->belongsTo(
+            UserPlan::class,
+            'feature_id',
+            'id'
         );
     }
 }

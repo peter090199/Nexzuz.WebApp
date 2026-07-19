@@ -68,6 +68,27 @@ class UserPlanDetailsController extends Controller
         ]);
     }
 
+     public function getByPlanPublic($planId)
+    {
+        $data = UserPlanDetails::where('planId', $planId)
+            ->orderBy('id')
+            ->get();
+
+        if ($data->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No features available for this plan.',
+                'data' => []
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+
+
     /**
      * UPDATE
      */

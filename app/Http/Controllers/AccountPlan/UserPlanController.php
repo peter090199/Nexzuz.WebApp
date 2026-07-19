@@ -140,6 +140,23 @@ class UserPlanController extends Controller
         ]);
     }
 
+    public function getPlanpublic()
+    {
+        $plans = UserPlan::where('recordStatus', 'active')
+            ->orderBy('sort_number', 'asc')
+            ->get();
+
+        foreach ($plans as $plan) {
+            $plan->button_name = 'Get Started';
+            $plan->disabled = false;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $plans
+        ]);
+    }
+
     public function index()
     {
         $plans = UserPlan::where('recordStatus', 'active')
@@ -214,7 +231,7 @@ class UserPlanController extends Controller
         ]);
     }
 
-   
+
 
     public function show($planId)
     {

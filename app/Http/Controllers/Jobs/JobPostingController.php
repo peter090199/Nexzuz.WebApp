@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Jobs;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Jobs\JobPosting;
-use Illuminate\Support\Facades\File; 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Jobs\QuestionController;
 use App\Models\Jobs\Question;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class JobPostingController extends Controller
@@ -37,7 +37,7 @@ class JobPostingController extends Controller
                 'question_text'   => 'required|array|min:1',
                 'question_text.*' => 'required|string|max:255',
 
-                 // ✅ ADD THIS
+                // ✅ ADD THIS
                 'answer_type'          => 'required|array',
                 'answer_type.*'        => 'required|in:yes,no,general',
             ]);
@@ -90,11 +90,10 @@ class JobPostingController extends Controller
                 ]);
 
                 // Save all questions
-                foreach ($validated['question_text'] as $questionText) {
+                foreach ($validated['question_text'] as $index => $questionText) {
                     Question::create([
                         'question_text' => $questionText,
-                        'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
-
+                        'answer_text'   => $validated['answer_text'][$index] ?? 'yes',
                         'job_name'      => $validated['job_name'],
                         'role_code'     => $user->role_code,
                         'code'          => $user->code,
@@ -103,7 +102,7 @@ class JobPostingController extends Controller
                         'transNo'       => $transNo,
                     ]);
                 }
-            } 
+            }
             // ---------- UPDATE EXISTING JOB ----------
             else {
                 $job = JobPosting::where('transNo', $transNo)->firstOrFail();
@@ -129,7 +128,7 @@ class JobPostingController extends Controller
                 foreach ($validated['question_text'] as $index => $questionText) {
                     Question::create([
                         'question_text' => $questionText,
-                        'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
+                        'answer_text'   => $validated['answer_text'][$index] ?? 'yes',
                         'job_name'      => $validated['job_name'],
                         'role_code'     => $user->role_code,
                         'code'          => $user->code,
@@ -147,7 +146,6 @@ class JobPostingController extends Controller
                 'message' => $transNo ? 'Job updated successfully' : 'Job saved successfully',
                 'transNo' => $transNo,
             ], $transNo ? 200 : 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -155,7 +153,6 @@ class JobPostingController extends Controller
                 'success' => false,
                 'errors'  => $e->errors(),
             ], 422);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -166,7 +163,7 @@ class JobPostingController extends Controller
         }
     }
 
-   public function getApplicationScore($transNo)
+    public function getApplicationScore($transNo)
     {
         $rows = Question::where('transNo', $transNo)->get();
 
@@ -177,10 +174,10 @@ class JobPostingController extends Controller
         $answers = $rows->map(function ($item) {
             $ansText = strtolower($item->answer_text);
             $ansType = strtolower($item->answer_type);
-            
+
             // --- SCORING LOGIC ---
             $scoreValue = 0;
-            
+
             if ($ansText === 'yes') {
                 $scoreValue = 1.0;
             } elseif ($ansText === 'general' || $ansType === 'general') {
@@ -258,7 +255,7 @@ class JobPostingController extends Controller
     {
         try {
             $user = Auth::user();
-        
+
             $lastTrans = JobPosting::orderByDesc('job_id')->first();
             $lastNumber = $lastTrans ? intval(substr($lastTrans->transNo, -6)) : 0;
             $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
@@ -317,7 +314,7 @@ class JobPostingController extends Controller
                 Question::create([
                     'question_text' => $questionText,
                     'answer_type'   => $validated['answer_type'][$index] ?? 'yes',
-                   // 'job_id'        => $job->id,
+                    // 'job_id'        => $job->id,
                     'job_name'      => $validated['job_name'],
                     'role_code'     => $user->role_code,
                     'code'          => $user->code,
@@ -334,7 +331,6 @@ class JobPostingController extends Controller
                 'message'  => 'Job saved successfully',
                 'transNo' => $transNo,
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -342,7 +338,6 @@ class JobPostingController extends Controller
                 'success' => false,
                 'errors'  => $e->errors(),
             ], 422);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -351,7 +346,6 @@ class JobPostingController extends Controller
                 'error'   => $e->getMessage(),
             ], 500);
         }
-
     }
 
 
@@ -376,8 +370,8 @@ class JobPostingController extends Controller
             'job_about'       => 'required|string',
             'qualification'   => 'required|string',
             'work_type'       => 'required|string',
-          //  'comp_name'       => 'required|string|max:255',
-       //    'comp_description'=> 'required|string',
+            //  'comp_name'       => 'required|string|max:255',
+            //    'comp_description'=> 'required|string',
             'job_image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -419,7 +413,7 @@ class JobPostingController extends Controller
             $job->qualification   = $request->qualification;
             $job->work_type       = $request->work_type;
             $job->comp_name       = $request->comp_name;
-            $job->comp_description= $request->comp_description;
+            $job->comp_description = $request->comp_description;
             $job->code            = $currentUserCode;
             $job->role_code       = $role_code;
             $job->fname           = $fname;
@@ -432,7 +426,6 @@ class JobPostingController extends Controller
                 'success' => true,
                 'message' => 'Jobs updated successfully.',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -446,22 +439,21 @@ class JobPostingController extends Controller
     public function getJobPostingsByCode()
     {
         try {
-            $code = Auth::user()->code; 
+            $code = Auth::user()->code;
 
             $jobs = JobPosting::where('code', $code)
-            ->orderBy('created_at', 'asc')
-            ->get();
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-           $questions = Question::where('code', $code)
-            ->orderBy('created_at', 'asc')
-            ->get();
+            $questions = Question::where('code', $code)
+                ->orderBy('created_at', 'asc')
+                ->get();
 
             return response()->json([
                 'success' => true,
                 'jobs' => $jobs,
                 'questions' => $questions
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -496,7 +488,6 @@ class JobPostingController extends Controller
                 'job'       => $job,
                 'questions' => $questions,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -506,7 +497,7 @@ class JobPostingController extends Controller
         }
     }
 
- 
+
     public function deleteJobPosting($transNo)
     {
         try {
@@ -542,7 +533,7 @@ class JobPostingController extends Controller
                 ->where('transNo', $transNo)
                 ->delete();
 
-                $job->delete();
+            $job->delete();
 
             DB::commit();
 
@@ -550,7 +541,6 @@ class JobPostingController extends Controller
                 'success' => true,
                 'message' => 'Job deleted successfully.',
             ], 200);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -561,5 +551,4 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
-
 }

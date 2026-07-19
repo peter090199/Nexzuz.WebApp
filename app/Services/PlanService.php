@@ -12,6 +12,10 @@ use App\Models\GeneratesTransNo\ControllNumbers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\AccountPlan\UserSubscriptionsDetails;
+
+
+
 
 class PlanService
 {
@@ -33,16 +37,12 @@ class PlanService
                     'message' => 'Your Free Plan is already active.'
                 ], 409);
             }
-            $subscription = PlanService::subscribeUser(
-                $user,
-                'PLN000001',
-                'Free'
-            );
+            $subscription = PlanService::subscribeUser($user->code,'PLN000001','Free');
             DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Free plan activated successfully.',
-                'redirect_url' => "/{$user->role}/subscription",
+                'redirect_url' => "{$user->role}/home",
                 'data' => $subscription
             ]);
         } catch (\Throwable $e) {
@@ -54,11 +54,11 @@ class PlanService
         }
     }
 
-    public static function subscribeUser($user, $planId, $paymentMethod = 'Free')
+    public static function subscribeUser(string $code, string $planId, string $paymentMethod = 'Free')
     {
         $now = Carbon::now();
         // Prevent duplicate active subscription
-        $existing = UserSubscriptions::where('code', $user->code)
+        $existing = UserSubscriptions::where('code', $code)
             ->where('planId', $planId)
             ->where('is_active', 'active')
             ->first();
@@ -73,14 +73,14 @@ class PlanService
 
         $transNo = self::generateControlNumber('USER_SUBSCRIPTION');
 
-        UserSubscriptions::where('code', $user->code)
+        UserSubscriptions::where('code', $code)
             ->where('is_active', 'active')
             ->update([
                 'is_active' => 'expired',
                 'updated_at' => $now
             ]);
 
-        UserSubscriptionDetails::where('code', $user->code)
+        UserSubscriptionDetails::where('code', $code)
             ->where('is_active', 'active')
             ->update([
                 'is_active' => 'expired',
@@ -89,7 +89,7 @@ class PlanService
 
         $subscription = UserSubscriptions::create([
             'transNo'        => $transNo,
-            'code'           => $user->code,
+            'code'           => $code,
             'planId'         => $plan->planId,
             'plan_name'      => $plan->plan_name,
             'amount'         => $plan->price,
@@ -112,7 +112,7 @@ class PlanService
         foreach ($features as $feature) {
             $details[] = [
                 'transNo'       => $transNo,
-                'code'          => $user->code,
+                'code'          => $code,
                 'planId'        => $feature->planId,
                 'plan_name'     => $feature->plan_name,
                 'fid'           => $feature->fid,
@@ -130,14 +130,41 @@ class PlanService
         return $subscription;
     }
 
-    public static function getCurrentPlan($code)
+    public static function getCurrentPlan(string $code)
     {
         return UserSubscriptions::where('code', $code)
             ->where('is_active', 'active')
             ->first();
     }
 
-    public static function getFeatureValue($code, $featureCode)
+    public static function getFeatureValue(string $code, string $featureCode): mixed
+    {
+        try {
+
+            return Cache::remember(
+                "feature_{$code}_{$featureCode}",
+                now()->addHour(),
+                function () use ($code, $featureCode) {
+
+                    return DB::table('usersubscription')
+                        ->join(
+                            'usersubscription_details',
+                            'usersubscription.planId',
+                            '=',
+                            'usersubscription_details.planId'
+                        )
+                        ->where('usersubscription.code', $code)
+                        ->where('usersubscription.is_active', 'active')
+                        ->where('usersubscription_details.is_active', 'active')
+                        ->where('usersubscription_details.feature_code', $featureCode)
+                        ->value('usersubscription_details.feature_value');
+                }
+            );
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+    public static function getFeatureValuexxx(string $code, string $featureCode)
     {
         return Cache::remember(
             "feature_{$code}_{$featureCode}",
@@ -161,7 +188,7 @@ class PlanService
     /**
      * YES / NO FEATURES
      */
-    public static function hasFeature($code, $featureCode)
+    public static function hasFeature(string $code, string $featureCode): bool
     {
         $value = self::getFeatureValue($code, $featureCode);
 
@@ -171,9 +198,61 @@ class PlanService
     /**
      * GET NUMERIC LIMIT (e.g. 15 connections)
      */
-    public static function getLimit($code, $featureCode)
+    public static function getLimit(string $code, string $featureCode)
     {
         return (int) self::getFeatureValue($code, $featureCode);
+    }
+
+    /**
+     * Check if user has unlimited job applications.
+     */
+    public function hasUnlimitedJobApplicationsxxx(string $code): bool
+    {
+        $value = $this->getFeature($code, 'UNLIMITED_JOB');
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN)
+            || $value == 1
+            || strtolower((string) $value) === 'yes'
+            || strtolower((string) $value) === 'true'
+            || strtolower((string) $value) === 'unlimited';
+    }
+
+    public function hasUnlimitedJobApplications(string $code): bool
+    {
+        $feature = UserSubscriptionDetails::where('code', $code)
+            ->where('feature_code', 'UNLIMITED_JOB')
+            ->where('is_active', 'active')
+            ->first();
+
+        // No feature found
+        if (!$feature) {
+            return false;
+        }
+
+        // Feature exists and is enabled
+        return strtoupper($feature->feature_value) === 'YES';
+    }
+
+
+    public function getApplicationLimit($code): int
+    {
+        return (int) ($this->getFeature($code, 'UNLIMITED_JOB') ?? 0);
+    }
+
+    public function getFeature($code, $featureCode)
+    {
+        $subscription = UserSubscriptions::with('plan.features.feature')
+            ->where('code', $code)
+            ->where('is_active', 'active')
+            ->first();
+
+        if (!$subscription || !$subscription->plan) {
+            return null;
+        }
+        $planFeature = $subscription->plan->features
+            ->first(function ($item) use ($featureCode) {
+                return optional($item->feature)->code === $featureCode;
+            });
+        return $planFeature?->value;
     }
 
     /**
