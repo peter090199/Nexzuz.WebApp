@@ -404,10 +404,10 @@ class JobPostingController extends Controller
             // QUESTIONS (replace all on every save)
             // -----------------------------------------------------
             Question::where('transNo', $transNo)->delete();
-
-            foreach ($validated['question_text'] as $questionText) {
+            foreach ($validated['question_text'] as $index => $questionText) {
                 Question::create([
                     'question_text' => $questionText,
+                    'answer_type'   => $validated['answer_type'][$index] ?? null,
                     'job_name'      => $validated['job_name'],
                     'role_code'     => $user->role_code,
                     'code'          => $user->code,
@@ -945,7 +945,11 @@ class JobPostingController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get();
 
+            // Get all transNo values from the jobs collection
+            $transNos = $jobs->pluck('transNo');
+
             $questions = Question::where('code', $code)
+                ->whereIn('transNo', $transNos)
                 ->orderBy('created_at', 'asc')
                 ->get();
 
@@ -962,6 +966,7 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
+
 
     public function getJobPostingByTransNo($transNo)
     {

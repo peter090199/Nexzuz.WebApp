@@ -19,6 +19,7 @@ class Question extends Model
         'question_id',
         'question_text',
         'answer_text',
+        'answer_type',
         'code',
         'role_code',
         'transNo',

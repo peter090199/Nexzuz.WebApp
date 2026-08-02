@@ -152,7 +152,7 @@ class AppliedJobController extends Controller
                         'message' => 'You have reached your job application limit. Upgrade your plan to apply for unlimited jobs.',
                         'current' => $totalApplied,
                         'limit'   => $limit
-                    ], 403);
+                    ], 409);
                 }
             }
 
@@ -366,11 +366,17 @@ class AppliedJobController extends Controller
             ]);
         }
 
+        // Combined into a single transform pass (was two separate loops before)
         $results->transform(function ($job) {
             $job->resumes = DB::table('applied_resumes')
                 ->where('transNo', $job->transNo)
                 ->where('code', $job->code)
                 ->select('resume_pdf as url')
+                ->get();
+
+            $job->answers = DB::table('applied_questions')
+                ->where('transNo', $job->transNo)
+                ->select('question_id', 'answer_type', 'question_text', 'answer_text')
                 ->get();
 
             return $job;
