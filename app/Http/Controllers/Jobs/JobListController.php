@@ -11,7 +11,7 @@ class JobListController extends Controller
 {
     public function getActiveJobs()
     {
-            $jobs = DB::table('jobPosting')
+        $jobs = DB::table('jobPosting')
             ->where('recordstatus', 'active')
             ->orderBy('created_at', 'asc')
             ->get();
@@ -70,9 +70,37 @@ class JobListController extends Controller
     {
         $jobs = DB::table('jobPosting')
             ->where('recordstatus', 'active')
-            ->where('code', $code) 
-            ->orderByDesc('created_at') 
+            ->where('code', $code)
+            ->orderByDesc('created_at')
             ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $jobs
+        ]);
+    }
+
+    public function getActiveJobsByPublic(Request $request)
+    {
+        $perPage = $request->get('per_page', 20);
+        $jobs = DB::table('jobPosting')
+            ->select([
+                'job_id',
+                'transNo',
+                'job_name',
+                'job_position',
+                'job_image',
+                'location',
+                'work_type',
+                'currency',
+                'min_salary',
+                'max_salary',
+                'company',
+                'created_at'
+            ])
+            ->where('recordstatus', 'active')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -95,6 +123,4 @@ class JobListController extends Controller
             'total' => $count
         ]);
     }
-
-
 }

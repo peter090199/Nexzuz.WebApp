@@ -61,9 +61,11 @@
     Route::post('forgetpassword', [ForgetpasswordController::class, 'forgetpassword'])->name('forgetpassword');
     Route::post('register', [RegisterController::class, 'register'])->name('register');
     Route::post('accountactivation', [RegisterController::class, 'accountactivation'])->name('accountactivation');
-    
+
     Route::get('getPlanpublic', [UserPlanController::class, 'getPlanpublic']);
     Route::get('getByPlanpublic/{planId}', [UserPlanDetailsController::class, 'getByPlanPublic']);
+
+    Route::get('getActiveJobsByPublic', [JobListController::class, 'getActiveJobsByPublic']);
 
     Route::post('send-message', function (Request $request) {
         $message = $request->input('message');

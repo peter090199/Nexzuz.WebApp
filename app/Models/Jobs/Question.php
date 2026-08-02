@@ -18,7 +18,7 @@ class Question extends Model
     protected $fillable = [
         'question_id',
         'question_text',
-        'answer_type',
+        'answer_text',
         'code',
         'role_code',
         'transNo',
