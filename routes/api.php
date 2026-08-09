@@ -66,6 +66,7 @@
     Route::get('getByPlanpublic/{planId}', [UserPlanDetailsController::class, 'getByPlanPublic']);
 
     Route::get('getActiveJobsByPublic', [JobListController::class, 'getActiveJobsByPublic']);
+    Route::get('searchUsersBypublic', [UserController::class, 'searchUsersBypublic']);
 
     Route::post('send-message', function (Request $request) {
         $message = $request->input('message');
