@@ -29,6 +29,7 @@
     use App\Http\Controllers\CV\UserWorkExperiences;
     use App\Http\Controllers\Follow\FollowController;
     use App\Http\Controllers\Jobs\JobPostingController;
+    use App\Http\Controllers\Jobs\SavedJobController;
     use App\Http\Controllers\Jobs\JobListController;
     use App\Http\Controllers\PhoneValidationController;
     use App\Http\Controllers\Jobs\QuestionController;
@@ -228,6 +229,10 @@
         Route::get('getProfileCV', [ProfileController::class, 'getProfileCV']);
         //JobPosting
         Route::post('saveJobPosting', [JobPostingController::class, 'saveJobPosting']);
+
+        Route::post('saveJobs', [SavedJobController::class, 'saveJobs']);
+        Route::get('getSaveJobs', [SavedJobController::class, 'getSaveJobs']);
+
         Route::post('job-posting', [JobPostingController::class, 'saveOrUpdateJobPosting']);
         Route::put('job-posting/{transNo}', [JobPostingController::class, 'saveOrUpdateJobPosting']);
 

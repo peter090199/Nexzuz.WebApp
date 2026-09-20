@@ -11,7 +11,7 @@ class JobListController extends Controller
 {
     public function getActiveJobs()
     {
-        $jobs = DB::table('jobPosting')
+        $jobs = DB::table('jobposting')
             ->where('recordstatus', 'active')
             ->orderBy('created_at', 'asc')
             ->get();
@@ -27,7 +27,7 @@ class JobListController extends Controller
         $user = Auth::user();
 
         $count = DB::table('applied_jobs as aj')
-            ->leftJoin('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->leftJoin('jobposting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->where('jp.code', $user->code)
             ->count();
 
@@ -41,7 +41,7 @@ class JobListController extends Controller
         $user = Auth::user();
 
         $count = DB::table('applied_jobs as aj')
-            ->join('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->join('jobposting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->where('jp.code', $user->code)
             ->where('aj.applied_status', 'review') // ✅ FIXED
             ->count();
@@ -56,7 +56,7 @@ class JobListController extends Controller
         $user = Auth::user();
 
         $count = DB::table('applied_jobs as aj')
-            ->join('jobPosting as jp', 'aj.transNo', '=', 'jp.transNo')
+            ->join('jobposting as jp', 'aj.transNo', '=', 'jp.transNo')
             ->where('jp.code', $user->code)
             ->where('aj.applied_status', 'interview') // ✅ FIXED
             ->count();
@@ -68,7 +68,7 @@ class JobListController extends Controller
     }
     public function getActiveJobsByCode($code)
     {
-        $jobs = DB::table('jobPosting')
+        $jobs = DB::table('jobposting')
             ->where('recordstatus', 'active')
             ->where('code', $code)
             ->orderByDesc('created_at')
@@ -83,7 +83,7 @@ class JobListController extends Controller
     public function getActiveJobsByPublic(Request $request)
     {
         $perPage = $request->get('per_page', 20);
-        $jobs = DB::table('jobPosting')
+        $jobs = DB::table('jobposting')
             ->select([
                 'job_id',
                 'transNo',
@@ -113,7 +113,7 @@ class JobListController extends Controller
     {
         $user = Auth::user();
 
-        $count = DB::table('jobPosting')
+        $count = DB::table('jobposting')
             ->where('recordstatus', 'active')
             ->where('code', $user->code)
             ->count();

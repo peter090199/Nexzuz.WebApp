@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Jobs\SavedJob;
 
 class User extends Authenticatable
 {
@@ -77,5 +78,10 @@ class User extends Authenticatable
         $this->save();
 
         return $this->coverphoto;
+    }
+
+     public function savedJobs()
+    {
+        return $this->hasMany(SavedJob::class, 'code', 'code');
     }
 }

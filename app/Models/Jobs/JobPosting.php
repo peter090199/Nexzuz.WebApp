@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class JobPosting extends Model
 {
     use HasFactory;
-    protected $table = 'jobPosting';  // your actual table name
+    protected $table = 'jobposting';  // your actual table name
     protected $primaryKey = 'job_id';
     public $incrementing = true;
     protected $keyType = 'int';
