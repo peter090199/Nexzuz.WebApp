@@ -440,7 +440,6 @@ class JobPostingController extends Controller
         }
     }
 
-
     public function saveOrUpdateJobPostingOld(Request $request, $transNo = null)
     {
         try {
