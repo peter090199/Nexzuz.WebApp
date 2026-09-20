@@ -972,7 +972,7 @@ class JobPostingController extends Controller
     {
         try {
             // ✅ Fetch job posting by transNo
-            $job = DB::table('jobPosting')
+            $job = DB::table('jobposting')
                 ->where('transNo', $transNo)
                 ->first();
 
